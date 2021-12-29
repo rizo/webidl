@@ -1,3 +1,5 @@
+open Sexplib.Std
+
 type primitive =
   [ `Boolean
   | `Byte
@@ -10,14 +12,14 @@ type primitive =
   | `Long
   | `LongLong
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type string_type =
   [ `ByteString
   | `DOMString
   | `USVString
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type buffer =
   [ `ArrayBuffer
@@ -32,7 +34,7 @@ type buffer =
   | `Float32Array
   | `Float64Array
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type 'type_with_ext nullable_non_any_aux =
   [ primitive
@@ -46,37 +48,37 @@ type 'type_with_ext nullable_non_any_aux =
   | `FrozenArray of 'type_with_ext
   | `Record of string_type * 'type_with_ext
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'union_type) nullable_union_aux =
   [ 'type_with_ext nullable_non_any_aux
   | `Union of 'union_type
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type) non_any_aux =
   [ `Promise of 'return_type
   | `Nullable of 'type_with_ext nullable_non_any_aux
   | 'type_with_ext nullable_non_any_aux
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type) single_type_aux =
   [ ('type_with_ext, 'return_type) non_any_aux
   | `Any
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type, 'union_type, 'extends) union_member_aux =
   [ `NonAny of 'extends * ('type_with_ext, 'return_type) non_any_aux
   | `Union of 'union_type
   | `Nullable of [ `Union of 'union_type ]
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type, 'union_type, 'extends) union_type_aux =
   ('type_with_ext, 'return_type, 'union_type, 'extends) union_member_aux list
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type, 'union_type) type_aux =
   [ `Promise of 'return_type
@@ -85,27 +87,27 @@ type ('type_with_ext, 'return_type, 'union_type) type_aux =
   | `Nullable of ('type_with_ext, 'union_type) nullable_union_aux
   | `Union of 'union_type
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type ('type_with_ext, 'return_type, 'union_type) return_type_aux =
   [ ('type_with_ext, 'return_type, 'union_type) type_aux
   | `Void
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type type_with_ext = extends * type_ [@@deriving show]
+type type_with_ext = extends * type_ [@@deriving sexp]
 
-and type_ = (type_with_ext, return_type, union_type) type_aux [@@deriving show]
+and type_ = (type_with_ext, return_type, union_type) type_aux [@@deriving sexp]
 
 and return_type = (type_with_ext, return_type, union_type) return_type_aux
-[@@deriving show]
+[@@deriving sexp]
 
 and union_type = (type_with_ext, return_type, union_type, extends) union_type_aux
-[@@deriving show]
+[@@deriving sexp]
 
-and nullable_non_any = type_with_ext nullable_non_any_aux [@@deriving show]
+and nullable_non_any = type_with_ext nullable_non_any_aux [@@deriving sexp]
 
-and non_any = (type_with_ext, return_type) non_any_aux [@@deriving show]
+and non_any = (type_with_ext, return_type) non_any_aux [@@deriving sexp]
 
 and const_value =
   [ `Bool of bool
@@ -113,13 +115,13 @@ and const_value =
   | `Int of int
   | `Null
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 and const =
   [ primitive
   | `Ident of string
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 and default_value =
   [ `Const of const_value
@@ -127,14 +129,14 @@ and default_value =
   | `EmptySequence
   | `EmptyObject
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 and argument =
   [ `Optional of type_with_ext * string * default_value option
   | `Variadic of type_ * string
   | `Fixed of type_ * string
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 and extended_argument = extends * argument
 
@@ -146,9 +148,9 @@ and extended_attribute =
   | `Ident of string * string
   | `IdentList of string * string list
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-and extends = extended_attribute list [@@deriving show]
+and extends = extended_attribute list [@@deriving sexp]
 
 type special =
   [ `Getter
@@ -156,70 +158,70 @@ type special =
   | `Deleter
   | `Legacycaller
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type operation_rest = string option * (extends * argument) list [@@deriving show]
+type operation_rest = string option * (extends * argument) list [@@deriving sexp]
 
 type no_special_operation = [ `NoSpecialOperation of return_type * operation_rest ]
-[@@deriving show]
+[@@deriving sexp]
 
 type operation =
   [ no_special_operation
   | `SpecialOperation of special list * return_type * operation_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type dictionary_member =
   [ `Required of type_with_ext * string * default_value option
   | `NotRequired of type_ * string * default_value option
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type dictionary = string * string option * (extends * dictionary_member) list
-[@@deriving show]
+[@@deriving sexp]
 
-type attribute_rest = [ `AttributeRest of type_with_ext * string ] [@@deriving show]
+type attribute_rest = [ `AttributeRest of type_with_ext * string ] [@@deriving sexp]
 
 type operation_or_attribute =
   [ no_special_operation
   | attribute_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type namespace_member =
   [ no_special_operation
   | `ReadOnly of attribute_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type namespace = string * (extends * namespace_member) list [@@deriving show]
-type maplike = type_with_ext * type_with_ext [@@deriving show]
-type setlike = type_with_ext [@@deriving show]
+type namespace = string * (extends * namespace_member) list [@@deriving sexp]
+type maplike = type_with_ext * type_with_ext [@@deriving sexp]
+type setlike = type_with_ext [@@deriving sexp]
 
 type const_type =
   [ const
   | `Nullable of const
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type static_member =
   [ operation_or_attribute
   | `ReadOnly of attribute_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type readonly_member =
   [ `Maplike of maplike
   | `Setlike of setlike
   | attribute_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type attribute =
   [ `Inherit of attribute_rest
   | attribute_rest
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type interface_member =
   [ `ReadOnly of readonly_member
@@ -232,10 +234,10 @@ type interface_member =
   | `Maplike of maplike
   | `Setlike of setlike
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type interface = string * string option * (extends * interface_member) list
-[@@deriving show]
+[@@deriving sexp]
 
 type mixin_member =
   [ `Attribute of attribute
@@ -244,9 +246,9 @@ type mixin_member =
   | `Operation of operation
   | `Stringifier of [ static_member | `None ]
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type mixin = string * (extends * mixin_member) list [@@deriving show]
+type mixin = string * (extends * mixin_member) list [@@deriving sexp]
 
 type partial =
   [ `PartialInterface of string * (extends * interface_member) list
@@ -254,13 +256,13 @@ type partial =
   | `PartialDictionary of string * (extends * dictionary_member) list
   | `Namespace of namespace
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type callback =
   [ `CallbackRest of string * return_type * (extends * argument) list
   | `Interface of interface
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type definition =
   [ `Callback of callback
@@ -274,6 +276,6 @@ type definition =
   | `Includes of string * string
   | `Implements of string * string
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type definitions = (extends * definition) list [@@deriving show]
+type definitions = (extends * definition) list [@@deriving sexp]

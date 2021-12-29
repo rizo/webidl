@@ -1,4 +1,5 @@
 open Webidl_syntax.Ast
+open Sexplib.Std
 
 type attribute =
   { is_static : bool
@@ -7,7 +8,7 @@ type attribute =
   ; type_with_ext : type_with_ext
   ; name : string
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type special =
   [ `Getter
@@ -15,7 +16,7 @@ type special =
   | `Deleter
   | `Legacycaller
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type operation =
   { specials : special list
@@ -24,7 +25,7 @@ type operation =
   ; ident : string option
   ; arguments : (extends * argument) list
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type dictionary_member =
   { is_required : bool
@@ -32,48 +33,48 @@ type dictionary_member =
   ; ident : string
   ; default : default_value option
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type dictionary =
   { ident : string
   ; inheritance : string option
   ; dictionary_members : (extends * dictionary_member) list
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type operation_or_attribute =
   [ `Operation of operation
   | `Attribute of attribute
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type namespace_member = operation_or_attribute [@@deriving show]
+type namespace_member = operation_or_attribute [@@deriving sexp]
 
 type namespace =
   { ident : string
   ; namespace_members : (extends * namespace_member) list
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type pattern_list =
   [ `Getter
   | `Identifiers of string list
   | `None
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type maplike =
   { is_readonly : bool
   ; key_type : type_with_ext
   ; value_type : type_with_ext
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type setlike =
   { is_readonly : bool
   ; key_type : type_with_ext
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type interface_member =
   [ `Const of const_type * string * const_value
@@ -84,14 +85,14 @@ type interface_member =
   | `Maplike of maplike
   | `Setlike of setlike
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type interface =
   { ident : string
   ; inheritance : string option
   ; interface_members : (extends * interface_member) list
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type mixin_member =
   [ `Const of const_type * string * const_value
@@ -101,13 +102,13 @@ type mixin_member =
   | `Maplike of maplike
   | `Setlike of setlike
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type mixin =
   { ident : string
   ; mixin_members : (extends * mixin_member) list
   }
-[@@deriving show]
+[@@deriving sexp]
 
 type partial =
   [ `Interface of interface
@@ -115,13 +116,13 @@ type partial =
   | `Dictionary of dictionary
   | `Namespace of namespace
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type callback =
   [ `Operation of operation
   | `Interface of interface
   ]
-[@@deriving show]
+[@@deriving sexp]
 
 type definition =
   [ `Callback of callback
@@ -135,6 +136,6 @@ type definition =
   | `Implements of string * string
   | `Includes of string * string
   ]
-[@@deriving show]
+[@@deriving sexp]
 
-type definitions = (extends * definition) list [@@deriving show]
+type definitions = (extends * definition) list [@@deriving sexp]

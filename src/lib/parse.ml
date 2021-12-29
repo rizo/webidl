@@ -1,10 +1,12 @@
-type data = Data.definitions [@@deriving show]
+open Sexplib.Std
+
+type data = Data.definitions [@@deriving sexp]
 
 type src_type =
   | File
   | Channel
   | String
-[@@deriving show]
+[@@deriving sexp]
 
 type syntax_error =
   { src : string
@@ -15,7 +17,7 @@ type syntax_error =
   ; strict : bool
   ; around : string
   }
-[@@deriving show]
+[@@deriving sexp]
 
 exception Syntax_error of syntax_error
 
