@@ -7,7 +7,7 @@ let of_attribute qualifiers (type_with_ext, name) =
   `Attribute { type_with_ext; name; is_static; is_readonly; is_inherit }
 ;;
 
-let rec of_operation specials is_static = function
+let of_operation specials is_static = function
   | `NoSpecialOperation (return_type, (ident, arguments)) ->
     `Operation { specials; is_static; return_type; ident; arguments }
   | `SpecialOperation (specials, return_type, (ident, arguments)) ->
