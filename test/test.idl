@@ -21,6 +21,7 @@ interface check_operation : Parent {
   object f(optional DOMString c = "value");
   void g(Event a, DOMString? b, optional DOMString c, double... d);
   static void h([PutForwards=name] Event maplike);
+  object i(optional Event c = {});
   setter float ();
 };
 

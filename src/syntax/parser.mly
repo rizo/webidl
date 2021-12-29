@@ -178,6 +178,7 @@ defaultValue :
     | constValue { `Const $1 }
     | STRING { `String $1 }
     | LBRACKET RBRACKET { `EmptySequence }
+    | LBRACE RBRACE { `EmptyObject }
 
 operation :
     | returnType operationRest { `NoSpecialOperation($1, $2) }

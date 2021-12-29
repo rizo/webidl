@@ -108,6 +108,7 @@ and default_value = [
     | `Const of const_value
     | `String of string
     | `EmptySequence
+    | `EmptyObject
   ] [@@deriving show]
 
 and argument = [
