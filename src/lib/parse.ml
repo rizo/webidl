@@ -45,18 +45,18 @@ let main ?(strict = true) src src_type lexbuf get_substr =
     let strict = strict
   end
   in
-  let module Parser_basic_extend = Syntax.Parser_extend.Make (Strict) in
+  let module Parser_basic_extend = Webidl_syntax.Parser_extend.Make (Strict) in
   let module Parser_extend = struct
     let main sp ep =
       let ext = get_substr sp ep in
       let lexbuf = Lexing.from_string ext in
-      try Parser_basic_extend.ext_main Syntax.Lexer.read lexbuf with
+      try Parser_basic_extend.ext_main Webidl_syntax.Lexer.read lexbuf with
       | Parser_basic_extend.Error | Parsing.Parse_error -> `Custom ext
     ;;
   end
   in
-  let module Parser = Syntax.Parser.Make (Strict) (Parser_extend) in
-  try Parser.main Syntax.Lexer.read lexbuf with
+  let module Parser = Webidl_syntax.Parser.Make (Strict) (Parser_extend) in
+  try Parser.main Webidl_syntax.Lexer.read lexbuf with
   | Parser.Error | Parsing.Parse_error ->
     let syntax_error = get_error_info strict src src_type get_substr lexbuf in
     raise (Syntax_error syntax_error)

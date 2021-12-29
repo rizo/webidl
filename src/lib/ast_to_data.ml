@@ -1,3 +1,4 @@
+open Webidl_syntax
 open Data
 
 let of_attribute qualifiers (type_with_ext, name) =

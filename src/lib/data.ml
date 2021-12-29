@@ -1,4 +1,4 @@
-open Syntax.Ast
+open Webidl_syntax.Ast
 
 type attribute =
   { is_static : bool

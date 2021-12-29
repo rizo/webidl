@@ -1,0 +1,20 @@
+opam-version: "2.0"
+version: "1.5"
+maintainer: "0zat <0.zat.zer0@gmail.com>"
+authors: "0zat"
+homepage: "https://github.com/0zat/webidl"
+bug-reports: "https://github.com/0zat/webidl"
+dev-repo: "git+https://github.com/0zat/webidl.git"
+build: ["dune" "build" "-p" name "-j" jobs "@install"]
+depends: [
+  "ocaml" {>= "4.03.0"}
+  "ocamlfind" {build & >= "1.7.1"}
+  "ocamlbuild" {build & >= "0.9.3"}
+  "ppx_sexp_conv"
+  "menhir" {build & >= "20170607" & < "20211215"}
+]
+synopsis: "Web IDL parser"
+description: """
+- parse Web IDL(https://heycam.github.io/webidl/) 
+- convert them to OCaml data
+- print them by deriving.show"""

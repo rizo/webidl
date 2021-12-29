@@ -1,5 +1,0 @@
-name="webidl"
-version="1.4"
-requires="ppx_deriving.show"
-archive(byte)="webidl.cmo"
-archive(native)="webidl.cmx"
