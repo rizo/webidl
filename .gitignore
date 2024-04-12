@@ -1,3 +1,6 @@
-/_build/
-/test/_build/
-*.byte
+.DS_Store
+_build
+_opam
+.merlin
+node_modules
+./result

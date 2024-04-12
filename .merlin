@@ -1,5 +1,0 @@
-B _build/*
-B _build/*/*
-S src/*
-S src/*/*
-S test
