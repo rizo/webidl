@@ -1,4 +1,5 @@
-type data = Data.definitions
+
+
 type src_type = File | Channel | String
 
 type syntax_error = {
@@ -11,7 +12,23 @@ type syntax_error = {
   around : string;
 }
 
+let string_of_syntax_error e =
+  let start_l, start_c = e.start_pos in
+  let end_l, end_c = e.end_pos in
+  if Int.equal start_l end_l then
+    Printf.sprintf "Syntax error: File %S, line %d, characters %d-%d: %S" e.src
+      start_l start_c end_c e.token
+  else
+    Printf.sprintf "Syntax error: File %S, lines %d-%d, characters %d-%d: %S"
+      e.src start_l end_l start_c end_c e.token
+
 exception Syntax_error of syntax_error
+
+let () =
+  Printexc.register_printer (function
+    | Syntax_error e -> Some (string_of_syntax_error e)
+    | _ -> None
+    )
 
 let get_around get_substr sp ep =
   let around_sp = max (sp - 20) 0 in
@@ -32,29 +49,17 @@ let get_error_info strict src src_type get_substr lexbuf =
   { src; src_type; start_pos; end_pos; token; strict; around }
 
 let main ?(strict = true) src src_type lexbuf get_substr =
-  let module Strict = struct
-    let strict = strict
-  end in
-  let module Parser_basic_extend = Webidl_syntax.Parser_extend.Make (Strict) in
-  let module Parser_extend = struct
-    let main sp ep =
-      let ext = get_substr sp ep in
-      let lexbuf = Lexing.from_string ext in
-      try Parser_basic_extend.ext_main Webidl_syntax.Lexer.read lexbuf
-      with Parser_basic_extend.Error | Parsing.Parse_error -> `Custom ext
-  end in
-  let module Parser = Webidl_syntax.Parser.Make (Strict) (Parser_extend) in
-  try Parser.main Webidl_syntax.Lexer.read lexbuf
+  try Parser.main Lexer.read lexbuf
   with Parser.Error | Parsing.Parse_error ->
     let syntax_error = get_error_info strict src src_type get_substr lexbuf in
     raise (Syntax_error syntax_error)
 
-let ast_from_string ?(strict = true) src_name input_string =
+let parse_string ?(strict = true) src_name input_string =
   let get_substr sp ep = String.sub input_string sp (ep - sp) in
   let lexbuf = Lexing.from_string input_string in
   main ~strict src_name String lexbuf get_substr
 
-let ast_from_channel ?(strict = true) src_name input_channel =
+let parse_channel ?(strict = true) src_name input_channel =
   let input_string =
     really_input_string input_channel (in_channel_length input_channel)
   in
@@ -62,7 +67,7 @@ let ast_from_channel ?(strict = true) src_name input_channel =
   let lexbuf = Lexing.from_string input_string in
   main ~strict src_name Channel lexbuf get_substr
 
-let ast_from_file ?(strict = true) file_name =
+let parse_file ?(strict = true) file_name =
   let input_channel = open_in file_name in
   let lexbuf = Lexing.from_channel input_channel in
   let get_substr sp ep =
@@ -73,12 +78,3 @@ let ast_from_file ?(strict = true) file_name =
     ans
   in
   main ~strict file_name File lexbuf get_substr
-
-let data_from_string ?(strict = true) src_name input_string =
-  ast_from_string ~strict src_name input_string |> Ast_to_data.of_difinitions
-
-let data_from_channel ?(strict = true) src_name input_channel =
-  ast_from_channel ~strict src_name input_channel |> Ast_to_data.of_difinitions
-
-let data_from_file ?(strict = true) file_name =
-  ast_from_file ~strict file_name |> Ast_to_data.of_difinitions

@@ -1,0 +1,4 @@
+(library
+ (name webidl_ast)
+ (public_name webidl.ast))
+

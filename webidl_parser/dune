@@ -1,0 +1,25 @@
+(library
+ (name webidl_parser)
+ (public_name webidl.parser)
+ (libraries webidl_ast))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser)
+ ; if enabled, causes https://github.com/ocaml/dune/issues/2450
+ (infer true))
+
+;(menhir
+; (modules tokens parser non_standard parser_basic_ext)
+; (merge_into parser_extend)
+; (flags --unused-tokens --external-tokens Tokens))
+
+;(menhir
+; (modules tokens)
+; (flags --only-tokens))
+
+;(menhir
+; (modules tokens parser non_standard parser_custom_ext)
+; (merge_into parser)
+; (flags --unused-tokens --external-tokens Tokens))

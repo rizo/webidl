@@ -1,39 +1,39 @@
 {
     open Lexing
-    open Tokens
-    open Keyword
+    open Parser
 
     let token_table = Hashtbl.create 63
 
     let () =
-      let open Parser in
+      (* let open Parser in *)
       List.iter (fun (key, token) -> Hashtbl.add token_table key token)
-        [  
+        Keyword.[
           unsigned , UNSIGNED ;
           byte , BYTE ;
-          octet , OCTET ; 
+          octet , OCTET ;
           short , SHORT ;
           long , LONG ;
-          domstring , DOMSTRING ;
           usvstring , USVSTRING ;
+          domstring , DOMSTRING ;
           bytestring , BYTESTRING ;
           unrestricted , UNRESTRICTED ;
           float , FLOAT ;
           double , DOUBLE ;
           any , ANY ;
-          void , VOID ;
+          (* void , VOID ; *)
           boolean , BOOLEAN ;
           object_ , OBJECT ;
           or_ , OR ;
           true_ , TRUE ;
           false_ , FALSE ;
           null , NULL ;
+          undefined , UNDEFINED ;
           infinity_ , INFINITY ;
           nan_ , NAN ;
           setter , SETTER ;
           getter , GETTER ;
           deleter , DELETER ;
-          legacycaller , LEGACYCALLER ;
+          constructor , CONSTRUCTOR ;
           stringifier , STRINGIFIER ;
           maplike , MAPLIKE ;
           setlike , SETLIKE ;
@@ -48,7 +48,6 @@
           interface , INTERFACE ;
           dictionary , DICTIONARY ;
           enum , ENUM ;
-          implements , IMPLEMENTS ;
           includes , INCLUDES ;
           inherit_ , INHERIT ;
           attribute , ATTRIBUTE ;
@@ -58,8 +57,6 @@
           required , REQUIRED ;
           static , STATIC ;
           optional , OPTIONAL ;
-          domexception , DOMEXCEPTION ;
-          error , ERROR_ ;
           int8array , INT8ARRAY ;
           int16array , INT16ARRAY ;
           int32array , INT32ARRAY ;
@@ -68,7 +65,7 @@
           uint32array , UINT32ARRAY ;
           uint8clampedarray , UINT8CLAMPEDARRAY;
           float32array , FLOAT32ARRAY ;
-          float64array , FLOAT64ARRAY ; 
+          float64array , FLOAT64ARRAY ;
           arraybuffer , ARRAYBUFFER ;
           dataview , DATAVIEW ;
           frozenarray , FROZENARRAY ;
@@ -98,6 +95,7 @@ rule read = parse
   | comment_line { new_line lexbuf; read lexbuf }
   | comment_region_start { skip_comment lexbuf }
   | '"' ([^'"']* as str) '"' { STRING str }
+  | "*" { ASTERISK }
   | "(" { LPAR }
   | ")" { RPAR }
   | "[" { LBRACKET }
@@ -107,23 +105,20 @@ rule read = parse
   | "<" { LT }
   | ">" { GT }
   | "-Infinity" { MINUSINFINITY }
-  | "-" { MINUS }
   | "?" { QUESTION }
   | "=" { EQUAL }
   | "," { COMMA }
   | ":" { COLON }
   | ";" { SEMICOLON }
   | "..." { ELLIPSIS }
-  | "." { DOT }
   | int { INTVAL (int_of_string (Lexing.lexeme lexbuf)) }
-  | float { FLOATVAL (float_of_string (Lexing.lexeme lexbuf)) } 
-  | identifier as id { 
+  | float { FLOATVAL (float_of_string (Lexing.lexeme lexbuf)) }
+  | identifier as id {
       try
         Hashtbl.find token_table id
       with
       | Not_found -> IDENTIFIER id
     }
-  | other as o { OTHER o}
   | eof { EOF }
   | _  { raise Parsing.Parse_error }
 

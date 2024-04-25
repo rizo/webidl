@@ -1,0 +1,16 @@
+- [ ] Unescape: `where_`, `_any`.
+- [ ] allow remapping webidl types to higher-level types.
+- [x] Add `constructor` syntax https://webidl.spec.whatwg.org/#idl-constructors.
+- [ ] Partial interfaces
+- [ ] Partial dictionaries
+- [ ] Empty stringifier.
+- [ ] ~~Implement `Dates[]` syntax.~~
+  - Deprecated? Find reference.
+- [ ] Translate `(t or undefined)` to `t Js.optional`.
+- [ ] `Js.any` alias for `Js.t`
+- [ ] Should getters for "optional" dict members be `Js.nullable`?
+- [ ] Consider inlining callback interface types.
+- [ ] Add of_string (option) to enums.
+- [ ] Union typedefs should expose abstract constructors
+- [ ] Add "safe" of_any that returns option to interfaces.
+- [ ] Flatten nested unions.
