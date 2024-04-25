@@ -1,0 +1,51 @@
+
+
+; W3C-Tests.webidl
+(rule
+ (deps W3C-Tests.webidl)
+ (action
+  (with-stdout-to
+   W3c_tests.actual.mli
+   (pipe-stdout
+    (run %{bin:jx_of_webidl} %{deps} -)
+    (run %{bin:ocamlformat} --intf -)))))
+
+
+(rule
+ (alias runtest)
+ (action
+  (diff W3c_tests.actual.mli W3c_tests.expected.mli)))
+
+; Basic.webidl
+(rule
+ (deps Basic.webidl)
+ (action
+  (with-stdout-to
+   Basic.actual.mli
+   (pipe-stdout
+    (run %{bin:jx_of_webidl} %{deps} -)
+    (run %{bin:ocamlformat} --intf -)))))
+
+
+(rule
+ (alias runtest)
+ (action
+  (diff Basic.actual.mli Basic.expected.mli)))
+
+
+; Dom.webidl
+(rule
+ (deps Dom.webidl)
+ (action
+  (with-stdout-to
+   Dom.actual.mli
+   (pipe-stdout
+    (run %{bin:jx_of_webidl} %{deps} -)
+    (run %{bin:ocamlformat} --intf -)))))
+
+
+(rule
+ (alias runtest)
+ (action
+  (diff Dom.actual.mli Dom.expected.mli)))
+
