@@ -1,0 +1,4 @@
+(library
+  (name js)
+  (modules Js)
+  (modes byte))

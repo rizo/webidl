@@ -1,36 +1,26 @@
 
 
-; W3C-Tests.webidl
+; Scratch.webidl
 (rule
- (deps W3C-Tests.webidl)
+ (deps Scratch.webidl)
+ (targets Scratch.actual.ml)
  (action
   (with-stdout-to
-   W3c_tests.actual.mli
+   Scratch.actual.ml
    (pipe-stdout
     (run %{bin:jx_of_webidl} %{deps} -)
-    (run %{bin:ocamlformat} --intf -)))))
+    (run %{bin:ocamlformat} --impl -)))))
 
 
 (rule
  (alias runtest)
  (action
-  (diff W3c_tests.actual.mli W3c_tests.expected.mli)))
+  (diff Scratch.actual.ml Scratch.ml)))
 
-; Basic.webidl
-(rule
- (deps Basic.webidl)
- (action
-  (with-stdout-to
-   Basic.actual.mli
-   (pipe-stdout
-    (run %{bin:jx_of_webidl} %{deps} -)
-    (run %{bin:ocamlformat} --intf -)))))
-
-
-(rule
- (alias runtest)
- (action
-  (diff Basic.actual.mli Basic.expected.mli)))
+(library
+  (name scratch)
+  (modules Scratch)
+  (libraries js))
 
 
 ; Dom.webidl
@@ -38,14 +28,35 @@
  (deps Dom.webidl)
  (action
   (with-stdout-to
-   Dom.actual.mli
+   Dom.actual.ml
    (pipe-stdout
     (run %{bin:jx_of_webidl} %{deps} -)
-    (run %{bin:ocamlformat} --intf -)))))
+    (run %{bin:ocamlformat} --impl -)))))
 
 
 (rule
  (alias runtest)
  (action
-  (diff Dom.actual.mli Dom.expected.mli)))
+  (diff Dom.actual.ml Dom.ml)))
+
+(library
+  (name dom)
+  (modules Dom)
+  (libraries js))
+
+;; Basic.webidl
+;(rule
+; (deps Basic.webidl)
+; (action
+;  (with-stdout-to
+;   Basic.actual.mli
+;   (pipe-stdout
+;    (run %{bin:jx_of_webidl} %{deps} -)
+;    (run %{bin:ocamlformat} --intf -)))))
+;
+;
+;(rule
+; (alias runtest)
+; (action
+;  (diff Basic.actual.mli Basic.expected.mli)))
 

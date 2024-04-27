@@ -31,7 +31,7 @@ interface Event : Object {
   readonly attribute boolean composed;
 
   [LegacyUnforgeable] readonly attribute boolean isTrusted;
-  readonly attribute DOMHighResTimeStamp timeStamp;
+  readonly attribute [MLModule=Hr_time]DOMHighResTimeStamp timeStamp;
 
   undefined initEvent(DOMString type, optional boolean bubbles = false, optional boolean cancelable = false); // legacy
 };
@@ -42,9 +42,9 @@ dictionary EventInit {
   boolean composed = false;
 };
 
-//partial interface Window {
-//  [Replaceable] readonly attribute (Event or undefined) event; // legacy
-//};
+/* partial interface Window { */
+  /* [Replaceable] readonly attribute (Event or undefined) event; // legacy */
+/* }; */
 
 [Exposed=*]
 interface CustomEvent : Event {

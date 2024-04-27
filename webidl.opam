@@ -23,9 +23,6 @@ depends: [
   "dune"
   "menhir" {build & >= "20170607" & < "20211215"}
   "odoc" {with-doc}
-  "ocaml-lsp-server" {with-dev-setup}
-  "ocamlformat" {with-dev-setup}
-  "utop" {with-dev-setup}
 ]
 synopsis: "Web IDL parser"
 description: """

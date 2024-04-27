@@ -14,3 +14,9 @@
 - [ ] Union typedefs should expose abstract constructors
 - [ ] Add "safe" of_any that returns option to interfaces.
 - [ ] Flatten nested unions.
+- [ ] Rename regular_operation.type to return.
+- [ ] Does Js.any need to include at least Nullable? See CustomEvent.detail.
+- [ ] How do we introspect the type ``event:[ `Event | `String ] Js.t -> _``.
+- [ ] Normalize overloaded functions to unions?
+  - See: https://www.chromium.org/developers/web-idl-interfaces/#union-types
+- [ ] If structural types are used, add aliases.

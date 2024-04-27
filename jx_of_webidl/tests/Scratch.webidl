@@ -1,12 +1,11 @@
-interface Args {
-  undefined f_any(any a);
-  undefined f_symbol(symbol a);
-  undefined f_undefined(undefined a);
-  undefined f_promise(Promise<boolean> a);
-  undefined f_named(Foo a);
-  undefined f_sequence(sequence<Foo> a);
-  undefined simple(DOMString a, unsigned short b, boolean c);
-  undefined variadic_simple(DOMString... nodes);
-  undefined union_simple((Node or TrustedScript or DOMString) node);
-  undefined variadic_union((Node or TrustedScript or DOMString)... nodes);
+interface A {
+  undefined f0(boolean arg1, DOMString arg2, float arg3);
+  undefined f1((boolean or DOMString) arg);
+  undefined f2((Node or boolean or DOMString) arg1, float arg2);
+  undefined f3((Node or boolean or DOMString)? arg1, float arg2, (boolean or float) arg3);
+  undefined f4((Node or boolean? or DOMString) arg);
+};
+
+interface Node {
+  
 };
