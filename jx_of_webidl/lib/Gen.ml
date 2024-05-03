@@ -61,6 +61,7 @@ module Config = struct
     let name = string_dash_to_underscore name in
     if keyword then
       match name with
+      | "Object" -> "Obj"
       | "type" -> "type_"
       | "method" -> "method_"
       | "module" -> "module_"
@@ -105,6 +106,8 @@ module Ml' = struct
     let m_t ?loc ?attrs name args =
       let ident = mkoptloc Longident.(Ldot (Lident name, "t")) loc in
       Ml.Typ.constr ?loc ?attrs ident args
+
+    let seq ?loc ?attrs arg = m_t ?loc ?attrs "Seq" [ arg ]
   end
 
   module Exp = struct
@@ -116,6 +119,7 @@ module Ml' = struct
     let unit () = Ml.Exp.construct (mknoloc (Longident.Lident "()")) None
     let none () = Ml.Exp.construct (mknoloc (Longident.Lident "None")) None
     let some x = Ml.Exp.construct (mknoloc (Longident.Lident "Some")) (Some x)
+    let string x = Ml.Exp.constant (Ml.Const.string x)
   end
 end
 
@@ -146,6 +150,7 @@ module Ml_js = struct
     let string ?loc ?attrs () = mk0 ?loc ?attrs "string"
     let nullable ?loc ?attrs arg = mk1 ?loc ?attrs "nullable" arg
     let undefined ?loc ?attrs arg = mk1 ?loc ?attrs "undefined" arg
+    let constr ?loc ?attrs arg = mk1 ?loc ?attrs "constr" arg
     let sequence ?loc ?attrs arg = mk1 ?loc ?attrs "sequence" arg
     let array ?loc ?attrs arg = mk1 ?loc ?attrs "array" arg
     let promise ?loc ?attrs arg = mk1 ?loc ?attrs "promise" arg
@@ -296,7 +301,7 @@ module Gen_sig = struct
     | `Name that -> gen_type_name that
     | `Sequence that ->
       let arg = gen_type_ext that in
-      Ml_js.Typ.array arg
+      Ml'.Typ.array arg
     | `Object -> todo "object"
     | `Symbol -> todo "symbol"
     | #Wi.buffer_type -> todo "buffer"
@@ -379,7 +384,7 @@ module Gen_sig = struct
       (Asttypes.Optional (Config.rename name), t_ml)
     | `Variadic (name, t) ->
       let name = Wi.string_of_argument_name name in
-      (Labelled (Config.rename name), Ml_js.Typ.array (gen_type t))
+      (Labelled (Config.rename name), Ml'.Typ.array (gen_type t))
     | `Fixed (name, t) ->
       let name = Wi.string_of_argument_name name in
       (Labelled (Config.rename name), gen_type t)
@@ -486,7 +491,7 @@ module Gen_sig = struct
       stringifier_items @ items
 
   let gen_const ({ type_; ident; value = _ } : Wi.Const.t) =
-    let name = mknoloc (String.lowercase_ascii (Config.rename ident)) in
+    let name = mknoloc (Config.rename_lower ident) in
     let typ = gen_const_type type_ in
     let vd = Ml.Val.mk name typ in
     Ml.Sig.value vd
@@ -528,7 +533,7 @@ module Gen_sig = struct
       let vd = Ml.Val.mk name typ in
       [ Ml.Sig.value vd ]
     | None ->
-      let typ = Ml_js.Typ.iterable1 (gen_type (snd value_type)) in
+      let typ = Ml'.Typ.seq (gen_type (snd value_type)) in
       let typ = Ml.Typ.arrow Nolabel (Ml'.Typ.t []) typ in
       let name = mknoloc (String.lowercase_ascii Config.to_iterable_name) in
       let vd = Ml.Val.mk name typ in
@@ -592,22 +597,26 @@ module Gen_sig = struct
           mknoloc ("to_" ^ Config.rename_lower ~keyword:false base_class_name)
         in
         let ret_typ_name = Config.rename_upper base_class_name in
-        let ret_type =
-          if String.equal ret_typ_name "Object" then
-            Ml.Typ.constr (mknoloc (ident [ "Js"; "Obj"; "t" ])) []
-          else Ml.Typ.constr (mknoloc (ident [ ret_typ_name; "t" ])) []
-        in
+        let ret_type = Ml_js.Typ.t_tagged ret_typ_name in
         let type' = Ml.Typ.arrow Nolabel (Ml'.Typ.t []) ret_type in
         let vd = Ml.Val.mk val_name type' in
         [ Ml.Sig.value vd ]
     in
     let all_members = this.members @ partial_members @ includes_members in
     let member_items = List.concat_map gen_interface_member_ext all_members in
-    let t_item =
+    let t_typ =
       let manifest = Ml_js.Typ.t_tagged (Config.rename_upper this.name) in
       Ml.Sig.type_ Recursive [ Ml.Type.mk (mknoloc "t") ~manifest ]
     in
-    Ml.Mty.signature ((t_item :: t_inherits) @ member_items)
+    let t_val =
+      let name = Config.rename_upper this.name in
+      let this_variant =
+        Ml.Typ.variant [ Ml.Rf.tag (mknoloc name) false [] ] Closed None
+      in
+      let vd = Ml.Val.mk (mknoloc "t") (Ml_js.Typ.constr this_variant) in
+      Ml.Sig.value vd
+    in
+    Ml.Mty.signature ((t_typ :: t_val :: t_inherits) @ member_items)
 
   (* --- Include --- *)
 
@@ -726,7 +735,7 @@ module Gen_sig = struct
       [ getter ]
     | Optional (type_, name, _default) ->
       let m_t = gen_type type_ in
-      let m_t = Ml_js.Typ.nullable m_t in
+      let m_t = gen_nullable m_t true in
       let typ = Ml.Typ.arrow Nolabel (Ml'.Typ.t []) m_t in
       let getter =
         Ml.Sig.value (Ml.Val.mk (mknoloc (Config.rename name)) typ)
@@ -809,6 +818,7 @@ module Gen_str = struct
   let pat_unit = Ml.Pat.construct (mknoloc (Longident.Lident "()")) None
   let this_pat = Ml.Pat.var (mknoloc "this")
   let this_exp = Ml.Exp.ident (mknoloc (Longident.Lident "this"))
+  let t_exp = Ml.Exp.ident (mknoloc (Longident.Lident "t"))
   let this_id_fun_exp = Ml.Exp.fun_ Nolabel None this_pat this_exp
   let x_pat = Ml.Pat.var (mknoloc "x")
   let x_exp = Ml.Exp.ident (mknoloc (Longident.Lident "x"))
@@ -919,7 +929,7 @@ module Gen_str = struct
       | `Sequence that ->
         let conv_that_exp = loop that in
         exp_apply_no_labels
-          (ident_exp [ "Js"; any_prefix ^ "array" ])
+          (ident_exp [ "Js"; "Any"; any_prefix ^ "array" ])
           [ conv_that_exp ]
       | `Symbol -> js_ident "object_symbol"
       | `Undefined -> ident_exp [ "Js"; any_prefix ^ "unit" ]
@@ -933,8 +943,15 @@ module Gen_str = struct
     let c_typ = classify_type typ in
     gen_conv_classified conv c_typ
 
-  let gen_conv_ext_apply conv t_ext arg =
+  let gen_conv_ext_apply ?(optional = false) conv t_ext arg =
     let conv_exp = gen_conv_ext conv t_ext in
+    let conv_exp =
+      if optional then
+        exp_apply_no_labels
+          (ident_exp [ "Js"; "Any"; "undefined_of_option" ])
+          [ conv_exp ]
+      else conv_exp
+    in
     exp_apply_no_labels conv_exp [ arg ]
 
   let gen_attribute_get (this : Wi.Attribute.t) =
@@ -965,6 +982,13 @@ module Gen_str = struct
   let gen_attribute ~is_static ~is_readonly (this : Wi.Attribute.t) =
     if is_readonly then [ gen_attribute_get this ]
     else [ gen_attribute_get this; gen_attribute_set this ]
+
+  (* --- Const value --- *)
+  let gen_const_value (v : Wi.const_value) =
+    match v with
+    | `Bool x -> Ml.Exp.construct (mknoloc (ident [ string_of_bool x ])) None
+    | `Float x -> Ml.Exp.constant (Ml.Const.float (string_of_float x))
+    | `Int x -> Ml.Exp.constant (Ml.Const.int x)
 
   (* --- Regular operation --- *)
 
@@ -1019,29 +1043,23 @@ module Gen_str = struct
           )
           [] ml_args_rev
       in
+      let obj_exp = if is_static then t_exp else this_exp in
       let body =
         let ret_exp =
           exp_apply_no_labels
             (ident_exp [ "Js"; "Ffi"; "meth_call" ])
-            [ this_exp; op_key; Ml.Exp.array ml_args ]
+            [ obj_exp; op_key; Ml.Exp.array ml_args ]
         in
         gen_conv_ext_apply `ml_of_js ([], this.type_) ret_exp
       in
       let body =
         List.fold_left
           (fun acc arg ->
-            let _lbl, is_optional, name, (_ext, t) = arg in
-            let c_typ = classify_type t in
+            let _lbl, optional, name, t_ext = arg in
             let arg_name_exp = ident_exp [ name ] in
-            let conv_exp = gen_conv_classified `js_of_ml c_typ in
             let conv_exp =
-              if is_optional then
-                exp_apply_no_labels
-                  (ident_exp [ "Js"; "Any"; "undefined_of_option" ])
-                  [ conv_exp ]
-              else conv_exp
+              gen_conv_ext_apply ~optional `js_of_ml t_ext arg_name_exp
             in
-            let conv_exp = exp_apply_no_labels conv_exp [ arg_name_exp ] in
             let vb = Ml.Vb.mk (Ml.Pat.var (mknoloc name)) conv_exp in
             Ml.Exp.let_ Nonrecursive [ vb ] acc
           )
@@ -1063,12 +1081,84 @@ module Gen_str = struct
       let vb = Ml.Vb.mk pat body in
       [ Ml.Str.value Nonrecursive [ vb ] ]
 
+  (* --- Constructor --- *)
+
+  let gen_constructor arguments =
+    let ml_args_rev =
+      List.fold_left (fun acc arg -> gen_argument_ext arg :: acc) [] arguments
+    in
+    let arg_names =
+      List.map
+        (fun (_, a) ->
+          Config.rename_lower ~keyword:false (Wi.string_of_argument a)
+        )
+        arguments
+    in
+    let ml_args =
+      List.fold_left
+        (fun acc arg ->
+          let _, _, name, _ = arg in
+          ident_exp [ name ] :: acc
+        )
+        [] ml_args_rev
+    in
+    let name =
+      match arg_names with
+      | [] | [ _ ] -> mknoloc (String.lowercase_ascii Config.constructor_name)
+      | _ ->
+        let arg_names_str = String.concat "_and_" arg_names in
+        let name =
+          String.concat "_" [ Config.constructor_prefix; arg_names_str ]
+        in
+        mknoloc name
+    in
+    let body =
+      exp_apply_no_labels
+        (ident_exp [ "Js"; "Ffi"; "obj_new" ])
+        [ t_exp; Ml.Exp.array ml_args ]
+    in
+    let body =
+      List.fold_left
+        (fun acc arg ->
+          let _lbl, optional, name, t_ext = arg in
+          let arg_name_exp = ident_exp [ name ] in
+          let conv_exp =
+            gen_conv_ext_apply ~optional `js_of_ml t_ext arg_name_exp
+          in
+          let vb = Ml.Vb.mk (Ml.Pat.var (mknoloc name)) conv_exp in
+          Ml.Exp.let_ Nonrecursive [ vb ] acc
+        )
+        body ml_args_rev
+    in
+    let body = Ml.Exp.fun_ Nolabel None pat_unit body in
+    let body =
+      List.fold_left
+        (fun body arg ->
+          let label, _, name, _ = arg in
+          let arg_pat = Ml.Pat.var (mknoloc name) in
+          Ml.Exp.fun_ label None arg_pat body
+        )
+        body ml_args_rev
+    in
+    let pat = Ml.Pat.var name in
+    let vb = Ml.Vb.mk pat body in
+    [ Ml.Str.value Nonrecursive [ vb ] ]
+
+  (* --- Const --- *)
+
+  let gen_const ({ type_ = _; ident; value } : Wi.Const.t) =
+    let name = mknoloc (Config.rename_lower ident) in
+    let pat = Ml.Pat.var name in
+    let exp = gen_const_value value in
+    let vb = Ml.Vb.mk pat exp in
+    [ Ml.Str.value Nonrecursive [ vb ] ]
+
   (* --- Interface --- *)
 
   let gen_interface_member (this : Wi.Interface.member) =
     match this with
-    | Constructor that -> []
-    | Const that -> []
+    | Constructor that -> gen_constructor that
+    | Const that -> gen_const that
     | Regular_operation { regular_operation; is_static } ->
       gen_regular_operation ~is_static regular_operation
     | Special_operation special_operation -> []
@@ -1119,16 +1209,30 @@ module Gen_str = struct
           mknoloc ("to_" ^ Config.rename_lower ~keyword:false base_class_name)
         in
         let pat = Ml.Pat.var val_name in
-        let vb = Ml.Vb.mk pat this_id_fun_exp in
+        let exp =
+          exp_apply_no_labels (ident_exp [ "Js"; "Ffi"; "magic" ]) [ this_exp ]
+        in
+        let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
+        let vb = Ml.Vb.mk pat exp in
         [ Ml.Str.value Nonrecursive [ vb ] ]
     in
     let all_members = this.members @ partial_members @ includes_members in
     let member_items = List.concat_map gen_interface_member_ext all_members in
-    let t_item =
+    let t_typ =
       let manifest = Ml_js.Typ.t_tagged (Config.rename_upper this.name) in
       Ml.Str.type_ Recursive [ Ml.Type.mk (mknoloc "t") ~manifest ]
     in
-    let all_items = (t_item :: inherits_items) @ member_items in
+    let t_val =
+      let pat = Ml.Pat.var (mknoloc "t") in
+      let exp =
+        exp_apply_no_labels
+          (ident_exp [ "Js"; "Ffi"; "constr" ])
+          [ Ml'.Exp.string this.name ]
+      in
+      let vb = Ml.Vb.mk pat exp in
+      Ml.Str.value Nonrecursive [ vb ]
+    in
+    let all_items = (t_typ :: t_val :: inherits_items) @ member_items in
     Ml.Mod.structure all_items
 
   (* --- Callback --- *)

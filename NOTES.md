@@ -15,6 +15,14 @@
 - https://github.com/jmdyck/ecmaspeak-py
 
 
+## Principles
+
+1. Prioritize OCaml patterns and types when possible.
+  - This might add additional conversion overhead, but substantially simplifies working with the bindings.
+  - For users who want to fully reduce conversion overhead it is possible to use the low-level FFI API.
+  - In the future we could provide a secondary generator tht prioritizes Js values.
+
+
 ## Webidl
 
 - https://hacks.mozilla.org/2020/04/fuzzing-with-webidl/
@@ -72,4 +80,7 @@ values for `EventListener`.
 But we only implement the function version of this. Using the function is
 more flexible since, if needed, the body of the function can either directly
 implement the required logic, or, delegate the work to any object/method.
+
+
+### Value conversion
 

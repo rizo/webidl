@@ -1,6 +1,7 @@
 module rec A : sig
   type t = [ `A ] Js.t
 
+  val t : [ `A ] Js.constr
   val b1 : x:bool -> t -> unit
   val f1 : x:float -> t -> unit
   val s1 : x:string -> t -> unit
@@ -26,6 +27,8 @@ module rec A : sig
   val ou5 : ?x:[ `Bool | `String ] Js.nullable -> t -> unit
 end = struct
   type t = [ `A ] Js.t
+
+  let t = Js.Ffi.constr "A"
 
   let b1 ~x this =
     let x = Js.Any.of_bool x in

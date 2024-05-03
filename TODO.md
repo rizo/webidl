@@ -20,3 +20,4 @@
 - [ ] Normalize overloaded functions to unions?
   - See: https://www.chromium.org/developers/web-idl-interfaces/#union-types
 - [ ] If structural types are used, add aliases.
+- [ ] fail on `bool` and other ambiguous types.
