@@ -6,8 +6,8 @@ module Ffi = struct
   type prop = Stdlib.String.t
 
   external pure_js_expr : string -> 'a t = "caml_pure_js_expr"
+  external repr : 'a -> any = "%identity"
 
-  let constr = pure_js_expr
   let js_null = pure_js_expr "null"
   let js_undefined = pure_js_expr "undefined"
   let magic this = Obj.magic this
@@ -34,10 +34,10 @@ module Ffi = struct
     = "caml_js_to_array"
 
   (* TODO: review *)
-  external caml_js_of_array : any Stdlib.Array.t -> [ `Array of [ `Any ] ] js
+  external caml_js_of_array : any Stdlib.Array.t -> [ `Any ] js
     = "caml_js_from_array"
 
-  external caml_js_to_array : [ `Array of [ `Any ] ] js -> any Stdlib.Array.t
+  external caml_js_to_array : [ `Any ] js -> any Stdlib.Array.t
     = "caml_js_to_array"
 
   (* obj *)
@@ -55,6 +55,9 @@ module Ffi = struct
 
   external js_of_fun : Stdlib.Int.t -> (_ -> _) -> [ `Function ] js
     = "caml_js_wrap_callback_strict"
+
+  let global_this = pure_js_expr "globalThis"
+  let constr name = get global_this name
 end
 
 open Ffi
@@ -217,3 +220,12 @@ module Obj = struct
 end
 
 type obj = Obj.t
+
+(* Constructor *)
+
+type 'kind constr = [ `Constr of 'kind ] js
+
+let global_this = Ffi.global_this
+let global prop _kind = Ffi.get Ffi.global_this prop
+let console = pure_js_expr "console"
+let log x = Ffi.meth_call console "log" [| Ffi.repr x |] |> to_unit

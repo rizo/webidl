@@ -164,3 +164,12 @@ module Ffi : sig
   external js_of_fun : Stdlib.Int.t -> (_ -> _) -> [ `Function ] js
     = "caml_js_wrap_callback_strict"
 end
+
+(** {2 Globals} *)
+
+val global_this : obj
+val global : Stdlib.String.t -> 'kind -> 'kind js
+
+(** {2 Helpers} *)
+
+val log : 'a -> unit

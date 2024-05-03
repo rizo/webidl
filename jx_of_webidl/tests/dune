@@ -60,3 +60,14 @@
 ; (action
 ;  (diff Basic.actual.mli Basic.expected.mli)))
 
+
+(executable
+  (name test_dom)
+  (modules Test_dom)
+  (libraries dom js)
+  (modes js))
+
+(alias
+ (name all)
+ (deps index.html))
+
