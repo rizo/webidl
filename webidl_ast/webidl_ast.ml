@@ -95,6 +95,11 @@ let string_of_argument_name argument_name =
   | `Ident name -> name
   | `Keyword kwd -> string_of_argument_name_keyword kwd
 
+let string_of_argument arg =
+  match arg with
+  | `Optional (name, _, _) | `Variadic (name, _) | `Fixed (name, _) ->
+    string_of_argument_name name
+
 (* https://webidl.spec.whatwg.org/#prod-BufferRelatedType *)
 type buffer_type =
   [ `ArrayBuffer
@@ -213,6 +218,9 @@ let type_is_nullable (t : type_) =
   | `Any -> false
   | `Promise _ -> false
   | `Union (_, is_nullable) -> is_nullable
+
+let type_of_const_type (ct : const_type) : type_ =
+  `Distinguishable ((ct :> distinguishable_type), false)
 
 type constructor = (extended_attributes * argument) list
 

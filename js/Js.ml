@@ -7,8 +7,10 @@ module Ffi = struct
 
   external pure_js_expr : string -> 'a t = "caml_pure_js_expr"
 
+  let constr = pure_js_expr
   let js_null = pure_js_expr "null"
   let js_undefined = pure_js_expr "undefined"
+  let magic this = Obj.magic this
 
   external js_of_int : Stdlib.Int.t -> [ `Int ] js = "%identity"
   external int_of_js : [ `Int ] js -> Stdlib.Int.t = "%identity"
@@ -31,6 +33,14 @@ module Ffi = struct
   external array_of_js : ('a_js js -> 'a) -> [ `Array of 'a_js ] js -> 'a array
     = "caml_js_to_array"
 
+  (* TODO: review *)
+  external caml_js_of_array : any Stdlib.Array.t -> [ `Array of [ `Any ] ] js
+    = "caml_js_from_array"
+
+  external caml_js_to_array : [ `Array of [ `Any ] ] js -> any Stdlib.Array.t
+    = "caml_js_to_array"
+
+  (* obj *)
   external get : 'obj js -> prop -> 'value js = "caml_js_get"
   external set : 'obj js -> prop -> 'value js -> unit = "caml_js_set"
   external del : 'obj js -> prop -> unit = "caml_js_delete"
@@ -60,6 +70,9 @@ module Any = struct
   let of_float x = to_any (js_of_float x)
   let of_string x = to_any (js_of_string x)
 
+  let of_array any_of_x xs =
+    to_any (Ffi.caml_js_of_array (Stdlib.Array.map any_of_x xs))
+
   let nullable_of_option any_of_x o =
     match o with
     | None -> to_any js_null
@@ -74,6 +87,7 @@ module Any = struct
   let to_int x = int_of_js (of_any x)
   let to_float x = float_of_js (of_any x)
   let to_string x = string_of_js (of_any x)
+  let to_array x_of_any xs = Stdlib.Array.map x_of_any (Ffi.caml_js_to_array xs)
 
   let nullable_to_option x_of_any any =
     if any == js_null then None else Some (x_of_any any)

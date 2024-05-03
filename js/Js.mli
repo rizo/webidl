@@ -10,12 +10,14 @@ module Any : sig
   val of_int : Stdlib.Int.t -> t
   val of_float : Stdlib.Float.t -> t
   val of_string : Stdlib.String.t -> t
+  val of_array : ('a -> t) -> 'a Stdlib.Array.t -> t
   val nullable_of_option : ('a -> t) -> 'a option -> t
   val undefined_of_option : ('a -> t) -> 'a option -> t
   val to_bool : t -> Stdlib.Bool.t
   val to_int : t -> Stdlib.Int.t
   val to_float : t -> Stdlib.Float.t
   val to_string : t -> Stdlib.String.t
+  val to_array : (t -> 'a) -> t -> 'a Stdlib.Array.t
   val nullable_to_option : (t -> 'a) -> t -> 'a option
   val undefined_to_option : (t -> 'a) -> t -> 'a option
 end
@@ -133,14 +135,25 @@ end
 
 type obj = Obj.t
 
+(** {2 Constructor} *)
+
+type 'kind constr = [ `Constr of 'kind ] js
+
+(** {2 FFI} *)
+
 module Ffi : sig
   type prop = Stdlib.String.t
 
+  (* val unsafe_cast : 'a js -> 'b js *)
+  val constr : Stdlib.String.t -> [ `Constr of 'kind ] js
+  val magic : 'this js -> 'that js
   external get : 'obj js -> prop -> 'value js = "caml_js_get"
   external set : 'obj js -> prop -> 'value js -> unit = "caml_js_set"
   external del : 'obj js -> prop -> unit = "caml_js_delete"
   external obj : (prop * any) Stdlib.Array.t -> 'obj js = "caml_js_object"
-  external obj_new : 'cls js -> any Stdlib.Array.t -> 'obj js = "caml_js_new"
+
+  external obj_new : [ `Constr of 'kind ] js -> any Stdlib.Array.t -> 'obj js
+    = "caml_js_new"
 
   external meth_call : 'obj js -> prop -> any Stdlib.Array.t -> 'return js
     = "caml_js_meth_call"
