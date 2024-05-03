@@ -8,6 +8,7 @@ end
 
 module Wi = Webidl_ast
 module Ml = Ppxlib_ast.Ast_helper
+module Asttypes = Astlib.Ast_414.Asttypes
 open Prelude
 
 let cat ?(sep = "") xs = String.concat sep xs
@@ -93,6 +94,10 @@ module Ml' = struct
       let ident = mkoptloc (Longident.Lident "array") loc in
       Ml.Typ.constr ?loc ?attrs ident [ arg ]
 
+    let option ?loc ?attrs arg =
+      let ident = mkoptloc (Longident.Lident "option") loc in
+      Ml.Typ.constr ?loc ?attrs ident [ arg ]
+
     let mk0 ?loc ?attrs name =
       let ident = mkoptloc (Longident.Lident name) loc in
       Ml.Typ.constr ?loc ?attrs ident []
@@ -109,6 +114,8 @@ module Ml' = struct
         (Ml.Exp.ident (mknoloc (Longident.Lident "x")))
 
     let unit () = Ml.Exp.construct (mknoloc (Longident.Lident "()")) None
+    let none () = Ml.Exp.construct (mknoloc (Longident.Lident "None")) None
+    let some x = Ml.Exp.construct (mknoloc (Longident.Lident "Some")) (Some x)
   end
 end
 
@@ -298,8 +305,7 @@ module Gen_sig = struct
     | `Record (string_type, type_ext) -> todo "record"
     | `Undefined -> Ml'.Typ.unit ()
 
-  and gen_nullable t is_nullable =
-    if is_nullable then Ml_js.Typ.nullable t else t
+  and gen_nullable t is_nullable = if is_nullable then Ml'.Typ.option t else t
 
   (* [TODO] Simflify nullable types
      (a? or b?) -> [`Nullable of [`A | `B]] js
@@ -369,7 +375,8 @@ module Gen_sig = struct
     match this with
     | `Optional (name, t, _default) ->
       let name = Wi.string_of_argument_name name in
-      (Asttypes.Optional (Config.rename name), gen_type_ext t)
+      let t_ml = gen_type_ext t in
+      (Asttypes.Optional (Config.rename name), t_ml)
     | `Variadic (name, t) ->
       let name = Wi.string_of_argument_name name in
       (Labelled (Config.rename name), Ml_js.Typ.array (gen_type t))
@@ -585,7 +592,7 @@ module Gen_sig = struct
           mknoloc ("to_" ^ Config.rename_lower ~keyword:false base_class_name)
         in
         let ret_typ_name = Config.rename_upper base_class_name in
-        let ret_type : Parsetree.core_type =
+        let ret_type =
           if String.equal ret_typ_name "Object" then
             Ml.Typ.constr (mknoloc (ident [ "Js"; "Obj"; "t" ])) []
           else Ml.Typ.constr (mknoloc (ident [ ret_typ_name; "t" ])) []
@@ -609,7 +616,7 @@ module Gen_sig = struct
       (Ml.Mty.with_
          (Ml.Mty.ident (mknoloc (Longident.Lident module_name)))
          [
-           Parsetree.Pwith_typesubst
+           Pwith_typesubst
              ( mknoloc (Longident.Lident "t"),
                Ml.Type.mk ~manifest:(Ml'.Typ.t []) (mknoloc "t")
              );
@@ -769,7 +776,7 @@ module Gen_sig = struct
             ("to_" ^ String.lowercase_ascii (Config.rename base_class_name))
         in
         let ret_typ_name = Config.rename base_class_name in
-        let ret_type : Parsetree.core_type =
+        let ret_type =
           Ml.Typ.constr (mknoloc Longident.(Ldot (Lident ret_typ_name, "t"))) []
         in
         let type' = Ml.Typ.arrow Nolabel (Ml'.Typ.t []) ret_type in
@@ -885,7 +892,7 @@ module Gen_str = struct
 
   and classify_type_ext ((_ext, type') : Wi.type_ext) = classify_type type'
 
-  let gen_conv_ext conv (_, typ) any =
+  let gen_conv_classified conv c_typ =
     let any_prefix, named_suffix =
       match conv with
       | `ml_of_js -> ("to_", "of_any")
@@ -897,7 +904,12 @@ module Gen_str = struct
       | `Named _name ->
         (* let name = Config.rename_upper name in *)
         ident_exp [ "Js"; named_suffix ]
-      | `Nullable _ -> ident_exp [ "Js"; named_suffix ]
+      | `Nullable (`Union _) -> ident_exp [ "Js"; named_suffix ]
+      | `Nullable that ->
+        let conv_that_exp = loop that in
+        exp_apply_no_labels
+          (ident_exp [ "Js"; "Any"; cat [ "nullable_"; any_prefix; "option" ] ])
+          [ conv_that_exp ]
       | `Object -> js_ident "object_todo"
       | `Promise that ->
         let conv_that_exp = loop that in
@@ -911,18 +923,26 @@ module Gen_str = struct
           [ conv_that_exp ]
       | `Symbol -> js_ident "object_symbol"
       | `Undefined -> ident_exp [ "Js"; any_prefix ^ "unit" ]
+      (* This should be identity. *)
       | `Any -> ident_exp [ "Js"; any_prefix ^ "any" ]
       | `Union _ -> ident_exp [ "Js"; named_suffix ]
     in
+    loop c_typ
+
+  let gen_conv_ext conv (_, typ) =
     let c_typ = classify_type typ in
-    let conv_name = loop c_typ in
-    exp_apply_no_labels conv_name [ any ]
+    gen_conv_classified conv c_typ
+
+  let gen_conv_ext_apply conv t_ext arg =
+    let conv_exp = gen_conv_ext conv t_ext in
+    exp_apply_no_labels conv_exp [ arg ]
 
   let gen_attribute_get (this : Wi.Attribute.t) =
     let pat = Ml.Pat.var (mknoloc (Config.rename_lower this.name)) in
     let key = Ml.Exp.constant (Ml.Const.string this.name) in
     let exp = Jx_builder.get this_exp key in
-    let exp = gen_conv_ext `ml_of_js this.type_ exp in
+    (* TODO: no optional attrs? *)
+    let exp = gen_conv_ext_apply `ml_of_js this.type_ exp in
     let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
     let vb = Ml.Vb.mk pat exp in
     Ml.Str.value Nonrecursive [ vb ]
@@ -933,7 +953,8 @@ module Gen_str = struct
         (mknoloc ("set_" ^ Config.rename_lower ~keyword:false this.name))
     in
     let key = Ml.Exp.constant (Ml.Const.string this.name) in
-    let exp = gen_conv_ext `js_of_ml this.type_ x_exp in
+    (* TODO: no optional attrs? *)
+    let exp = gen_conv_ext_apply `js_of_ml this.type_ x_exp in
     let exp = Jx_builder.set this_exp key exp in
     let exp = Ml.Exp.fun_ Nolabel None x_pat exp in
     let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
@@ -947,37 +968,38 @@ module Gen_str = struct
 
   (* --- Regular operation --- *)
 
-  let gen_default (default : Wi.default_value option) =
-    match default with
-    | None -> None
-    | Some (`Const (`Bool x)) ->
-      Some (Ml.Exp.construct (mknoloc (ident [ string_of_bool x ])) None)
-    | Some (`Const (`Float x)) ->
-      Some (Ml.Exp.constant (Ml.Const.float (string_of_float x)))
-    | Some (`Const (`Int x)) -> Some (Ml.Exp.constant (Ml.Const.int x))
-    | Some (`String x) -> Some (Ml.Exp.constant (Ml.Const.string x))
-    | Some `Empty_sequence -> Some (Ml.Exp.array [])
-    | Some `Empty_object ->
-      Some
-        (exp_apply_no_labels
-           (ident_exp [ "Js"; "Obj"; "empty" ])
-           [ Ml'.Exp.unit () ]
-        )
-    | Some `Null -> Some (ident_exp [ "Js"; "null" ])
-    | Some `Undefined -> Some (ident_exp [ "Js"; "undefined" ])
+  (* let gen_default (default : Wi.default_value option) =
+     match default with
+     | None -> None
+     | Some (`Const (`Bool x)) ->
+       Some (Ml.Exp.construct (mknoloc (ident [ string_of_bool x ])) None)
+     | Some (`Const (`Float x)) ->
+       Some (Ml.Exp.constant (Ml.Const.float (string_of_float x)))
+     | Some (`Const (`Int x)) -> Some (Ml.Exp.constant (Ml.Const.int x))
+     | Some (`String x) -> Some (Ml.Exp.constant (Ml.Const.string x))
+     | Some `Empty_sequence -> Some (Ml.Exp.array [])
+     | Some `Empty_object ->
+       Some
+         (exp_apply_no_labels
+            (ident_exp [ "Js"; "Obj"; "empty" ])
+            [ Ml'.Exp.unit () ]
+         )
+     | Some `Null -> Some (Ml'.Exp.none ())
+     | Some `Undefined -> Some (ident_exp [ "Js"; "undefined" ]) *)
 
   let gen_argument_ext (_ext, (this : Wi.argument)) =
     match this with
-    | `Optional (name, t, default) ->
+    | `Optional (name, (ext, t), _default) ->
       let name = Config.rename_lower (Wi.string_of_argument_name name) in
-      (Asttypes.Optional name, gen_default default, name, t)
+      let t_ext = (ext, t) in
+      (Asttypes.Optional name, true, name, t_ext)
     | `Variadic (name, t) ->
       let name = Config.rename_lower (Wi.string_of_argument_name name) in
       let t' = `Distinguishable (`Sequence ([], t), false) in
-      (Labelled name, None, name, ([], t'))
+      (Labelled name, false, name, ([], t'))
     | `Fixed (name, t) ->
       let name = Config.rename_lower (Wi.string_of_argument_name name) in
-      (Labelled name, None, name, ([], t))
+      (Labelled name, false, name, ([], t))
 
   let gen_regular_operation ~is_static (this : Wi.Regular_operation.t) =
     match this.name with
@@ -1003,13 +1025,23 @@ module Gen_str = struct
             (ident_exp [ "Js"; "Ffi"; "meth_call" ])
             [ this_exp; op_key; Ml.Exp.array ml_args ]
         in
-        gen_conv_ext `ml_of_js ([], this.type_) ret_exp
+        gen_conv_ext_apply `ml_of_js ([], this.type_) ret_exp
       in
       let body =
         List.fold_left
           (fun acc arg ->
-            let _, _, name, t_ext = arg in
-            let conv_exp = gen_conv_ext `js_of_ml t_ext (ident_exp [ name ]) in
+            let _lbl, is_optional, name, (_ext, t) = arg in
+            let c_typ = classify_type t in
+            let arg_name_exp = ident_exp [ name ] in
+            let conv_exp = gen_conv_classified `js_of_ml c_typ in
+            let conv_exp =
+              if is_optional then
+                exp_apply_no_labels
+                  (ident_exp [ "Js"; "Any"; "undefined_of_option" ])
+                  [ conv_exp ]
+              else conv_exp
+            in
+            let conv_exp = exp_apply_no_labels conv_exp [ arg_name_exp ] in
             let vb = Ml.Vb.mk (Ml.Pat.var (mknoloc name)) conv_exp in
             Ml.Exp.let_ Nonrecursive [ vb ] acc
           )
@@ -1020,9 +1052,9 @@ module Gen_str = struct
       let body =
         List.fold_left
           (fun body arg ->
-            let label, default, name, _ = arg in
+            let label, _, name, _ = arg in
             let arg_pat = Ml.Pat.var (mknoloc name) in
-            Ml.Exp.fun_ label default arg_pat body
+            Ml.Exp.fun_ label None arg_pat body
           )
           body ml_args_rev
       in
