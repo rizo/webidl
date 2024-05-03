@@ -1,4 +1,4 @@
-type +'a t
+type +'kind t constraint 'kind = [> ]
 type 'a js = 'a t
 type any = [ `Any ] js
 
@@ -59,10 +59,27 @@ module Any = struct
   let of_int x = to_any (js_of_int x)
   let of_float x = to_any (js_of_float x)
   let of_string x = to_any (js_of_string x)
+
+  let nullable_of_option any_of_x o =
+    match o with
+    | None -> to_any js_null
+    | Some x -> any_of_x x
+
+  let undefined_of_option any_of_x o =
+    match o with
+    | None -> to_any js_undefined
+    | Some x -> any_of_x x
+
   let to_bool x = bool_of_js (of_any x)
   let to_int x = int_of_js (of_any x)
   let to_float x = float_of_js (of_any x)
   let to_string x = string_of_js (of_any x)
+
+  let nullable_to_option x_of_any any =
+    if any == js_null then None else Some (x_of_any any)
+
+  let undefined_to_option x_of_any any =
+    if any == js_undefined then None else Some (x_of_any any)
 end
 
 (* Unit *)
@@ -119,7 +136,7 @@ let false' = of_bool false
 (* Array *)
 
 module Array = struct
-  type 'a t = [ `Array of 'a ] js
+  type 'kind t = [ `Array of 'kind ] js constraint 'kind = [> ]
 end
 
 type 'a array = 'a Array.t
@@ -130,7 +147,7 @@ let to_array = array_of_js
 (* Iterable *)
 
 module Iterable = struct
-  type 'a t = [ `Iterable of 'a ] js
+  type 'kind t = [ `Iterable of 'kind ] js constraint 'kind = [> ]
 end
 
 type 'a iterable = 'a Iterable.t
@@ -138,20 +155,42 @@ type 'a iterable = 'a Iterable.t
 (* Nullable *)
 
 module Nullable = struct
-  type 'a t = [ `Nullable of 'a ] js
+  type 'kind t = [ `Nullable of 'kind ] js constraint 'kind = [> ]
+
+  external make : 'kind js -> 'kind t = "%identity"
+
+  let null = Ffi.js_null
+
+  let of_option to_js opt =
+    match opt with
+    | None -> null
+    | Some x -> make (to_js x)
+
+  let to_any = to_any
 end
 
-type 'a nullable = 'a Nullable.t
+type 'kind nullable = 'kind Nullable.t
 
-let null = Ffi.js_null
+let null = Nullable.null
 
 (* Undefined *)
 
 module Undefined = struct
-  type 'a t = [ `Undefined of 'a ] js
+  type 'kind t = [ `Undefined of 'kind ] js constraint 'kind = [> ]
+
+  external make : 'kind js -> 'kind t = "%identity"
+
+  let undefined = Ffi.js_undefined
+
+  let of_option to_js opt =
+    match opt with
+    | None -> undefined
+    | Some x -> make (to_js x)
+
+  let to_any = to_any
 end
 
-type 'a undefined = 'a Undefined.t
+type 'kind undefined = 'kind Undefined.t
 
 let undefined = Ffi.js_undefined
 
@@ -159,6 +198,8 @@ let undefined = Ffi.js_undefined
 
 module Obj = struct
   type t = [ `Obj ] js
+
+  let empty () = Ffi.obj [||]
 end
 
 type obj = Obj.t

@@ -1,4 +1,5 @@
 (library
   (name js)
   (modules Js)
-  (modes byte))
+  (modes byte)
+  (libraries js_of_ocaml-compiler.runtime))

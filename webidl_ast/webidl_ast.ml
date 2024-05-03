@@ -198,10 +198,21 @@ and extended_attributes = extended_attribute list
 
 type special = Getter | Setter | Deleter
 
+let argument_is_optional = function
+  | `Optional _ -> true
+  | _ -> false
+
 let string_of_special = function
   | Getter -> "getter"
   | Setter -> "setter"
   | Deleter -> "deleter"
+
+let type_is_nullable (t : type_) =
+  match t with
+  | `Distinguishable (_, is_nullable) -> is_nullable
+  | `Any -> false
+  | `Promise _ -> false
+  | `Union (_, is_nullable) -> is_nullable
 
 type constructor = (extended_attributes * argument) list
 

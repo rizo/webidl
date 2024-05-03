@@ -1,7 +1,7 @@
 let
   onix = import (builtins.fetchGit {
     url = "https://github.com/rizo/onix.git";
-    rev = "d2808d34e0932853ee5d42337238280c49cb6625";
+    rev = "6c132df73185efbb46b36a1df54e3cd37bdde5f5";
   }) { verbosity = "info"; };
 
 in onix.env {
@@ -14,7 +14,7 @@ in onix.env {
   };
 
   deps = {
-    "ocaml-base-compiler" = "5.0.0";
+    "ocaml-system" = "*";
     "ocamlformat" = "*";
     "ocaml-lsp-server" = "*";
   };

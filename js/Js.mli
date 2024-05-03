@@ -1,5 +1,5 @@
-type +'kind js
-type +'kind t = 'kind js
+type +'kind t constraint 'kind = [> ]
+type +'kind js = 'kind t
 
 (** {2 Any} *)
 
@@ -10,10 +10,14 @@ module Any : sig
   val of_int : Stdlib.Int.t -> t
   val of_float : Stdlib.Float.t -> t
   val of_string : Stdlib.String.t -> t
+  val nullable_of_option : ('a -> t) -> 'a option -> t
+  val undefined_of_option : ('a -> t) -> 'a option -> t
   val to_bool : t -> Stdlib.Bool.t
   val to_int : t -> Stdlib.Int.t
   val to_float : t -> Stdlib.Float.t
   val to_string : t -> Stdlib.String.t
+  val nullable_to_option : (t -> 'a) -> t -> 'a option
+  val undefined_to_option : (t -> 'a) -> t -> 'a option
 end
 
 type any = Any.t
@@ -75,7 +79,7 @@ val false' : bool
 (** {2 Array} *)
 
 module Array : sig
-  type 'kind t = [ `Array of 'kind ] js
+  type 'kind t = [ `Array of 'kind ] js constraint 'kind = [> ]
 end
 
 type 'kind array = 'kind Array.t
@@ -86,7 +90,7 @@ val to_array : ('kind js -> 'a) -> 'kind array -> 'a Stdlib.Array.t
 (** {2 Iterable} *)
 
 module Iterable : sig
-  type 'kind t = [ `Iterable of 'kind ] js
+  type 'kind t = [ `Iterable of 'kind ] js constraint 'kind = [> ]
 end
 
 type 'kind iterable = 'kind Iterable.t
@@ -94,7 +98,11 @@ type 'kind iterable = 'kind Iterable.t
 (** {2 Nullable} *)
 
 module Nullable : sig
-  type 'kind t = [ `Nullable of 'kind ] js
+  type 'kind t = [ `Nullable of 'kind ] js constraint 'kind = [> ]
+
+  external make : 'kind js -> 'kind t = "%identity"
+  val of_option : ('a -> 'kind js) -> 'a option -> 'kind t
+  val to_any : 'kind t -> any
 end
 
 type 'kind nullable = 'kind Nullable.t
@@ -104,17 +112,23 @@ val null : 'kind nullable
 (** {2 Undefined} *)
 
 module Undefined : sig
-  type 'kind t = [ `Undefined of 'kind ] js
+  type 'kind t = [ `Undefined of 'kind ] js constraint 'kind = [> ]
+
+  external make : 'kind js -> 'kind t = "%identity"
+  val of_option : ('a -> 'kind js) -> 'a option -> 'kind t
+  val to_any : 'kind t -> any
 end
 
 type 'kind undefined = 'kind Undefined.t
 
-val undefinde : 'kind undefined
+val undefined : 'kind undefined
 
 (** {2 Object} *)
 
 module Obj : sig
   type t = [ `Obj ] js
+
+  val empty : unit -> t
 end
 
 type obj = Obj.t

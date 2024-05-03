@@ -117,7 +117,7 @@ end = struct
     let type_ = Js.Any.of_string type_ in
     let bubbles = Js.Any.of_bool bubbles in
     let cancelable = Js.Any.of_bool cancelable in
-    let detail = Js.of_any detail in
+    let detail = Js.Nullable.to_any detail in
     Js.to_unit
       (Js.Ffi.meth_call this "initCustomEvent"
          [| type_; bubbles; cancelable; detail |]
