@@ -262,6 +262,35 @@ module Gen_common = struct
     | `Long_long -> "int"
     (* TODO *)
     | `Bigint -> "bigint"
+
+  let make_special_operation_name (special : Wi.special) name =
+    let prefix =
+      match special with
+      | Getter -> "get"
+      | Setter -> "set"
+      | Deleter -> "delete"
+    in
+    match name with
+    | None -> prefix
+    | Some name
+      when Wi.is_getter special && String.starts_with ~prefix:"get" name ->
+      String.lowercase_ascii (Config.rename name)
+    | Some name
+      when Wi.is_setter special && String.starts_with ~prefix:"set" name ->
+      String.lowercase_ascii (Config.rename name)
+    | Some name
+      when Wi.is_deleter special && String.starts_with ~prefix:"delete" name ->
+      String.lowercase_ascii (Config.rename name)
+    | Some name ->
+      String.concat "_" [ prefix; String.lowercase_ascii (Config.rename name) ]
+
+  let regular_operation_of_special_operation (this : Wi.Special_operation.t) =
+    let name = make_special_operation_name this.special this.name in
+    {
+      Wi.Regular_operation.name = Some name;
+      type_ = this.type_;
+      arguments = this.arguments;
+    }
 end
 
 module Gen_sig = struct
@@ -389,75 +418,6 @@ module Gen_sig = struct
       let name = Wi.string_of_argument_name name in
       (Labelled (Config.rename name), gen_type t)
 
-  let make_special_operation_name (special : Wi.special) name =
-    let prefix =
-      match special with
-      | Getter -> "get"
-      | Setter -> "set"
-      | Deleter -> "delete"
-    in
-    match name with
-    | None -> prefix
-    | Some name ->
-      String.concat "_" [ prefix; String.lowercase_ascii (Config.rename name) ]
-
-  (* [FIXME] "set" might collide with a non-setter operation *)
-  let gen_operation_setter (this : Wi.Special_operation.t) =
-    let name = mknoloc (make_special_operation_name this.special this.name) in
-    let this_t = Ml'.Typ.t [] in
-    let type' = gen_type this.type_ in
-    let type' =
-      List.fold_left
-        (fun acc arg ->
-          let label, ml_arg = gen_argument_ext arg in
-          Ml.Typ.arrow label ml_arg acc
-        )
-        type' (List.rev this.arguments)
-    in
-    let type' = Ml.Typ.arrow Nolabel this_t type' in
-    let vd = Ml.Val.mk name type' in
-    [ Ml.Sig.value vd ]
-
-  (* [FIXME] "get" might collide with a non-setter operation *)
-  let gen_operation_getter (this : Wi.Special_operation.t) =
-    let name = mknoloc (make_special_operation_name this.special this.name) in
-    let this_t = Ml'.Typ.t [] in
-    let type' = gen_type this.type_ in
-    let type' =
-      List.fold_left
-        (fun acc arg ->
-          let label, ml_arg = gen_argument_ext arg in
-          Ml.Typ.arrow label ml_arg acc
-        )
-        type' (List.rev this.arguments)
-    in
-    let type' = Ml.Typ.arrow Nolabel this_t type' in
-    let vd = Ml.Val.mk name type' in
-    [ Ml.Sig.value vd ]
-
-  (* [FIXME] "delete" might collide with a non-setter operation *)
-  let gen_operation_deleter (this : Wi.Special_operation.t) =
-    let name = mknoloc (make_special_operation_name this.special this.name) in
-    let this_t = Ml'.Typ.t [] in
-    let type' = gen_type this.type_ in
-    let type' =
-      List.fold_left
-        (fun acc arg ->
-          let label, ml_arg = gen_argument_ext arg in
-          Ml.Typ.arrow label ml_arg acc
-        )
-        type' (List.rev this.arguments)
-    in
-    let type' = Ml.Typ.arrow Nolabel this_t type' in
-    let vd = Ml.Val.mk name type' in
-    [ Ml.Sig.value vd ]
-
-  let gen_special_operation (special_operation : Wi.Special_operation.t) =
-    match special_operation.special with
-    | Getter -> gen_operation_getter special_operation
-    | Setter -> gen_operation_setter special_operation
-    | Deleter -> gen_operation_deleter special_operation
-
   let gen_regular_operation ~is_static (this : Wi.Regular_operation.t) =
     match this.name with
     | None -> failwith "todo: regular operation without ident"
@@ -477,6 +437,27 @@ module Gen_sig = struct
       let vd = Ml.Val.mk name type' in
       [ Ml.Sig.value vd ]
 
+  (* [FIXME] "set" might collide with a non-setter operation *)
+  let gen_special_operation (this : Wi.Special_operation.t) =
+    let r_op = Gen_common.regular_operation_of_special_operation this in
+    gen_regular_operation ~is_static:false r_op
+
+  (* let gen_special_operation (this : Wi.Special_operation.t) =
+     let name = mknoloc (make_special_operation_name this.special this.name) in
+     let this_t = Ml'.Typ.t [] in
+     let type' = gen_type this.type_ in
+     let type' =
+       List.fold_left
+         (fun acc arg ->
+           let label, ml_arg = gen_argument_ext arg in
+           Ml.Typ.arrow label ml_arg acc
+         )
+         type' (List.rev this.arguments)
+     in
+     let type' = Ml.Typ.arrow Nolabel this_t type' in
+     let vd = Ml.Val.mk name type' in
+     [ Ml.Sig.value vd ] *)
+
   let gen_stringifier (this : Wi.Stringifier.t) =
     match this with
     | Standalone -> []
@@ -486,7 +467,7 @@ module Gen_sig = struct
         { attribute with name = Config.stringifier_name }
       in
       let stringifier_items =
-        gen_attribute ~is_static:false ~is_readonly stringifier_attr
+        gen_attribute ~is_static:false ~is_readonly:true stringifier_attr
       in
       stringifier_items @ items
 
@@ -551,7 +532,9 @@ module Gen_sig = struct
     | Special_operation special_operation ->
       gen_special_operation special_operation
     | Stringifier that -> gen_stringifier that
-    | Iterable that -> gen_iterable that
+    | Iterable that -> []
+    (* TODO: implement iterable *)
+    (* | Iterable that -> gen_iterable that *)
     | Async_iterable that -> [ todo "async_iterable" ]
     | Attribute { attribute; is_static; is_readonly } ->
       gen_attribute ~is_static ~is_readonly attribute
@@ -684,7 +667,7 @@ module Gen_sig = struct
     let to_str_val =
       Ml.Sig.value
         (Ml.Val.mk (mknoloc "to_string")
-           (Ml.Typ.arrow Nolabel (Ml'.Typ.t []) (Ml_js.Typ.string ()))
+           (Ml.Typ.arrow Nolabel (Ml'.Typ.t []) (Ml'.Typ.string ()))
         )
     in
     let cases_items =
@@ -798,17 +781,9 @@ module Gen_sig = struct
   (* --- Callback --- *)
 
   let gen_callback (this : Wi.Callback.t) =
-    let return = gen_type this.return in
-    let manifest =
-      List.fold_left
-        (fun typ arg ->
-          let label, ml_arg = gen_argument_ext arg in
-          Ml.Typ.arrow label ml_arg typ
-        )
-        return (List.rev this.arguments)
-    in
     let t_item =
-      Ml.Sig.type_ Recursive [ Ml.Type.mk ~manifest (mknoloc "t") ]
+      Ml.Sig.type_ Recursive
+        [ gen_callback_type ~return:this.return this.arguments ]
     in
     Ml.Mty.signature [ t_item ]
 end
@@ -943,12 +918,25 @@ module Gen_str = struct
     let c_typ = classify_type typ in
     gen_conv_classified conv c_typ
 
-  let gen_conv_ext_apply ?(optional = false) conv t_ext arg =
+  let gen_conv_ext_apply ?(nullable = false) ?(optional = false) conv t_ext arg
+      =
+    let any_prefix =
+      match conv with
+      | `ml_of_js -> "to_"
+      | `js_of_ml -> "of_"
+    in
     let conv_exp = gen_conv_ext conv t_ext in
     let conv_exp =
       if optional then
         exp_apply_no_labels
-          (ident_exp [ "Js"; "Any"; "undefined_of_option" ])
+          (ident_exp [ "Js"; "Any"; cat [ "undefined_"; any_prefix; "option" ] ])
+          [ conv_exp ]
+      else conv_exp
+    in
+    let conv_exp =
+      if nullable then
+        exp_apply_no_labels
+          (ident_exp [ "Js"; "Any"; cat [ "nullable_"; any_prefix; "option" ] ])
           [ conv_exp ]
       else conv_exp
     in
@@ -984,6 +972,7 @@ module Gen_str = struct
     else [ gen_attribute_get this; gen_attribute_set this ]
 
   (* --- Const value --- *)
+
   let gen_const_value (v : Wi.const_value) =
     match v with
     | `Bool x -> Ml.Exp.construct (mknoloc (ident [ string_of_bool x ])) None
@@ -1151,18 +1140,52 @@ module Gen_str = struct
     let pat = Ml.Pat.var name in
     let exp = gen_const_value value in
     let vb = Ml.Vb.mk pat exp in
-    [ Ml.Str.value Nonrecursive [ vb ] ]
+    Ml.Str.value Nonrecursive [ vb ]
+
+  (* --- Inherits --- *)
+
+  let gen_inherits this =
+    match this with
+    | None -> []
+    | Some base_class_name ->
+      let val_name =
+        mknoloc ("to_" ^ Config.rename_lower ~keyword:false base_class_name)
+      in
+      let pat = Ml.Pat.var val_name in
+      let exp =
+        exp_apply_no_labels (ident_exp [ "Js"; "Ffi"; "magic" ]) [ this_exp ]
+      in
+      let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
+      let vb = Ml.Vb.mk pat exp in
+      [ Ml.Str.value Nonrecursive [ vb ] ]
+
+  (* --- Stringifier --- *)
+
+  let gen_stringifier (this : Wi.Stringifier.t) =
+    match this with
+    | Standalone -> []
+    | Attribute { attribute; readonly = is_readonly } ->
+      let items = gen_attribute ~is_static:false ~is_readonly attribute in
+      let alias_item =
+        let pat = Ml.Pat.var (mknoloc Config.stringifier_name) in
+        let exp = ident_exp [ Config.rename_lower attribute.name ] in
+        let vb = Ml.Vb.mk pat exp in
+        Ml.Str.value Nonrecursive [ vb ]
+      in
+      items @ [ alias_item ]
 
   (* --- Interface --- *)
 
   let gen_interface_member (this : Wi.Interface.member) =
     match this with
     | Constructor that -> gen_constructor that
-    | Const that -> gen_const that
+    | Const that -> [ gen_const that ]
     | Regular_operation { regular_operation; is_static } ->
       gen_regular_operation ~is_static regular_operation
-    | Special_operation special_operation -> []
-    | Stringifier that -> []
+    | Special_operation s_op ->
+      let r_op = Gen_common.regular_operation_of_special_operation s_op in
+      gen_regular_operation ~is_static:false r_op
+    | Stringifier that -> gen_stringifier that
     | Iterable that -> []
     | Async_iterable that -> []
     | Attribute { attribute; is_static; is_readonly } ->
@@ -1201,21 +1224,7 @@ module Gen_str = struct
           )
           mixins []
     in
-    let inherits_items =
-      match this.inherits with
-      | None -> []
-      | Some base_class_name ->
-        let val_name =
-          mknoloc ("to_" ^ Config.rename_lower ~keyword:false base_class_name)
-        in
-        let pat = Ml.Pat.var val_name in
-        let exp =
-          exp_apply_no_labels (ident_exp [ "Js"; "Ffi"; "magic" ]) [ this_exp ]
-        in
-        let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
-        let vb = Ml.Vb.mk pat exp in
-        [ Ml.Str.value Nonrecursive [ vb ] ]
-    in
+    let inherits_items = gen_inherits this.inherits in
     let all_members = this.members @ partial_members @ includes_members in
     let member_items = List.concat_map gen_interface_member_ext all_members in
     let t_typ =
@@ -1235,13 +1244,99 @@ module Gen_str = struct
     let all_items = (t_typ :: t_val :: inherits_items) @ member_items in
     Ml.Mod.structure all_items
 
-  (* --- Callback --- *)
-
-  let gen_callback (this : Wi.Callback.t) = Ml.Mod.structure []
-
   (* --- Dictionary --- *)
 
-  let gen_dictionary (this : Wi.Dictionary.t) = Ml.Mod.structure []
+  let gen_dictionary_member (this : Wi.Dictionary.member) =
+    match this with
+    | Required (type_ext, name) ->
+      let pat = Ml.Pat.var (mknoloc (Config.rename_lower name)) in
+      let key = Ml.Exp.constant (Ml.Const.string name) in
+      let exp = Jx_builder.get this_exp key in
+      let exp = gen_conv_ext_apply `ml_of_js type_ext exp in
+      let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
+      let vb = Ml.Vb.mk pat exp in
+      Ml.Str.value Nonrecursive [ vb ]
+    | Optional (type_, name, _default) ->
+      let pat = Ml.Pat.var (mknoloc (Config.rename_lower name)) in
+      let key = Ml.Exp.constant (Ml.Const.string name) in
+      let exp = Jx_builder.get this_exp key in
+      let exp = gen_conv_ext_apply ~nullable:true `ml_of_js ([], type_) exp in
+      let exp = Ml.Exp.fun_ Nolabel None this_pat exp in
+      let vb = Ml.Vb.mk pat exp in
+      Ml.Str.value Nonrecursive [ vb ]
+
+  let gen_dictionary_member_ext (_, (m : Wi.Dictionary.member)) =
+    gen_dictionary_member m
+
+  let gen_dictionary_constructor (ms_ext : (_ * Wi.Dictionary.member) list) =
+    let ms_rev = List.rev_map snd ms_ext in
+    let ml_arg_bindings =
+      List.fold_left
+        (fun acc (m : Wi.Dictionary.member) ->
+          let name = Wi.Dictionary.member_name m in
+          let key = Ml'.Exp.string name in
+          let value = ident_exp [ Config.rename_lower name ] in
+          Ml.Exp.tuple [ key; value ] :: acc
+        )
+        [] ms_rev
+    in
+    let body =
+      exp_apply_no_labels
+        (ident_exp [ "Js"; "Ffi"; "obj" ])
+        [ Ml.Exp.array ml_arg_bindings ]
+    in
+    let body =
+      List.fold_left
+        (fun acc (m : Wi.Dictionary.member) ->
+          let nullable, name', t_ext =
+            match m with
+            | Required (t_ext, name) ->
+              let name' = Config.rename_lower name in
+              (false, name', t_ext)
+            | Optional (t, name, _default) ->
+              let name' = Config.rename_lower name in
+              (true, name', ([], t))
+          in
+          let arg_name_exp = ident_exp [ name' ] in
+          let conv_exp =
+            gen_conv_ext_apply ~nullable `js_of_ml t_ext arg_name_exp
+          in
+          let vb = Ml.Vb.mk (Ml.Pat.var (mknoloc name')) conv_exp in
+          Ml.Exp.let_ Nonrecursive [ vb ] acc
+        )
+        body ms_rev
+    in
+    let body = Ml.Exp.fun_ Nolabel None pat_unit body in
+    let exp =
+      List.fold_left
+        (fun body (m : Wi.Dictionary.member) ->
+          let label, name' =
+            match m with
+            | Required (_t_ext, name) ->
+              let name' = Config.rename_lower name in
+              (Asttypes.Labelled name', name')
+            | Optional (_t, name, _default) ->
+              let name' = Config.rename_lower name in
+              (Asttypes.Optional name', name')
+          in
+          let arg_pat = Ml.Pat.var (mknoloc name') in
+          Ml.Exp.fun_ label None arg_pat body
+        )
+        body ms_rev
+    in
+    let pat_name = Ml.Pat.var (mknoloc Config.constructor_name) in
+    let vb = Ml.Vb.mk pat_name exp in
+    Ml.Str.value Nonrecursive [ vb ]
+
+  let gen_dictionary (this : Wi.Dictionary.t) =
+    let manifest = Ml_js.Typ.any in
+    let t_item =
+      Ml.Str.type_ Recursive [ Ml.Type.mk ~manifest (mknoloc "t") ]
+    in
+    let t_cons = gen_dictionary_constructor this.members in
+    let inherits_items = gen_inherits this.inherits in
+    let member_items = List.map gen_dictionary_member_ext this.members in
+    Ml.Mod.structure ((t_item :: t_cons :: inherits_items) @ member_items)
 
   (* --- Enum --- *)
 
@@ -1271,17 +1366,39 @@ module Gen_str = struct
   (* --- Callback interface --- *)
 
   let gen_callback_interface (this : Wi.Callback_interface.t) =
-    Ml.Mod.structure []
+    let const_l, cbt_l =
+      List.fold_left
+        (fun (const_l, cbt_l) (_ext, (m : Wi.Callback_interface.member)) ->
+          match m with
+          | Const that ->
+            let c = gen_const that in
+            (c :: const_l, cbt_l)
+          | Regular_operation that ->
+            let cbt =
+              Gen_sig.gen_callback_type ~return:that.type_ that.arguments
+            in
+            (const_l, cbt :: cbt_l)
+        )
+        ([], []) this.members
+    in
+    let cbt =
+      match cbt_l with
+      | [ x ] -> x
+      | [] -> fail "callback interface %S: missing regular operation" this.name
+      | _ -> fail "callback interface %S: too many regular operations" this.name
+    in
+    let cbt_item = Ml.Str.type_ Recursive [ cbt ] in
+    Ml.Mod.structure (cbt_item :: const_l)
 end
 
 (* Top-level module binding generators *)
 
 let gen_callback (this : Wi.Callback.t) =
-  let name = mknoloc (Some (Config.rename_upper this.name)) in
+  let name' = Config.rename_upper this.name in
   let mtyp = Gen_sig.gen_callback this in
-  let mexp = Gen_str.gen_callback this in
+  let mexp = Ml.Mod.ident (mknoloc (ident [ name' ])) in
   let mexp = Ml.Mod.constraint_ mexp mtyp in
-  Ml.Mb.mk name mexp
+  Ml.Mb.mk (mknoloc (Some name')) mexp
 
 let gen_callback_interface (this : Wi.Callback_interface.t) =
   let name = mknoloc (Some (Config.rename_upper this.name)) in

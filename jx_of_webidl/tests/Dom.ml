@@ -107,7 +107,27 @@ and Event_init : sig
   val bubbles : t -> bool option
   val cancelable : t -> bool option
   val composed : t -> bool option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?bubbles ?cancelable ?composed () =
+    let bubbles = (Js.Any.nullable_of_option Js.Any.of_bool) bubbles in
+    let cancelable = (Js.Any.nullable_of_option Js.Any.of_bool) cancelable in
+    let composed = (Js.Any.nullable_of_option Js.Any.of_bool) composed in
+    Js.Ffi.obj
+      [|
+        ("bubbles", bubbles); ("cancelable", cancelable); ("composed", composed);
+      |]
+
+  let bubbles this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "bubbles")
+
+  let cancelable this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "cancelable")
+
+  let composed this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "composed")
+end
 
 and Custom_event : sig
   type t = [ `Custom_event ] Js.t
@@ -159,7 +179,18 @@ and Custom_event_init : sig
   val make : ?detail:Js.any -> unit -> t
   val to_event_init : t -> Event_init.t
   val detail : t -> Js.any option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?detail () =
+    let detail = (Js.Any.nullable_of_option Js.of_any) detail in
+    Js.Ffi.obj [| ("detail", detail) |]
+
+  let to_event_init this = Js.Ffi.magic this
+
+  let detail this =
+    (Js.Any.nullable_to_option Js.to_any) (Js.Ffi.get this "detail")
+end
 
 and Event_target : sig
   type t = [ `Event_target ] Js.t
@@ -211,14 +242,25 @@ end
 
 and Event_listener : sig
   type t = event:[ `Event ] Js.t -> unit
-end = struct end
+end = struct
+  type t = event:[ `Event ] Js.t -> unit
+end
 
 and Event_listener_options : sig
   type t
 
   val make : ?capture:bool -> unit -> t
   val capture : t -> bool option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?capture () =
+    let capture = (Js.Any.nullable_of_option Js.Any.of_bool) capture in
+    Js.Ffi.obj [| ("capture", capture) |]
+
+  let capture this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "capture")
+end
 
 and Add_event_listener_options : sig
   type t
@@ -230,7 +272,26 @@ and Add_event_listener_options : sig
   val passive : t -> bool option
   val once : t -> bool option
   val signal : t -> [ `Abort_signal ] Js.t option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?passive ?once ?signal () =
+    let passive = (Js.Any.nullable_of_option Js.Any.of_bool) passive in
+    let once = (Js.Any.nullable_of_option Js.Any.of_bool) once in
+    let signal = (Js.Any.nullable_of_option Js.to_any) signal in
+    Js.Ffi.obj [| ("passive", passive); ("once", once); ("signal", signal) |]
+
+  let to_event_listener_options this = Js.Ffi.magic this
+
+  let passive this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "passive")
+
+  let once this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "once")
+
+  let signal this =
+    (Js.Any.nullable_to_option Js.of_any) (Js.Ffi.get this "signal")
+end
 
 and Abort_controller : sig
   type t = [ `Abort_controller ] Js.t
@@ -299,13 +360,18 @@ and Node_list : sig
   type t = [ `Node_list ] Js.t
 
   val t : [ `Node_list ] Js.constr
-  val get_item : t -> index:int -> [ `Node ] Js.t option
+  val get_item : index:int -> t -> [ `Node ] Js.t option
   val length : t -> int
-  val to_iterable : t -> [ `Node ] Js.t Seq.t
 end = struct
   type t = [ `Node_list ] Js.t
 
   let t = Js.Ffi.constr "NodeList"
+
+  let get_item ~index this =
+    let index = Js.Any.of_int index in
+    (Js.Any.nullable_to_option Js.of_any)
+      (Js.Ffi.meth_call this "get_item" [| index |])
+
   let length this = Js.Any.to_int (Js.Ffi.get this "length")
 end
 
@@ -314,13 +380,23 @@ and Html_collection : sig
 
   val t : [ `Html_collection ] Js.constr
   val length : t -> int
-  val get_item : t -> index:int -> [ `Element ] Js.t option
-  val get_named_item : t -> name:string -> [ `Element ] Js.t option
+  val get_item : index:int -> t -> [ `Element ] Js.t option
+  val get_named_item : name:string -> t -> [ `Element ] Js.t option
 end = struct
   type t = [ `Html_collection ] Js.t
 
   let t = Js.Ffi.constr "HTMLCollection"
   let length this = Js.Any.to_int (Js.Ffi.get this "length")
+
+  let get_item ~index this =
+    let index = Js.Any.of_int index in
+    (Js.Any.nullable_to_option Js.of_any)
+      (Js.Ffi.meth_call this "get_item" [| index |])
+
+  let get_named_item ~name this =
+    let name = Js.Any.of_string name in
+    (Js.Any.nullable_to_option Js.of_any)
+      (Js.Ffi.meth_call this "get_named_item" [| name |])
 end
 
 and Mutation_observer : sig
@@ -362,7 +438,8 @@ and Mutation_callback : sig
     mutations:[ `Mutation_record ] Js.t array ->
     observer:[ `Mutation_observer ] Js.t ->
     unit
-end = struct end
+end =
+  Mutation_callback
 
 and Mutation_observer_init : sig
   type t
@@ -385,7 +462,62 @@ and Mutation_observer_init : sig
   val attribute_old_value : t -> bool option
   val character_data_old_value : t -> bool option
   val attribute_filter : t -> string array option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?child_list ?attributes ?character_data ?subtree ?attribute_old_value
+      ?character_data_old_value ?attribute_filter () =
+    let child_list = (Js.Any.nullable_of_option Js.Any.of_bool) child_list in
+    let attributes = (Js.Any.nullable_of_option Js.Any.of_bool) attributes in
+    let character_data =
+      (Js.Any.nullable_of_option Js.Any.of_bool) character_data
+    in
+    let subtree = (Js.Any.nullable_of_option Js.Any.of_bool) subtree in
+    let attribute_old_value =
+      (Js.Any.nullable_of_option Js.Any.of_bool) attribute_old_value
+    in
+    let character_data_old_value =
+      (Js.Any.nullable_of_option Js.Any.of_bool) character_data_old_value
+    in
+    let attribute_filter =
+      (Js.Any.nullable_of_option (Js.Any.of_array Js.Any.of_string))
+        attribute_filter
+    in
+    Js.Ffi.obj
+      [|
+        ("childList", child_list);
+        ("attributes", attributes);
+        ("characterData", character_data);
+        ("subtree", subtree);
+        ("attributeOldValue", attribute_old_value);
+        ("characterDataOldValue", character_data_old_value);
+        ("attributeFilter", attribute_filter);
+      |]
+
+  let child_list this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "childList")
+
+  let attributes this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "attributes")
+
+  let character_data this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "characterData")
+
+  let subtree this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "subtree")
+
+  let attribute_old_value this =
+    (Js.Any.nullable_to_option Js.Any.to_bool)
+      (Js.Ffi.get this "attributeOldValue")
+
+  let character_data_old_value this =
+    (Js.Any.nullable_to_option Js.Any.to_bool)
+      (Js.Ffi.get this "characterDataOldValue")
+
+  let attribute_filter this =
+    (Js.Any.nullable_to_option (Js.Any.to_array Js.Any.to_string))
+      (Js.Ffi.get this "attributeFilter")
+end
 
 and Mutation_record : sig
   type t = [ `Mutation_record ] Js.t
@@ -622,7 +754,16 @@ and Get_root_node_options : sig
 
   val make : ?composed:bool -> unit -> t
   val composed : t -> bool option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?composed () =
+    let composed = (Js.Any.nullable_of_option Js.Any.of_bool) composed in
+    Js.Ffi.obj [| ("composed", composed) |]
+
+  let composed this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "composed")
+end
 
 and Document : sig
   type t = [ `Document ] Js.t
@@ -931,7 +1072,16 @@ and Element_creation_options : sig
 
   val make : ?is:string -> unit -> t
   val is : t -> string option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ?is () =
+    let is = (Js.Any.nullable_of_option Js.Any.of_string) is in
+    Js.Ffi.obj [| ("is", is) |]
+
+  let is this =
+    (Js.Any.nullable_to_option Js.Any.to_string) (Js.Ffi.get this "is")
+end
 
 and Dom_implementation : sig
   type t = [ `Dom_implementation ] Js.t
@@ -1097,7 +1247,7 @@ end
 and Shadow_root_mode : sig
   type t
 
-  val to_string : t -> Js.string
+  val to_string : t -> string
   val open_ : t
   val closed : t
 end = struct
@@ -1111,7 +1261,7 @@ end
 and Slot_assignment_mode : sig
   type t
 
-  val to_string : t -> Js.string
+  val to_string : t -> string
   val manual : t
   val named : t
 end = struct
@@ -1409,15 +1559,52 @@ and Shadow_root_init : sig
   val slot_assignment : t -> [ `Slot_assignment_mode ] Js.t option
   val clonable : t -> bool option
   val serializable : t -> bool option
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ~mode ?delegates_focus ?slot_assignment ?clonable ?serializable () =
+    let mode = Js.to_any mode in
+    let delegates_focus =
+      (Js.Any.nullable_of_option Js.Any.of_bool) delegates_focus
+    in
+    let slot_assignment =
+      (Js.Any.nullable_of_option Js.to_any) slot_assignment
+    in
+    let clonable = (Js.Any.nullable_of_option Js.Any.of_bool) clonable in
+    let serializable =
+      (Js.Any.nullable_of_option Js.Any.of_bool) serializable
+    in
+    Js.Ffi.obj
+      [|
+        ("mode", mode);
+        ("delegatesFocus", delegates_focus);
+        ("slotAssignment", slot_assignment);
+        ("clonable", clonable);
+        ("serializable", serializable);
+      |]
+
+  let mode this = Js.of_any (Js.Ffi.get this "mode")
+
+  let delegates_focus this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "delegatesFocus")
+
+  let slot_assignment this =
+    (Js.Any.nullable_to_option Js.of_any) (Js.Ffi.get this "slotAssignment")
+
+  let clonable this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "clonable")
+
+  let serializable this =
+    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.Ffi.get this "serializable")
+end
 
 and Named_node_map : sig
   type t = [ `Named_node_map ] Js.t
 
   val t : [ `Named_node_map ] Js.constr
   val length : t -> int
-  val get_item : t -> index:int -> [ `Attr ] Js.t option
-  val get_get_named_item : t -> qualified_name:string -> [ `Attr ] Js.t option
+  val get_item : index:int -> t -> [ `Attr ] Js.t option
+  val get_named_item : qualified_name:string -> t -> [ `Attr ] Js.t option
 
   val get_named_item_ns :
     namespace:string option -> local_name:string -> t -> [ `Attr ] Js.t option
@@ -1433,6 +1620,16 @@ end = struct
 
   let t = Js.Ffi.constr "NamedNodeMap"
   let length this = Js.Any.to_int (Js.Ffi.get this "length")
+
+  let get_item ~index this =
+    let index = Js.Any.of_int index in
+    (Js.Any.nullable_to_option Js.of_any)
+      (Js.Ffi.meth_call this "get_item" [| index |])
+
+  let get_named_item ~qualified_name this =
+    let qualified_name = Js.Any.of_string qualified_name in
+    (Js.Any.nullable_to_option Js.of_any)
+      (Js.Ffi.meth_call this "get_named_item" [| qualified_name |])
 
   let get_named_item_ns ~namespace ~local_name this =
     let namespace = (Js.Any.nullable_of_option Js.Any.of_string) namespace in
@@ -1672,7 +1869,27 @@ and Static_range_init : sig
   val start_offset : t -> int
   val end_container : t -> [ `Node ] Js.t
   val end_offset : t -> int
-end = struct end
+end = struct
+  type t = Js.any
+
+  let make ~start_container ~start_offset ~end_container ~end_offset () =
+    let start_container = Js.to_any start_container in
+    let start_offset = Js.Any.of_int start_offset in
+    let end_container = Js.to_any end_container in
+    let end_offset = Js.Any.of_int end_offset in
+    Js.Ffi.obj
+      [|
+        ("startContainer", start_container);
+        ("startOffset", start_offset);
+        ("endContainer", end_container);
+        ("endOffset", end_offset);
+      |]
+
+  let start_container this = Js.of_any (Js.Ffi.get this "startContainer")
+  let start_offset this = Js.Any.to_int (Js.Ffi.get this "startOffset")
+  let end_container this = Js.of_any (Js.Ffi.get this "endContainer")
+  let end_offset this = Js.Any.to_int (Js.Ffi.get this "endOffset")
+end
 
 and Static_range : sig
   type t = [ `Static_range ] Js.t
@@ -1932,14 +2149,33 @@ and Node_filter : sig
   val filter_skip : int
   val filter_reject : int
   val filter_accept : int
-end = struct end
+end = struct
+  type t = node:[ `Node ] Js.t -> int
+
+  let show_notation = 2048
+  let show_document_fragment = 1024
+  let show_document_type = 512
+  let show_document = 256
+  let show_comment = 128
+  let show_processing_instruction = 64
+  let show_entity = 32
+  let show_entity_reference = 16
+  let show_cdata_section = 8
+  let show_text = 4
+  let show_attribute = 2
+  let show_element = 1
+  let show_all = 4294967295
+  let filter_skip = 3
+  let filter_reject = 2
+  let filter_accept = 1
+end
 
 and Dom_token_list : sig
   type t = [ `Dom_token_list ] Js.t
 
   val t : [ `Dom_token_list ] Js.constr
   val length : t -> int
-  val get_item : t -> index:int -> string option
+  val get_item : index:int -> t -> string option
   val contains : token:string -> t -> bool
   val add : tokens:string array -> t -> unit
   val remove : tokens:string array -> t -> unit
@@ -1947,15 +2183,18 @@ and Dom_token_list : sig
   val replace : token:string -> new_token:string -> t -> bool
   val supports : token:string -> t -> bool
   val to_string : t -> string
-  val set_to_string : t -> string -> unit
   val value : t -> string
   val set_value : t -> string -> unit
-  val to_iterable : t -> string Seq.t
 end = struct
   type t = [ `Dom_token_list ] Js.t
 
   let t = Js.Ffi.constr "DOMTokenList"
   let length this = Js.Any.to_int (Js.Ffi.get this "length")
+
+  let get_item ~index this =
+    let index = Js.Any.of_int index in
+    (Js.Any.nullable_to_option Js.Any.to_string)
+      (Js.Ffi.meth_call this "get_item" [| index |])
 
   let contains ~token this =
     let token = Js.Any.of_string token in
@@ -1982,6 +2221,10 @@ end = struct
   let supports ~token this =
     let token = Js.Any.of_string token in
     Js.Any.to_bool (Js.Ffi.meth_call this "supports" [| token |])
+
+  let value this = Js.Any.to_string (Js.Ffi.get this "value")
+  let set_value this x = Js.Ffi.set this "value" (Js.Any.of_string x)
+  let to_string = value
 end
 
 and X_path_result : sig
@@ -2072,7 +2315,9 @@ end
 
 and X_path_ns_resolver : sig
   type t = prefix:string option -> string option
-end = struct end
+end = struct
+  type t = prefix:string option -> string option
+end
 
 and X_path_evaluator : sig
   type t = [ `X_path_evaluator ] Js.t

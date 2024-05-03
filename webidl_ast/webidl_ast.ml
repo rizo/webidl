@@ -212,6 +212,18 @@ let string_of_special = function
   | Setter -> "setter"
   | Deleter -> "deleter"
 
+let is_getter = function
+  | Getter -> true
+  | _ -> false
+
+let is_setter = function
+  | Setter -> true
+  | _ -> false
+
+let is_deleter = function
+  | Deleter -> true
+  | _ -> false
+
 let type_is_nullable (t : type_) =
   match t with
   | `Distinguishable (_, is_nullable) -> is_nullable
@@ -425,6 +437,9 @@ module Dictionary = struct
   type member =
     | Required of type_ext * string
     | Optional of type_ * string * default_value option
+
+  let member_name = function
+    | Required (_, name) | Optional (_, name, _) -> name
 
   type t = {
     name : string;
