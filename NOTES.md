@@ -82,5 +82,21 @@ more flexible since, if needed, the body of the function can either directly
 implement the required logic, or, delegate the work to any object/method.
 
 
-### Value conversion
+## Notes for public documentation
 
+- The super type represents the inheritence hierarchy for a given class.
+
+## Inheritence
+
+- If a purely structural approach is followed in the codegen, we wan't be able to ensure full type compatibility. This is because the inheritence information of some types might not be available in the compilation scope. If there's a return type `T`, we might not know the base classes of `T` because it's defined in a different scope.
+- Interface methods might refer to callback types that are not in scope. It should be possible to convert a function into an opaque callback type to resolve these incompatibilities. For example, `Event_listener` should have a `val make : t -> [<Event_listener] Js.t` to allow the function to lifted to an opaque js type.
+
+## OOP
+
+- Call a method on an instance of a class.
+- Extend base class.
+- Call base class method on a derived class instance.
+- Create a list of instances with a common base class.
+- Downcast an instance to a base class.
+- Dynamic safe upcast.
+- Static unsafe upcast.

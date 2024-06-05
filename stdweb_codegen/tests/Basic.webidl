@@ -1,7 +1,7 @@
 
 // --- Types ---
 
-interface A1 {
+interface Types1 {
     attribute ByteString s1;
     attribute DOMString s2;
     attribute USVString s3;
@@ -26,6 +26,21 @@ interface A1 {
     //A<long> g(A<long> x);
     any h();
 };
+
+// --- Attributes ---
+
+interface Attr1 {
+  attribute unsigned short a1;
+  attribute float a2;
+  attribute boolean a3;
+  attribute DOMString a4;
+  attribute Attr2 a5;
+  attribute Attr3? a6;
+  attribute sequence<DOMString> a7;
+};
+
+interface Attr2 { };
+interface Attr3 { };
 
 
 // --- Operations ---

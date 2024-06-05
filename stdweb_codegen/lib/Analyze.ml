@@ -12,6 +12,8 @@ type ctx = {
   interface_includes : Wi.Mixin.t String_map.t String_map.t;
   (* All interface mixins *)
   mixins : Wi.Mixin.t String_map.t;
+  (* Types and inheritence information *)
+  types : string option String_map.t;
 }
 
 let empty =
@@ -21,6 +23,7 @@ let empty =
     unresolved_partial_interface_names = String_set.empty;
     interface_includes = String_map.empty;
     mixins = String_map.empty;
+    types = String_map.empty;
   }
 
 let rec analyze ?init:(ctx = empty) (definitions : Wi.definitions) =
@@ -74,7 +77,11 @@ and analyze_definition ctx (_ext, (definition : Wi.definition)) =
           )
         ctx.interfaces
     in
-    { ctx with interfaces }
+    let types = String_map.add intf.name intf.inherits ctx.types in
+    { ctx with interfaces; types }
+  | Dictionary dict ->
+    let types = String_map.add dict.name dict.inherits ctx.types in
+    { ctx with types }
   | Includes (intf_name, mixin_name) ->
     let interface_includes =
       let placeholder = { Wi.Mixin.name = mixin_name; members = [] } in

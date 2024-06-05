@@ -8,7 +8,7 @@
   (with-stdout-to
    Scratch.actual.ml
    (pipe-stdout
-    (run %{bin:jx_of_webidl} %{deps} -)
+    (run %{bin:stdweb_codegen} %{deps} -)
     (run %{bin:ocamlformat} --impl -)))))
 
 
@@ -22,28 +22,6 @@
   (modules Scratch)
   (libraries js))
 
-
-; Dom.webidl
-(rule
- (deps Dom.webidl)
- (action
-  (with-stdout-to
-   Dom.actual.ml
-   (pipe-stdout
-    (run %{bin:jx_of_webidl} %{deps} -)
-    (run %{bin:ocamlformat} --impl -)))))
-
-
-(rule
- (alias runtest)
- (action
-  (diff Dom.actual.ml Dom.ml)))
-
-(library
-  (name dom)
-  (modules Dom)
-  (libraries js))
-
 ;; Basic.webidl
 ;(rule
 ; (deps Basic.webidl)
@@ -51,7 +29,7 @@
 ;  (with-stdout-to
 ;   Basic.actual.mli
 ;   (pipe-stdout
-;    (run %{bin:jx_of_webidl} %{deps} -)
+;    (run %{bin:stdweb_codegen} %{deps} -)
 ;    (run %{bin:ocamlformat} --intf -)))))
 ;
 ;
@@ -59,15 +37,3 @@
 ; (alias runtest)
 ; (action
 ;  (diff Basic.actual.mli Basic.expected.mli)))
-
-
-(executable
-  (name test_dom)
-  (modules Test_dom)
-  (libraries dom js)
-  (modes js))
-
-(alias
- (name all)
- (deps index.html))
-

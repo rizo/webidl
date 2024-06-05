@@ -1,3 +1,5 @@
+typedef double T;
+
 interface A {
   undefined b1(boolean x);
   undefined f1(float x);

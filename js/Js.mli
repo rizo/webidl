@@ -1,175 +1,162 @@
-type +'kind t constraint 'kind = [> ]
-type +'kind js = 'kind t
+type +'cls t constraint 'cls = [> ]
+type +'cls js = 'cls t
 
 (** {2 Any} *)
 
+type any = [ `Any ] js
+
+external to_any : 'cls js -> any = "%identity"
+external of_any : any -> 'cls js = "%identity"
+
 module Any : sig
-  type t = [ `Any ] js
+  type t = any
 
   val of_bool : Stdlib.Bool.t -> t
-  val of_int : Stdlib.Int.t -> t
-  val of_float : Stdlib.Float.t -> t
-  val of_string : Stdlib.String.t -> t
-  val of_array : ('a -> t) -> 'a Stdlib.Array.t -> t
-  val nullable_of_option : ('a -> t) -> 'a option -> t
-  val undefined_of_option : ('a -> t) -> 'a option -> t
   val to_bool : t -> Stdlib.Bool.t
+  val of_int : Stdlib.Int.t -> t
   val to_int : t -> Stdlib.Int.t
+  val of_float : Stdlib.Float.t -> t
   val to_float : t -> Stdlib.Float.t
+  val of_string : Stdlib.String.t -> t
   val to_string : t -> Stdlib.String.t
+  val of_array : ('a -> t) -> 'a Stdlib.Array.t -> t
   val to_array : (t -> 'a) -> t -> 'a Stdlib.Array.t
+  val nullable_of_option : ('a -> t) -> 'a option -> t
   val nullable_to_option : (t -> 'a) -> t -> 'a option
+  val undefined_of_option : ('a -> t) -> 'a option -> t
   val undefined_to_option : (t -> 'a) -> t -> 'a option
+  val of_fun : Stdlib.Int.t -> (_ -> _) -> t
 end
 
-type any = Any.t
+(** {2 Function} *)
 
-val to_any : 'kind js -> any
-val of_any : any -> 'kind js
+type function' = [ `Function ] js
 
-(** {2 Unit} *)
-
-val of_unit : unit -> 'kind js
-val to_unit : 'kind js -> unit
-
-(** {2 Int} *)
-
-module Int : sig
-  type t = [ `Int ] js
-end
-
-type int = Int.t
-
-val of_int : Stdlib.Int.t -> int
-val to_int : int -> Stdlib.Int.t
-
-(** {2 Float} *)
-
-module Float : sig
-  type t = [ `Float ] js
-end
-
-type float = Float.t
-
-val of_float : Stdlib.Float.t -> [> `Float ] js
-val to_float : float -> Stdlib.Float.t
-
-(** {2 String} *)
-
-module String : sig
-  type t = [ `String ] js
-end
-
-type string = String.t
-
-val of_string : Stdlib.String.t -> [> `String ] js
-val to_string : string -> Stdlib.String.t
-
-(** {2 Bool} *)
-
-module Bool : sig
-  type t = [ `Bool ] js
-end
-
-type bool = Bool.t
-
-val of_bool : Stdlib.Bool.t -> [> `Bool ] js
-val to_bool : bool -> Stdlib.Bool.t
-val true' : bool
-val false' : bool
-
-(** {2 Array} *)
-
-module Array : sig
-  type 'kind t = [ `Array of 'kind ] js constraint 'kind = [> ]
-end
-
-type 'kind array = 'kind Array.t
-
-val of_array : ('a -> 'kind js) -> 'a Stdlib.Array.t -> 'kind array
-val to_array : ('kind js -> 'a) -> 'kind array -> 'a Stdlib.Array.t
-
-(** {2 Iterable} *)
-
-module Iterable : sig
-  type 'kind t = [ `Iterable of 'kind ] js constraint 'kind = [> ]
-end
-
-type 'kind iterable = 'kind Iterable.t
-
-(** {2 Nullable} *)
-
-module Nullable : sig
-  type 'kind t = [ `Nullable of 'kind ] js constraint 'kind = [> ]
-
-  external make : 'kind js -> 'kind t = "%identity"
-  val of_option : ('a -> 'kind js) -> 'a option -> 'kind t
-  val to_any : 'kind t -> any
-end
-
-type 'kind nullable = 'kind Nullable.t
-
-val null : 'kind nullable
-
-(** {2 Undefined} *)
-
-module Undefined : sig
-  type 'kind t = [ `Undefined of 'kind ] js constraint 'kind = [> ]
-
-  external make : 'kind js -> 'kind t = "%identity"
-  val of_option : ('a -> 'kind js) -> 'a option -> 'kind t
-  val to_any : 'kind t -> any
-end
-
-type 'kind undefined = 'kind Undefined.t
-
-val undefined : 'kind undefined
+external of_fun : int -> (_ -> _) -> function' = "caml_js_wrap_callback_strict"
+external fun_call : function' -> any array -> any = "caml_js_fun_call"
 
 (** {2 Object} *)
 
-module Obj : sig
-  type t = [ `Obj ] js
+type object' = [ `Object ] js
 
-  val empty : unit -> t
+external get : 'cls js -> string -> any = "caml_js_get"
+external set : 'cls js -> string -> any -> unit = "caml_js_set"
+external del : 'cls js -> string -> unit = "caml_js_delete"
+external obj : (string * any) array -> any = "caml_js_object"
+external obj_new : any -> any array -> any = "caml_js_new"
+external meth_call : 'cls js -> string -> any array -> any = "caml_js_meth_call"
+
+(** {2 Boolean} *)
+
+type boolean = [ `Boolean ] js
+
+external of_bool : Stdlib.Bool.t -> boolean = "caml_js_from_bool"
+external to_bool : boolean -> Stdlib.Bool.t = "caml_js_to_bool"
+val true' : boolean
+val false' : boolean
+
+(* {2 Symbol} *)
+
+type symbol = [ `Symbol ] js
+
+(** {2 Number} *)
+
+type number = [ `Number ] t
+
+external of_int : Stdlib.Int.t -> number = "%identity"
+external to_int : number -> Stdlib.Int.t = "%identity"
+external of_float : Stdlib.Float.t -> number = "caml_js_from_float"
+external to_float : number -> Stdlib.Float.t = "caml_js_to_float"
+
+(** {2 String} *)
+
+type string = [ `String ] js
+
+external of_string : Stdlib.String.t -> string = "caml_jsstring_of_string"
+external to_string : string -> Stdlib.String.t = "caml_string_of_jsstring"
+
+(** {2 Nullable} *)
+
+type 'cls nullable = [ `Nullable of 'cls ] js constraint 'cls = [> ]
+
+external nullable : 'cls js -> 'cls nullable = "%identity"
+val null : 'cls nullable
+val is_null : 'cls nullable -> Stdlib.Bool.t
+val nullable_of_option : ('a -> 'cls js) -> 'a option -> 'cls nullable
+val nullable_to_option : ('cls js -> 'a) -> 'cls nullable -> 'a option
+
+(** {2 Undefined} *)
+
+type 'cls undefined = [ `Undefined of 'cls ] js constraint 'cls = [> ]
+
+external defined : 'cls js -> 'cls nullable = "%identity"
+val undefined : 'cls undefined
+val is_undefined : 'cls nullable -> Stdlib.Bool.t
+val undefined_of_option : ('a -> 'cls js) -> 'a option -> 'cls undefined
+val undefined_to_option : ('cls js -> 'a) -> 'cls undefined -> 'a option
+
+(** {2 Unit} *)
+
+val of_unit : unit -> 'cls js
+val to_unit : 'cls js -> unit
+
+(** {2 Array} *)
+
+type 'cls array = [ `Array of 'cls ] js constraint 'cls = [> ]
+
+val of_array : ('a -> 'cls js) -> 'a Stdlib.Array.t -> 'cls array
+val to_array : ('cls js -> 'a) -> 'cls array -> 'a Stdlib.Array.t
+
+(** {2 Dict} *)
+
+module Dict : sig
+  type 'a t = [ `Dict of 'a ] js
+
+  val of_any : (any -> 'a) -> any -> 'a t
+  val to_any : ('a -> any) -> 'a t -> any
 end
 
-type obj = Obj.t
+type 'cls dict = 'cls Dict.t
+
+(** {2 Iterable} *)
+
+type iterable = [ `Iterable ] js
+
+(** {2 Promise} *)
+
+module Promise : sig
+  type 'a t = [ `Promise ] js
+
+  val to_any : ('a -> any) -> 'a t -> any
+  val of_any : (any -> 'a) -> any -> 'a t
+end
+
+type 'a promise = 'a Promise.t
 
 (** {2 Constructor} *)
 
-type 'kind constr = [ `Constr of 'kind ] js
+type 'cls constr = [ `Constr of 'cls ] js constraint 'cls = [> ]
 
 (** {2 FFI} *)
 
 module Ffi : sig
   type prop = Stdlib.String.t
 
-  (* val unsafe_cast : 'a js -> 'b js *)
-  val constr : Stdlib.String.t -> [ `Constr of 'kind ] js
+  val unsafe_cast : 'cls -> 'a js -> 'cls js
+  val constr : Stdlib.String.t -> [ `Constr of 'cls ] js
   val magic : 'this js -> 'that js
-  external get : 'obj js -> prop -> 'value js = "caml_js_get"
-  external set : 'obj js -> prop -> 'value js -> unit = "caml_js_set"
-  external del : 'obj js -> prop -> unit = "caml_js_delete"
-  external obj : (prop * any) Stdlib.Array.t -> 'obj js = "caml_js_object"
-
-  external obj_new : [ `Constr of 'kind ] js -> any Stdlib.Array.t -> 'obj js
-    = "caml_js_new"
-
-  external meth_call : 'obj js -> prop -> any Stdlib.Array.t -> 'return js
-    = "caml_js_meth_call"
-
-  external fun_call : [ `Function ] js -> any Stdlib.Array.t -> 'return js
-    = "caml_js_fun_call"
-
-  external js_of_fun : Stdlib.Int.t -> (_ -> _) -> [ `Function ] js
-    = "caml_js_wrap_callback_strict"
 end
 
 (** {2 Globals} *)
 
-val global_this : obj
-val global : Stdlib.String.t -> 'kind -> 'kind js
+val global_this : object'
+val global : Stdlib.String.t -> 'cls -> 'cls js
 
-(** {2 Helpers} *)
+(** {2 Unsafe} *)
 
-val log : 'a -> unit
+external any : 'a -> any = "%identity"
+(** Unsafe direct runtime representation of any value. *)
+
+external raw : Stdlib.String.t -> any = "caml_pure_js_expr"
+(** Unsafe pure JavaScript expression. If the resulting value is not used, it
+    will be discarded. *)

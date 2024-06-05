@@ -3,7 +3,7 @@
    "repositories": [
      {
        "url": "https://github.com/ocaml/opam-repository.git",
-       "rev": "bafea8d973125b41dbbd32e9c5b409df0d2d320a"
+       "rev": "23fec2c23a10862bcdde83a7688d35608defa7a7"
      }
    ],
    "packages" : {
@@ -314,10 +314,10 @@
        ]
      },
      "js_of_ocaml-compiler": {
-       "version": "5.7.2",
+       "version": "5.8.1",
        "src": {
-         "url": "https://github.com/ocsigen/js_of_ocaml/releases/download/5.7.2/js_of_ocaml-5.7.2.tbz",
-         "sha256": "d76f0748dbef45b68f5f6b66f1da2d7a462de64f1cd2932aa0740388e667793c"
+         "url": "https://github.com/ocsigen/js_of_ocaml/releases/download/5.8.1/js_of_ocaml-5.8.1.tbz",
+         "sha256": "0e886e10b273a8c48d9f453d5c4b8769ca1f3eba5ee950e0b1885adc943f4a53"
        },
        "depends": [
          "cmdliner",
@@ -336,29 +336,6 @@
          "menhir",
          "ocamlfind"
        ]
-     },
-     "jx_of_webidl": {
-       "version": "dev",
-       "src": { "url": "file://." },
-       "depends": [
-         "dune",
-         "ocaml",
-         "ppxlib",
-         "re",
-         "webidl"
-       ],
-       "build-depends": [
-         "dune"
-       ],
-       "doc-depends": [
-         "odoc"
-       ],
-       "dev-setup-depends": [
-         "ocaml-lsp-server",
-         "ocamlformat",
-         "utop"
-       ],
-       "vars": { "with-test": true, "with-doc": true, "with-dev-setup": true }
      },
      "lambda-term": {
        "version": "3.3.2",
@@ -1029,6 +1006,29 @@
        "build-depends": [
          "dune",
          "js_of_ocaml-compiler"
+       ],
+       "vars": { "with-test": true, "with-doc": true, "with-dev-setup": true }
+     },
+     "stdweb_codegen": {
+       "version": "dev",
+       "src": { "url": "file://." },
+       "depends": [
+         "dune",
+         "ocaml",
+         "ppxlib",
+         "re",
+         "webidl"
+       ],
+       "build-depends": [
+         "dune"
+       ],
+       "doc-depends": [
+         "odoc"
+       ],
+       "dev-setup-depends": [
+         "ocaml-lsp-server",
+         "ocamlformat",
+         "utop"
        ],
        "vars": { "with-test": true, "with-doc": true, "with-dev-setup": true }
      },

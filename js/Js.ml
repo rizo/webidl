@@ -1,15 +1,109 @@
-type +'kind t constraint 'kind = [> ]
-type 'a js = 'a t
+let phys_equal = Stdlib.( == )
+
+type +'cls t constraint 'cls = [> ]
+type +'cls js = 'cls t
+
+(* Any *)
+
 type any = [ `Any ] js
 
-module Ffi = struct
-  type prop = Stdlib.String.t
+external to_any : 'cls js -> any = "%identity"
+external of_any : any -> 'cls js = "%identity"
 
-  external pure_js_expr : string -> 'a t = "caml_pure_js_expr"
+(* Unsafe *)
+
+external raw : string -> any = "caml_pure_js_expr"
+external any : 'a -> any = "%identity"
+
+(* Object *)
+
+type object' = [ `Object ] js
+
+external get : 'cls js -> string -> any = "caml_js_get"
+external set : 'cls js -> string -> any -> unit = "caml_js_set"
+external del : 'cls js -> string -> unit = "caml_js_delete"
+external obj : (string * any) array -> any = "caml_js_object"
+external obj_new : any -> any array -> any = "caml_js_new"
+external meth_call : 'cls js -> string -> any array -> any = "caml_js_meth_call"
+
+let global_this = raw "globalThis"
+let global prop = get global_this prop
+
+(* Function *)
+
+external of_fun : int -> (_ -> _) -> [ `Function ] js
+  = "caml_js_wrap_callback_strict"
+
+external fun_call : [ `Function ] js -> any array -> any = "caml_js_fun_call"
+
+(* equal *)
+
+external equal : any -> any -> bool = "caml_js_equals"
+external strict_equal : any -> any -> bool = "caml_js_strict_equals"
+
+(* Boolean *)
+
+type boolean = [ `Boolean ] js
+
+external of_bool : Stdlib.Bool.t -> boolean = "caml_js_from_bool"
+external to_bool : boolean -> Stdlib.Bool.t = "caml_js_to_bool"
+
+let true' = of_bool true
+let false' = of_bool false
+
+(* Number *)
+
+type number = [ `Number ] t
+
+external of_int : Stdlib.Int.t -> number = "%identity"
+external to_int : number -> Stdlib.Int.t = "%identity"
+external of_float : Stdlib.Float.t -> number = "caml_js_from_float"
+external to_float : number -> Stdlib.Float.t = "caml_js_to_float"
+
+(* String *)
+
+type string = [ `String ] js
+
+external of_string : Stdlib.String.t -> string = "caml_jsstring_of_string"
+external to_string : string -> Stdlib.String.t = "caml_string_of_jsstring"
+
+(* Array *)
+
+external of_any_array : any Stdlib.Array.t -> any = "caml_js_from_array"
+external to_any_array : any -> any Stdlib.Array.t = "caml_js_to_array"
+
+(* nullable *)
+
+let null = raw "null"
+let is_null any = phys_equal any null
+
+let nullable_of_option to_js opt =
+  match opt with
+  | None -> null
+  | Some x -> to_js x
+
+let nullable_to_option of_js js = if is_null js then None else Some (of_js js)
+
+(* undefined *)
+
+let undefined = raw "undefined"
+let is_undefined any = phys_equal any undefined
+let is_defined any = not (is_undefined any)
+
+let undefined_of_option to_js opt =
+  match opt with
+  | None -> undefined
+  | Some x -> to_js x
+
+let undefined_to_option of_js js =
+  if is_undefined js then None else Some (of_js js)
+
+(* Any *)
+
+module Ffi = struct
   external repr : 'a -> any = "%identity"
 
-  let js_null = pure_js_expr "null"
-  let js_undefined = pure_js_expr "undefined"
+  let unsafe_cast _ this = Obj.magic this
   let magic this = Obj.magic this
 
   external js_of_int : Stdlib.Int.t -> [ `Int ] js = "%identity"
@@ -39,25 +133,6 @@ module Ffi = struct
 
   external caml_js_to_array : [ `Any ] js -> any Stdlib.Array.t
     = "caml_js_to_array"
-
-  (* obj *)
-  external get : 'obj js -> prop -> 'value js = "caml_js_get"
-  external set : 'obj js -> prop -> 'value js -> unit = "caml_js_set"
-  external del : 'obj js -> prop -> unit = "caml_js_delete"
-  external obj : (prop * any) Stdlib.Array.t -> 'obj js = "caml_js_object"
-  external obj_new : 'cls js -> any Stdlib.Array.t -> 'obj js = "caml_js_new"
-
-  external meth_call : 'obj js -> prop -> any Stdlib.Array.t -> 'return js
-    = "caml_js_meth_call"
-
-  external fun_call : [ `Function ] js -> any Stdlib.Array.t -> 'return js
-    = "caml_js_fun_call"
-
-  external js_of_fun : Stdlib.Int.t -> (_ -> _) -> [ `Function ] js
-    = "caml_js_wrap_callback_strict"
-
-  let global_this = pure_js_expr "globalThis"
-  let constr name = get global_this name
 end
 
 open Ffi
@@ -76,32 +151,21 @@ module Any = struct
   let of_array any_of_x xs =
     to_any (Ffi.caml_js_of_array (Stdlib.Array.map any_of_x xs))
 
-  let nullable_of_option any_of_x o =
-    match o with
-    | None -> to_any js_null
-    | Some x -> any_of_x x
-
-  let undefined_of_option any_of_x o =
-    match o with
-    | None -> to_any js_undefined
-    | Some x -> any_of_x x
-
+  let of_fun n x = to_any (of_fun n x)
+  let nullable_of_option to_js o = to_any (nullable_of_option to_js o)
+  let undefined_of_option to_js o = to_any (undefined_of_option to_js o)
   let to_bool x = bool_of_js (of_any x)
   let to_int x = int_of_js (of_any x)
   let to_float x = float_of_js (of_any x)
   let to_string x = string_of_js (of_any x)
   let to_array x_of_any xs = Stdlib.Array.map x_of_any (Ffi.caml_js_to_array xs)
-
-  let nullable_to_option x_of_any any =
-    if any == js_null then None else Some (x_of_any any)
-
-  let undefined_to_option x_of_any any =
-    if any == js_undefined then None else Some (x_of_any any)
+  let nullable_to_option of_js any = nullable_to_option of_js (of_any any)
+  let undefined_to_option of_js any = undefined_to_option of_js (of_any any)
 end
 
 (* Unit *)
 
-let of_unit () = js_undefined
+let of_unit () = undefined
 let to_unit _ = ()
 
 (* Int *)
@@ -126,29 +190,9 @@ let to_float = float_of_js
 
 type float = Float.t
 
-(* String *)
+(* Symbol *)
 
-module String = struct
-  type t = [ `String ] js
-end
-
-let of_string = js_of_string
-let to_string = string_of_js
-
-type string = String.t
-
-(* Bool *)
-
-module Bool = struct
-  type t = [ `Bool ] js
-end
-
-type bool = Bool.t
-
-let of_bool = js_of_bool
-let to_bool = bool_of_js
-let true' = of_bool true
-let false' = of_bool false
+type symbol = [ `Symbol ] js
 
 (* Array *)
 
@@ -161,71 +205,18 @@ type 'a array = 'a Array.t
 let of_array = js_of_array
 let to_array = array_of_js
 
+(* Dict *)
+
+type 'cls dict = [ `Dict of 'cls ] js constraint 'kind = [> ]
+
 (* Iterable *)
 
-module Iterable = struct
-  type 'kind t = [ `Iterable of 'kind ] js constraint 'kind = [> ]
-end
+type 'cls iterable = [ `Iterable of 'cls ] js constraint 'kind = [> ]
 
-type 'a iterable = 'a Iterable.t
+(* Promise *)
 
-(* Nullable *)
-
-module Nullable = struct
-  type 'kind t = [ `Nullable of 'kind ] js constraint 'kind = [> ]
-
-  external make : 'kind js -> 'kind t = "%identity"
-
-  let null = Ffi.js_null
-
-  let of_option to_js opt =
-    match opt with
-    | None -> null
-    | Some x -> make (to_js x)
-
-  let to_any = to_any
-end
-
-type 'kind nullable = 'kind Nullable.t
-
-let null = Nullable.null
-
-(* Undefined *)
-
-module Undefined = struct
-  type 'kind t = [ `Undefined of 'kind ] js constraint 'kind = [> ]
-
-  external make : 'kind js -> 'kind t = "%identity"
-
-  let undefined = Ffi.js_undefined
-
-  let of_option to_js opt =
-    match opt with
-    | None -> undefined
-    | Some x -> make (to_js x)
-
-  let to_any = to_any
-end
-
-type 'kind undefined = 'kind Undefined.t
-
-let undefined = Ffi.js_undefined
-
-(* Object *)
-
-module Obj = struct
-  type t = [ `Obj ] js
-
-  let empty () = Ffi.obj [||]
-end
-
-type obj = Obj.t
+type 'cls promise = [ `Promise of 'cls ] js constraint 'kind = [> ]
 
 (* Constructor *)
 
-type 'kind constr = [ `Constr of 'kind ] js
-
-let global_this = Ffi.global_this
-let global prop _kind = Ffi.get Ffi.global_this prop
-let console = pure_js_expr "console"
-let log x = Ffi.meth_call console "log" [| Ffi.repr x |] |> to_unit
+type 'kind constr = [ `Constr of 'kind ] js constraint 'kind = [> ]

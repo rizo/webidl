@@ -1,0 +1,6 @@
+
+(executable
+  (public_name stdweb_codegen)
+  (name Main)
+  (package stdweb_codegen)
+  (libraries stdweb_codegen))

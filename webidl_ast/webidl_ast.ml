@@ -191,6 +191,12 @@ and extended_attribute =
   | Ext_arg_list of string * argument_ext list
   (* [identifier = identifier] *)
   | Ext_ident of string * string
+  (* NOTE: This is not part of the restricted grammar described in [1]. But in
+     practice some specs will provide a string to an ext attribute as in [2].
+     [1]: https://webidl.spec.whatwg.org/#idl-extended-attributes
+     [2]: https://github.com/servo/servo/blob/575aa37ff33a9c39aa325f46d0dc69c46d5351fa/components/script/dom/webidls/ActivatableElement.webidl#L10 *)
+  (* [identifier = value] *)
+  | Ext_value of string * default_value
   (* [identifier = ( IdentifierList )] *)
   | Ext_ident_list of string * string list
   (* [identifier = *] *)
@@ -239,7 +245,7 @@ type constructor = (extended_attributes * argument) list
 module Regular_operation = struct
   type t = {
     name : string option;
-    type_ : type_;
+    return : type_;
     arguments : (extended_attributes * argument) list;
   }
 end
@@ -248,7 +254,7 @@ module Special_operation = struct
   type t = {
     special : special;
     name : string option;
-    type_ : type_;
+    return : type_;
     arguments : (extended_attributes * argument) list;
   }
 

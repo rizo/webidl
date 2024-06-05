@@ -12,7 +12,7 @@
 %token UNSIGNED BYTE OCTET SHORT LONG
 %token DOMSTRING USVSTRING BYTESTRING
 %token UNRESTRICTED FLOAT DOUBLE
-%token ANY BOOLEAN OBJECT OR
+%token ANY BOOLEAN OBJECT SYMBOL OR
 %token TRUE FALSE NULL UNDEFINED INFINITY MINUSINFINITY NAN
 %token GETTER SETTER DELETER
 %token CONSTRUCTOR
@@ -61,9 +61,9 @@ definition :
   | dictionary { Dictionary $1 }
   | enum { Enum $1 }
   | typedef { Typedef $1 }
-  
+
   // https://webidl.spec.whatwg.org/#index-prod-IncludesStatement
-  | IDENTIFIER INCLUDES IDENTIFIER SEMICOLON { Includes ($1, $3) }
+  | identifierExtra INCLUDES IDENTIFIER SEMICOLON { Includes ($1, $3) }
 
 
 // https://webidl.spec.whatwg.org/#index-prod-CallbackRest
@@ -87,7 +87,7 @@ specialOperation :
     | special type_ operationRest
     { {
         Special_operation.special = $1;
-        type_ = $2;
+        return = $2;
         name = fst $3;
         arguments = snd $3;
       }
@@ -103,12 +103,12 @@ special :
 regularOperation :
   type_ operationRest
     { {
-        Regular_operation.type_ = $1;
+        Regular_operation.return = $1;
         name = fst $2;
         arguments = snd $2;
       }
     }
-    
+
 // https://webidl.spec.whatwg.org/#index-prod-OperationRest
 operationRest :
   | optionalOperationName LPAR argumentList RPAR SEMICOLON
@@ -160,8 +160,23 @@ operationNameKeyword :
 
 // https://webidl.spec.whatwg.org/#index-prod-InterfaceRest
 interfaceRest :
-    | IDENTIFIER inheritance LBRACE interfaceMembers RBRACE SEMICOLON
+    | identifierExtra inheritance LBRACE interfaceMembers RBRACE SEMICOLON
     { { Interface.name = $1; inherits = $2; members = $4 } }
+
+identifierExtra :
+  | IDENTIFIER { $1 }
+  | ARRAYBUFFER { "ArrayBuffer" }
+  | DATAVIEW { "DataView" }
+  | INT8ARRAY { "Int8Array" }
+  | INT16ARRAY { "Int16Array" }
+  | INT32ARRAY { "Int32Array" }
+  | UINT8ARRAY { "Uint8Array" }
+  | UINT16ARRAY { "Uint16Array" }
+  | UINT32ARRAY { "Uint32Array" }
+  | UINT8CLAMPEDARRAY { "Uint8ClampedArray" }
+  | FLOAT32ARRAY { "Float32Array" }
+  | FLOAT64ARRAY { "Float64Array" }
+  | PROMISE { "Promise" }
 
 // https://webidl.spec.whatwg.org/#index-prod-Partial
 partial :
@@ -530,7 +545,7 @@ unionMemberTypes :
   | SEQUENCE LT typeWithExtendedAttributes GT null { (`Sequence $3, $5) }
   | OBJECT null { (`Object, $2) }
   // https://webidl.spec.whatwg.org/#idl-symbol
-  /* | SYMBOL null { mk_nullable $2 `Symbol} */
+  | SYMBOL null { (`Symbol, $2) }
   | bufferRelatedType null { (($1 :> distinguishable_type), $2) }
   | FROZENARRAY LT typeWithExtendedAttributes GT null
     { (`Frozen_array $3, $5) }
@@ -617,6 +632,7 @@ extendedAttribute :
   | extendedAttributeNoArgs { $1 }
   | extendedAttributeArgList { $1 }
   | extendedAttributeIdent { $1 }
+  | extendedAttributeValue { $1 }
   | extendedAttributeWildcard { $1 }
   | extendedAttributeIdentList { $1 }
   | extendedAttributeNamedArgList { $1 }
@@ -633,6 +649,9 @@ extendedAttributeArgList :
 extendedAttributeIdent :
   | IDENTIFIER EQUAL IDENTIFIER { Ext_ident ($1, $3) }
 
+extendedAttributeValue :
+  | IDENTIFIER EQUAL defaultValue { Ext_value ($1, $3) }
+
 extendedAttributeWildcard :
   | IDENTIFIER EQUAL ASTERISK { Ext_wildcard $1 }
 
@@ -640,5 +659,5 @@ extendedAttributeIdentList :
   | IDENTIFIER EQUAL LPAR identifierList RPAR { Ext_ident_list ($1, $4) }
 
 extendedAttributeNamedArgList :
-  | IDENTIFIER EQUAL IDENTIFIER LPAR argumentList RPAR 
+  | IDENTIFIER EQUAL IDENTIFIER LPAR argumentList RPAR
     { Ext_named_arg_list ($1, $3, $5) }

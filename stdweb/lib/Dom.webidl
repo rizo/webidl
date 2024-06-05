@@ -1,3 +1,10 @@
+// https://github.com/w3c/webref/blob/main/ed/idl/dom.idl
+// TODO: auto add these types
+typedef double DOMHighResTimeStamp;
+typedef any HTMLSlotElement;
+callback EventHandlerNonNull = any (Event event);
+typedef EventHandlerNonNull? EventHandler;
+
 // GENERATED CONTENT - DO NOT EDIT
 // Content was automatically extracted by Reffy into webref
 // (https://github.com/w3c/webref)

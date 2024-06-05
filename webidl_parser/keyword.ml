@@ -14,6 +14,7 @@ let any = "any"
 
 (* let void = "void" *)
 let boolean = "boolean"
+let symbol = "symbol"
 let object_ = "object"
 let or_ = "or"
 let true_ = "true"

@@ -1,0 +1,93 @@
+; Dom
+
+(rule
+ (deps Dom.webidl)
+ (action
+  (with-stdout-to
+   Dom.actual.ml
+   (pipe-stdout
+    (run %{bin:stdweb_codegen} %{deps} -)
+    (run %{bin:ocamlformat} --impl -)))))
+
+(rule
+ (alias runtest)
+ (deps Dom.actual.ml)
+ (action
+  (diff Dom.actual.ml Dom.ml)))
+
+(library
+  (name dom)
+  (public_name stdweb.dom)
+  (modules Dom)
+  (libraries js))
+
+
+; Es6
+
+(rule
+ (deps Es6.webidl)
+ (action
+  (with-stdout-to
+   Es6.actual.ml
+   (pipe-stdout
+    (run %{bin:stdweb_codegen} %{deps} -)
+    (run %{bin:ocamlformat} --impl -)))))
+
+(rule
+ (alias runtest)
+ (deps Es6.actual.ml)
+ (action
+  (diff Es6.actual.ml Es6.ml)))
+
+(library
+  (name es6)
+  (public_name stdweb.es6)
+  (modules Es6)
+  (libraries js))
+
+
+; Es6_ast
+
+;(rule
+; (deps Es6_ast.webidl)
+; (action
+;  (with-stdout-to
+;   Es6_ast.actual.ml
+;   (pipe-stdout
+;    (run %{bin:stdweb_codegen} %{deps} -)
+;    (run %{bin:ocamlformat} --impl -)))))
+;
+;(rule
+; (alias runtest)
+; (deps Es6_ast.actual.ml)
+; (action
+;  (diff Es6_ast.actual.ml Es6_ast.ml)))
+;
+;(library
+;  (name es6_ast)
+;  (public_name stdweb.es6_ast)
+;  (modules Es6_ast)
+;  (libraries js))
+
+;; Megadom.webidl
+;(rule
+; (deps Megadom.webidl)
+; (action
+;  (with-stdout-to
+;   Megadom.actual.ml
+;   (pipe-stdout
+;    (run %{bin:stdweb_codegen} %{deps} -)
+;    (run %{bin:ocamlformat} --impl -)))))
+;
+;
+;(rule
+; (alias runtest)
+; (deps Megadom.actual.ml)
+; (action
+;  (diff Megadom.actual.ml Megadom.ml)))
+;
+;(library
+;  (name megadom)
+;  (public_name stdweb.megadom)
+;  (modules Megadom)
+;  (libraries js))

@@ -1,6 +1,0 @@
-
-(executable
-  (public_name jx_of_webidl)
-  (name Main)
-  (package jx_of_webidl)
-  (libraries jx_of_webidl))

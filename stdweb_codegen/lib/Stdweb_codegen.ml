@@ -15,4 +15,4 @@ let gen_mli ?(input_name = "input") ~input ~output () =
   check ctx;
   let ocaml_str = Gen.gen ~ctx definitions in
   let f = Format.formatter_of_out_channel output in
-  Format.fprintf f "@.@.%a@." Astlib.Pprintast.structure_item ocaml_str
+  Format.fprintf f "@.@.%a@." Astlib.Pprintast.structure ocaml_str

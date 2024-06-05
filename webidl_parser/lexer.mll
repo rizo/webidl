@@ -23,6 +23,7 @@
           (* void , VOID ; *)
           boolean , BOOLEAN ;
           object_ , OBJECT ;
+          symbol, SYMBOL ;
           or_ , OR ;
           true_ , TRUE ;
           false_ , FALSE ;

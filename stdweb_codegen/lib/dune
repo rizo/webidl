@@ -1,4 +1,4 @@
 (library
-  (public_name jx_of_webidl)
+  (public_name stdweb_codegen)
   (libraries webidl.parser webidl.ast re ocaml-compiler-libs.common compiler-libs.common ppxlib.astlib)
   (preprocess (pps ppxlib.metaquot)))

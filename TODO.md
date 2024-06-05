@@ -21,3 +21,15 @@
   - See: https://www.chromium.org/developers/web-idl-interfaces/#union-types
 - [ ] If structural types are used, add aliases.
 - [ ] fail on `bool` and other ambiguous types.
+- [ ] better naming higiene (e.g. `this`).
+- [ ] Add of/to super conv
+- [ ] Fix:
+
+```
+type t = [< `Event | `String ] Js.t -> string -> int -> int -> Js.any -> Js.any
+```
+
+- [ ] Better enums: https://github.com/binast/binjs-ref/blob/4261ca204354423faa1c5e4236dff5e93b20a09d/spec/es6.webidl#L16
+- [ ] Better tracking of type variables for union types. We need to consult the types ctx.
+- [ ] Unresolved includes are not reported.
+- [ ] Consider turning ``[ `Object ] Js.t`` into `'a Js.t`.
