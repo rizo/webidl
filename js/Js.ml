@@ -3,31 +3,44 @@ let phys_equal = Stdlib.( == )
 type +'cls t constraint 'cls = [> ]
 type +'cls js = 'cls t
 
+(* Equality *)
+
+external equal : 'a js -> 'a js -> bool = "caml_js_equals"
+external strict_equal : 'a js -> 'a js -> bool = "caml_js_strict_equals"
+
 (* Any *)
 
 type any = [ `Any ] js
 
-external to_any : 'cls js -> any = "%identity"
-external of_any : any -> 'cls js = "%identity"
+(* external to_any : 'cls js -> any = "%identity"
+   external of_any : any -> 'cls js = "%identity" *)
 
 (* Unsafe *)
 
-external raw : string -> any = "caml_pure_js_expr"
+external raw : string -> 'a js = "caml_pure_js_expr"
 external any : 'a -> any = "%identity"
+external magic : 'a js -> 'b js = "%identity"
+
+(* Class *)
+
+type 'a class' = [ `Class of 'a ] js constraint 'a = [> ]
+
+(* Function *)
+
+type function' = [ `Function ] js
 
 (* Object *)
 
 type object' = [ `Object ] js
 
-external get : 'cls js -> string -> any = "caml_js_get"
-external set : 'cls js -> string -> any -> unit = "caml_js_set"
-external del : 'cls js -> string -> unit = "caml_js_delete"
-external obj : (string * any) array -> any = "caml_js_object"
-external obj_new : any -> any array -> any = "caml_js_new"
-external meth_call : 'cls js -> string -> any array -> any = "caml_js_meth_call"
+external get : 'obj js -> string -> 'a js = "caml_js_get"
+external set : 'obj js -> string -> 'a js -> unit = "caml_js_set"
+external del : 'obj js -> string -> unit = "caml_js_delete"
+external obj : (string * any) array -> object' = "caml_js_object"
+external obj_new : 'a class' -> any array -> 'a js = "caml_js_new"
 
-let global_this = raw "globalThis"
-let global prop = get global_this prop
+external meth_call : 'obj js -> string -> any array -> 'a js
+  = "caml_js_meth_call"
 
 (* Function *)
 
@@ -35,11 +48,6 @@ external of_fun : int -> (_ -> _) -> [ `Function ] js
   = "caml_js_wrap_callback_strict"
 
 external fun_call : [ `Function ] js -> any array -> any = "caml_js_fun_call"
-
-(* equal *)
-
-external equal : any -> any -> bool = "caml_js_equals"
-external strict_equal : any -> any -> bool = "caml_js_strict_equals"
 
 (* Boolean *)
 
@@ -73,6 +81,10 @@ external of_any_array : any Stdlib.Array.t -> any = "caml_js_from_array"
 external to_any_array : any -> any Stdlib.Array.t = "caml_js_to_array"
 
 (* nullable *)
+type 'a nullable = [ `Nullable of 'a ] js constraint 'a = [> ]
+
+external nullable : 'cls js -> 'cls nullable = "%identity"
+external nullable_get : 'cls nullable -> 'cls js = "%identity"
 
 let null = raw "null"
 let is_null any = phys_equal any null
@@ -80,11 +92,17 @@ let is_null any = phys_equal any null
 let nullable_of_option to_js opt =
   match opt with
   | None -> null
-  | Some x -> to_js x
+  | Some x -> nullable (to_js x)
 
-let nullable_to_option of_js js = if is_null js then None else Some (of_js js)
+let nullable_to_option of_js nullable =
+  if is_null nullable then None else Some (of_js (nullable_get nullable))
 
 (* undefined *)
+
+type 'a undefined = [ `Undefined of 'a ] js constraint 'a = [> ]
+
+external defined : 'cls js -> 'cls undefined = "%identity"
+external undefined_get : 'cls undefined -> 'cls js = "%identity"
 
 let undefined = raw "undefined"
 let is_undefined any = phys_equal any undefined
@@ -93,10 +111,10 @@ let is_defined any = not (is_undefined any)
 let undefined_of_option to_js opt =
   match opt with
   | None -> undefined
-  | Some x -> to_js x
+  | Some x -> defined (to_js x)
 
-let undefined_to_option of_js js =
-  if is_undefined js then None else Some (of_js js)
+let undefined_to_option of_js undefined =
+  if is_undefined undefined then None else Some (of_js (undefined_get undefined))
 
 (* Any *)
 
@@ -168,28 +186,6 @@ end
 let of_unit () = undefined
 let to_unit _ = ()
 
-(* Int *)
-
-module Int = struct
-  type t = [ `Int ] js
-end
-
-let of_int = js_of_int
-let to_int = int_of_js
-
-type int = Int.t
-
-(* Float *)
-
-module Float = struct
-  type t = [ `Float ] js
-end
-
-let of_float = js_of_float
-let to_float = float_of_js
-
-type float = Float.t
-
 (* Symbol *)
 
 type symbol = [ `Symbol ] js
@@ -211,12 +207,13 @@ type 'cls dict = [ `Dict of 'cls ] js constraint 'kind = [> ]
 
 (* Iterable *)
 
-type 'cls iterable = [ `Iterable of 'cls ] js constraint 'kind = [> ]
+type iterable = [ `Iterable ] js
 
 (* Promise *)
 
-type 'cls promise = [ `Promise of 'cls ] js constraint 'kind = [> ]
+type 'a promise = [ `Promise of 'a ] js
 
-(* Constructor *)
+(* Global *)
 
-type 'kind constr = [ `Constr of 'kind ] js constraint 'kind = [> ]
+let global_this = raw "globalThis"
+let global prop = get global_this prop

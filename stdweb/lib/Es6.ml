@@ -54,8 +54,8 @@ end = struct
   let of_any = Js.of_any
 
   let decode_uri ~encoded_uri () =
-    let encoded_uri = Js.Any.of_string encoded_uri in
-    Js.Any.to_string (Js.meth_call t "decodeURI" [| encoded_uri |])
+    let encoded_uri = Js.any (Js.of_string encoded_uri) in
+    Js.to_string (Js.meth_call t "decodeURI" [| encoded_uri |])
 
   let decode_uri_component ~encoded_uri_component () =
     let encoded_uri_component = Js.Any.of_string encoded_uri_component in
@@ -124,14 +124,12 @@ and Property_descriptor : sig
   val get : t -> Getter.t option option
   val set : t -> Setter.t option option
 end = struct
-  type t = Js.any
+  type t = Js.object'
 
   let make ?configurable ?enumerable ?value ?writable ?get ?set () =
-    let configurable =
-      (Js.Any.nullable_of_option Js.Any.of_bool) configurable
-    in
-    let enumerable = (Js.Any.nullable_of_option Js.Any.of_bool) enumerable in
-    let value = (Js.Any.nullable_of_option Js.of_any) value in
+    let configurable = Js.any ((Js.nullable_of_option Js.any) configurable) in
+    let enumerable = Js.any ((Js.nullable_of_option Js.any) enumerable) in
+    let value = Js.any ((Js.nullable_of_option Js.any) value) in
     let writable =
       (Js.Any.nullable_of_option (Js.Any.nullable_of_option Js.Any.of_bool))
         writable
@@ -366,15 +364,12 @@ end = struct
 
   let create ~proto ?props () =
     let proto = to_any proto in
-    let props =
-      (Js.Any.undefined_of_option (Js.Dict.to_any Property_descriptor.to_any))
-        props
-    in
+    let props = Js.any ((Js.undefined_of_option Js.any) props) in
     of_any (Js.meth_call t "create" [| proto; props |])
 
   let define_properties ~obj ~props () =
     let obj = to_any obj in
-    let props = (Js.Dict.to_any Property_descriptor.to_any) props in
+    let props = Js.any props in
     Js.to_unit (Js.meth_call t "defineProperties" [| obj; props |])
 
   let define_property ~obj ~prop ~descriptor () =
@@ -1176,7 +1171,7 @@ and Math : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Math/trunc} \
      [trunc] on MDN}."]
 end = struct
-  let t = Js.global "Math" `Object
+  let t = Js.global "Math"
   let e = Js.Any.to_float (Js.get t "E")
   let ln10 = Js.Any.to_float (Js.get t "LN10")
   let ln2 = Js.Any.to_float (Js.get t "LN2")
@@ -4221,19 +4216,19 @@ end = struct
 
   let all ~iterable () =
     let iterable = Js.to_any iterable in
-    (Js.Promise.of_any Js.to_any) (Js.meth_call t "all" [| iterable |])
+    Js.meth_call t "all" [| iterable |]
 
   let race ~iterable () =
     let iterable = Js.to_any iterable in
-    (Js.Promise.of_any Js.to_any) (Js.meth_call t "race" [| iterable |])
+    Js.meth_call t "race" [| iterable |]
 
   let reject ~r () =
     let r = Js.to_any r in
-    (Js.Promise.of_any Js.to_any) (Js.meth_call t "reject" [| r |])
+    Js.meth_call t "reject" [| r |]
 
   let resolve ~x () =
     let x = Js.to_any x in
-    (Js.Promise.of_any Js.to_any) (Js.meth_call t "resolve" [| x |])
+    Js.meth_call t "resolve" [| x |]
 
   let catch ~on_rejected this =
     let on_rejected = Js.to_any on_rejected in
@@ -4242,8 +4237,7 @@ end = struct
   let then' ~on_fulfilled ~on_reject this =
     let on_fulfilled = Js.to_any on_fulfilled in
     let on_reject = Js.to_any on_reject in
-    (Js.Promise.of_any Js.to_any)
-      (Js.meth_call this "then" [| on_fulfilled; on_reject |])
+    Js.meth_call this "then" [| on_fulfilled; on_reject |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise} [Promise] \
@@ -4485,7 +4479,7 @@ and Intl : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Intl/getCanonicalLocales} \
      [getCanonicalLocales] on MDN}."]
 end = struct
-  let t = Js.global "Intl" `Object
+  let t = Js.global "Intl"
   let collator = Collator.of_any (Js.get t "Collator")
   let date_time_format = Js.of_any (Js.get t "DateTimeFormat")
   let number_format = Js.of_any (Js.get t "NumberFormat")
@@ -4589,7 +4583,7 @@ and Collator_options : sig
   val numeric : t -> bool option
   val case_first : t -> Collator_case.t option
 end = struct
-  type t = Js.any
+  type t = Js.object'
 
   let make ?locale ?usage ?sensitivity ?ignore_punctuation ?collation ?numeric
       ?case_first () =
@@ -4756,7 +4750,7 @@ and Collator_init : sig
   val sensitivity : t -> Collator_sensitivity.t option
   val ignore_punctuation : t -> bool option
 end = struct
-  type t = Js.any
+  type t = Js.object'
 
   let make ?usage ?locale_matcher ?collation ?numeric ?case_first ?sensitivity
       ?ignore_punctuation () =
@@ -4821,7 +4815,7 @@ and Supported_locales_options : sig
   val to_any : t -> Js.any
   val locale_matcher : t -> Collator_locale_matcher.t option
 end = struct
-  type t = Js.any
+  type t = Js.object'
 
   let make ?locale_matcher () =
     let locale_matcher =

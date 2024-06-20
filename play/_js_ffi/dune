@@ -1,0 +1,18 @@
+(library
+  (name js_ffi)
+  (libraries js_of_ocaml-compiler.runtime)
+  (modules Js_ffi)
+  (modes byte)
+  (js_of_ocaml (javascript_files reflect.js)))
+
+
+(executable
+  (name use_js_ffi)
+  (modules Use_js_ffi)
+  (libraries js_ffi)
+  (modes js))
+
+(alias
+ (name all)
+ (deps index.html))
+

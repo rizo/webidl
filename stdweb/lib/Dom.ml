@@ -1,3 +1,8 @@
+open struct
+  module E_js = Js.Encode
+  module D_js = Js.Decode
+end
+
 module rec Dom_high_res_time_stamp : sig
   type nonrec t = float
 
@@ -179,7 +184,7 @@ end = struct
   let t = Js.raw "Event"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_object this = Js.Ffi.magic this
+  let super this = Js.magic this
 
   let with_type_and_event_init_dict ~type' ?event_init_dict () =
     let type' = Js.Any.of_string type' in
@@ -238,7 +243,8 @@ end
    MDN}."]
 
 and Event_init : sig
-  type t [@@ocaml.doc "The type for the [EventInit] dictionary."]
+  type t = [ `Event_init ] Js.t
+  [@@ocaml.doc "The type for the [EventInit] dictionary."]
 
   val make : ?bubbles:bool -> ?cancelable:bool -> ?composed:bool -> unit -> t
   val of_any : Js.any -> t
@@ -247,28 +253,30 @@ and Event_init : sig
   val cancelable : t -> bool option
   val composed : t -> bool option
 end = struct
-  type t = Js.any
+  type t = [ `Event_init ] Js.t
 
   let make ?bubbles ?cancelable ?composed () =
-    let bubbles = (Js.Any.nullable_of_option Js.Any.of_bool) bubbles in
-    let cancelable = (Js.Any.nullable_of_option Js.Any.of_bool) cancelable in
-    let composed = (Js.Any.nullable_of_option Js.Any.of_bool) composed in
-    Js.obj
-      [|
-        ("bubbles", bubbles); ("cancelable", cancelable); ("composed", composed);
-      |]
+    (* let bubbles = (Js.Any.nullable_of_option Js.Any.of_bool) bubbles in *)
+    let bubbles = E_js.nullable E_js.bool bubbles in
+    let cancelable = E_js.nullable E_js.bool cancelable in
+    let composed = E_js.nullable E_js.bool composed in
+    D_js.any
+      (E_js.obj
+         [|
+           ("bubbles", bubbles);
+           ("cancelable", cancelable);
+           ("composed", composed);
+         |]
+      )
 
   let to_any = Js.to_any
   let of_any = Js.of_any
 
   let bubbles this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "bubbles")
+    D_js.field "bubbles" (D_js.nullable D_js.bool) (E_js.any this)
 
-  let cancelable this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "cancelable")
-
-  let composed this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "composed")
+  let cancelable this = D_js.field "cancelable" (D_js.nullable D_js.bool) this
+  let composed this = D_js.field "composed" (D_js.nullable D_js.bool) this
 end
 
 and Custom_event : sig
@@ -319,7 +327,7 @@ end = struct
   let t = Js.raw "CustomEvent"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_event this = Js.Ffi.magic this
+  let super this = Js.magic this
 
   let with_type_and_event_init_dict ~type' ?event_init_dict () =
     let type' = Js.Any.of_string type' in
@@ -345,21 +353,25 @@ end
    [CustomEvent] on MDN}."]
 
 and Custom_event_init : sig
-  type t [@@ocaml.doc "The type for the [CustomEventInit] dictionary."]
+  type t = [ `Custom_event_init ] Js.t
+  [@@ocaml.doc "The type for the [CustomEventInit] dictionary."]
 
-  val make : ?detail:Js.any -> unit -> t
+  type 'a super = 'a Js.t constraint 'a = [< `Custom_event_init | `Event_init ]
+
+  val make : ?detail:Js.any -> unit -> 'a super
   val of_any : Js.any -> t
   val to_any : t -> Js.any
-  val to_event_init : t -> Event_init.t
+  val super : t -> 'a super
   val detail : t -> Js.any option
 end = struct
-  type t = Js.any
+  type t = [ `Custom_event_init ] Js.t
+  type 'a super = 'a Js.t constraint 'a = [< `Custom_event_init | `Event_init ]
 
   let make ?detail () =
     let detail = (Js.Any.nullable_of_option Js.of_any) detail in
-    Js.obj [| ("detail", detail) |]
+    Js.magic (Js.obj [| ("detail", detail) |])
 
-  let to_event_init this = Js.Ffi.magic this
+  let super this = Js.magic this
   let to_any = Js.to_any
   let of_any = Js.of_any
   let detail this = (Js.Any.nullable_to_option Js.to_any) (Js.get this "detail")
@@ -444,7 +456,7 @@ end = struct
   let to_any this = Js.Any.of_fun 1 this
 
   let of_any any =
-    let __f_js = Js.Ffi.unsafe_cast `Function any in
+    let __f_js = Js.magic any in
     fun event ->
       let event = Event.to_any event in
       Js.to_unit (Js.fun_call __f_js [| event |])
@@ -490,7 +502,7 @@ end = struct
     let signal = (Js.Any.nullable_of_option Abort_signal.to_any) signal in
     Js.obj [| ("passive", passive); ("once", once); ("signal", signal) |]
 
-  let to_event_listener_options this = Js.Ffi.magic this
+  let super this = Js.magic this
   let to_any = Js.to_any
   let of_any = Js.of_any
 
@@ -617,7 +629,7 @@ end = struct
   let t = Js.raw "AbortSignal"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_event_target this = Js.Ffi.magic this
+  let to_event_target this = Js.magic this
 
   let abort ?reason () =
     let reason = (Js.Any.undefined_of_option Js.of_any) reason in
@@ -1188,7 +1200,7 @@ end = struct
   let t = Js.raw "Node"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_event_target this = Js.Ffi.magic this
+  let to_event_target this = Js.magic this
   let element_node = 1
   let attribute_node = 2
   let text_node = 3
@@ -1638,7 +1650,7 @@ end = struct
   let t = Js.raw "Document"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
   let make () = Js.obj_new t [||]
 
   let implementation this =
@@ -1858,7 +1870,7 @@ end = struct
   let t = Js.raw "XMLDocument"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_document this = Js.Ffi.magic this
+  let to_document this = Js.magic this
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/XMLDocument} \
@@ -2013,7 +2025,7 @@ end = struct
   let t = Js.raw "DocumentType"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
   let name this = Js.Any.to_string (Js.get this "name")
   let public_id this = Js.Any.to_string (Js.get this "publicId")
   let system_id this = Js.Any.to_string (Js.get this "systemId")
@@ -2109,7 +2121,7 @@ end = struct
   let t = Js.raw "DocumentFragment"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
   let make () = Js.obj_new t [||]
 
   let query_selector_all ~selectors this =
@@ -2226,7 +2238,7 @@ end = struct
   let t = Js.raw "ShadowRoot"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_document_fragment this = Js.Ffi.magic this
+  let to_document_fragment this = Js.magic this
   let mode this = Shadow_root_mode.of_any (Js.get this "mode")
   let delegates_focus this = Js.Any.to_bool (Js.get this "delegatesFocus")
 
@@ -2585,7 +2597,7 @@ end = struct
   let t = Js.raw "Element"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
 
   let namespace_uri this =
     (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "namespaceURI")
@@ -2997,7 +3009,7 @@ end = struct
   let t = Js.raw "Attr"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
 
   let namespace_uri this =
     (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "namespaceURI")
@@ -3123,7 +3135,7 @@ end = struct
   let t = Js.raw "CharacterData"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_node this = Js.Ffi.magic this
+  let to_node this = Js.magic this
   let data this = Js.Any.to_string (Js.get this "data")
   let set_data this x = Js.set this "data" (Js.Any.of_string x)
   let length this = Js.Any.to_int (Js.get this "length")
@@ -3210,7 +3222,7 @@ end = struct
   let t = Js.raw "Text"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_character_data this = Js.Ffi.magic this
+  let to_character_data this = Js.magic this
 
   let make ?data () =
     let data = (Js.Any.undefined_of_option Js.Any.of_string) data in
@@ -3259,7 +3271,7 @@ end = struct
   let t = Js.raw "CDATASection"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_text this = Js.Ffi.magic this
+  let to_text this = Js.magic this
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/CDATASection} \
@@ -3306,7 +3318,7 @@ end = struct
   let t = Js.raw "ProcessingInstruction"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_character_data this = Js.Ffi.magic this
+  let to_character_data this = Js.magic this
   let target this = Js.Any.to_string (Js.get this "target")
 end
 [@@ocaml.doc
@@ -3344,7 +3356,7 @@ end = struct
   let t = Js.raw "Comment"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_character_data this = Js.Ffi.magic this
+  let to_character_data this = Js.magic this
 
   let make ?data () =
     let data = (Js.Any.undefined_of_option Js.Any.of_string) data in
@@ -3478,7 +3490,7 @@ end = struct
   let t = Js.raw "StaticRange"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_abstract_range this = Js.Ffi.magic this
+  let to_abstract_range this = Js.magic this
 
   let make ~init () =
     let init = Static_range_init.to_any init in
@@ -3643,7 +3655,7 @@ end = struct
   let t = Js.raw "Range"
   let to_any = Js.to_any
   let of_any = Js.of_any
-  let to_abstract_range this = Js.Ffi.magic this
+  let to_abstract_range this = Js.magic this
   let make () = Js.obj_new t [||]
 
   let common_ancestor_container this =
@@ -3972,7 +3984,7 @@ end = struct
   let to_any this = Js.Any.of_fun 1 this
 
   let of_any any =
-    let __f_js = Js.Ffi.unsafe_cast `Function any in
+    let __f_js = Js.magic any in
     fun node ->
       let node = Node.to_any node in
       Js.Any.to_int (Js.fun_call __f_js [| node |])
@@ -4286,7 +4298,7 @@ end = struct
   let to_any this = Js.Any.of_fun 1 this
 
   let of_any any =
-    let __f_js = Js.Ffi.unsafe_cast `Function any in
+    let __f_js = Js.magic any in
     fun prefix ->
       let prefix = (Js.Any.nullable_of_option Js.Any.of_string) prefix in
       (Js.Any.nullable_to_option Js.Any.to_string)
