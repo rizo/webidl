@@ -86,10 +86,21 @@ implement the required logic, or, delegate the work to any object/method.
 
 - The super type represents the inheritence hierarchy for a given class.
 
+
+## Notes on type constraints
+
+- The type constraints in the signatures only allow values with a valid
+  and native JavaScript runtime representation. For exmaple: `int Jx.array
+  Jx.promise` does not require conversion because, the type is already
+  a valid native JavaScript value. Note that `int` has the same runtime
+  representation in both JavaScript and OCaml. On the other hand, if the runtime
+  reperesentations differ, a JavaScript object should be passed instead.
+  - The only exception to this rule are functions/callbacks.
+
 ## Inheritence
 
 - If a purely structural approach is followed in the codegen, we wan't be able to ensure full type compatibility. This is because the inheritence information of some types might not be available in the compilation scope. If there's a return type `T`, we might not know the base classes of `T` because it's defined in a different scope.
-- Interface methods might refer to callback types that are not in scope. It should be possible to convert a function into an opaque callback type to resolve these incompatibilities. For example, `Event_listener` should have a `val make : t -> [<Event_listener] Js.t` to allow the function to lifted to an opaque js type.
+- Interface methods might refer to callback types that are not in scope. It should be possible to convert a function into an opaque callback type to resolve these incompatibilities. For example, `Event_listener` should have a `val make : t -> [<Event_listener] Js.t` to allow the function to lifted to an opaque, structural js type.
 
 ## OOP
 
@@ -100,3 +111,29 @@ implement the required logic, or, delegate the work to any object/method.
 - Downcast an instance to a base class.
 - Dynamic safe upcast.
 - Static unsafe upcast.
+
+## Goals
+
+- Bindings should avoid wrapping and aim to represent the datastructure and FFI calls as natively as possible.
+- Creating hetrogenous JS objects should be easy.
+  - `Jx.obj [ ("foo", Jx.string "abc"); ("n", Jx.int 42); ]`
+- Allow representing object inheritence.
+- Implicit obj to any conversion.
+
+
+## Default values
+
+- Default arguments can be passed using two different methods:
+  1. Passing undefined values to the JS API: this implies exposing the undefined
+     argument in the ML API (either as `Option.t` or as `Undefined.t`). The JS
+     API will implicitly use the default value defined in the spec.
+  2. Explicitly encoding and passing the default value defined in the spec.
+     - This avoids the need for boxing in the ML API. 
+     - This "overrides" the JS API default values (with the same value).
+     - Could this lead to inconsistent behaviour? That is, what if the JS API
+       handles `undefined` and an explicit default value differently? The assumption is
+       that the JS API uses the default value described in the spec.
+    - What if the default values, for whatever unlikely reason, diverge?
+    - Are there differences in default values between browsers?
+      - If so, in a way we ensure higher degree of consistency...
+

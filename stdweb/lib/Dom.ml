@@ -1,55 +1,55 @@
 open struct
-  module E_js = Js.Encode
-  module D_js = Js.Decode
+  module E_jx = Jx.Encode
+  module D_jx = Jx.Decode
 end
 
 module rec Dom_high_res_time_stamp : sig
   type nonrec t = float
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Dom_high_res_time_stamp
 
 and Html_slot_element : sig
-  type nonrec t = Js.any
+  type nonrec t = Jx.any
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Html_slot_element
 
 and Event_handler_non_null : sig
-  type t = Event.t -> Js.any
+  type t = Event.t -> Jx.any
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Event_handler_non_null
 
 and Event_handler : sig
   type nonrec t = Event_handler_non_null.t option
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Event_handler
 
 and Event : sig
-  type t = [ `Event ] Js.t
+  type t = [ `Event ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Event} [Event]} \
      interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Event | `Object ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Event | `Object ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Event} [Event]} \
      interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val with_type_and_event_init_dict :
     type':string -> ?event_init_dict:Event_init.t -> unit -> 'a super
@@ -173,17 +173,17 @@ and Event : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Event/initEvent} \
      [initEvent] on MDN}."]
 end = struct
-  type t = [ `Event ] Js.t
+  type t = [ `Event ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Event | `Object ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Event | `Object ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Event} [Event]} \
      interface or any base interface that it inherits."]
 
-  let t = Js.raw "Event"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Event"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let super this = Js.magic this
 
   let with_type_and_event_init_dict ~type' ?event_init_dict () =
@@ -243,17 +243,17 @@ end
    MDN}."]
 
 and Event_init : sig
-  type t = [ `Event_init ] Js.t
+  type t = [ `Event_init ] Jx.obj
   [@@ocaml.doc "The type for the [EventInit] dictionary."]
 
   val make : ?bubbles:bool -> ?cancelable:bool -> ?composed:bool -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val bubbles : t -> bool option
   val cancelable : t -> bool option
   val composed : t -> bool option
 end = struct
-  type t = [ `Event_init ] Js.t
+  type t = [ `Event_init ] Jx.obj
 
   let make ?bubbles ?cancelable ?composed () =
     (* let bubbles = (Js.Any.nullable_of_option Js.Any.of_bool) bubbles in *)
@@ -269,8 +269,8 @@ end = struct
          |]
       )
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let bubbles this =
     D_js.field "bubbles" (D_js.nullable D_js.bool) (E_js.any this)
@@ -280,25 +280,25 @@ end = struct
 end
 
 and Custom_event : sig
-  type t = [ `Custom_event ] Js.t
+  type t = [ `Custom_event ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent} \
      [CustomEvent]} interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Custom_event | `Event | `Object ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Custom_event | `Event | `Object ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent} \
      [CustomEvent]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val with_type_and_event_init_dict :
     type':string -> ?event_init_dict:Custom_event_init.t -> unit -> 'a super
 
-  val detail : t -> Js.any
+  val detail : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/detail} \
@@ -308,7 +308,7 @@ and Custom_event : sig
     type':string ->
     ?bubbles:bool ->
     ?cancelable:bool ->
-    ?detail:Js.any ->
+    ?detail:Jx.any ->
     t ->
     unit
   [@@ocaml.doc
@@ -316,17 +316,17 @@ and Custom_event : sig
      https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/initCustomEvent} \
      [initCustomEvent] on MDN}."]
 end = struct
-  type t = [ `Custom_event ] Js.t
+  type t = [ `Custom_event ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Custom_event | `Event | `Object ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Custom_event | `Event | `Object ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent} \
      [CustomEvent]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "CustomEvent"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "CustomEvent"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let super this = Js.magic this
 
   let with_type_and_event_init_dict ~type' ?event_init_dict () =
@@ -336,13 +336,13 @@ end = struct
     in
     Js.obj_new t [| type'; event_init_dict |]
 
-  let detail this = Js.to_any (Js.get this "detail")
+  let detail this = E_jx.obj (Js.get this "detail")
 
   let init_custom_event ~type' ?bubbles ?cancelable ?detail this =
     let type' = Js.Any.of_string type' in
     let bubbles = (Js.Any.undefined_of_option Js.Any.of_bool) bubbles in
     let cancelable = (Js.Any.undefined_of_option Js.Any.of_bool) cancelable in
-    let detail = (Js.Any.undefined_of_option Js.of_any) detail in
+    let detail = (Js.Any.undefined_of_option D_jx.obj) detail in
     Js.to_unit
       (Js.meth_call this "initCustomEvent"
          [| type'; bubbles; cancelable; detail |]
@@ -353,45 +353,45 @@ end
    [CustomEvent] on MDN}."]
 
 and Custom_event_init : sig
-  type t = [ `Custom_event_init ] Js.t
+  type t = [ `Custom_event_init ] Jx.obj
   [@@ocaml.doc "The type for the [CustomEventInit] dictionary."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Custom_event_init | `Event_init ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Custom_event_init | `Event_init ]
 
-  val make : ?detail:Js.any -> unit -> 'a super
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val make : ?detail:Jx.any -> unit -> 'a super
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val super : t -> 'a super
-  val detail : t -> Js.any option
+  val detail : t -> Jx.any option
 end = struct
-  type t = [ `Custom_event_init ] Js.t
-  type 'a super = 'a Js.t constraint 'a = [< `Custom_event_init | `Event_init ]
+  type t = [ `Custom_event_init ] Jx.obj
+  type 'a super = 'a Jx.obj constraint 'a = [< `Custom_event_init | `Event_init ]
 
   let make ?detail () =
-    let detail = (Js.Any.nullable_of_option Js.of_any) detail in
+    let detail = (Js.Any.nullable_of_option D_jx.obj) detail in
     Js.magic (Js.obj [| ("detail", detail) |])
 
   let super this = Js.magic this
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let detail this = (Js.Any.nullable_to_option Js.to_any) (Js.get this "detail")
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let detail this = (Js.Any.nullable_to_option E_jx.obj) (Js.get this "detail")
 end
 
 and Event_target : sig
-  type t = [ `Event_target ] Js.t
+  type t = [ `Event_target ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/EventTarget} \
      [EventTarget]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
 
   val add_event_listener :
     type':string ->
     callback:Event_listener.t option ->
-    ?options:[< `Add_event_listener_options | `Bool ] Js.t ->
+    ?options:[< `Add_event_listener_options | `Bool ] Jx.obj ->
     t ->
     unit
   [@@ocaml.doc
@@ -402,7 +402,7 @@ and Event_target : sig
   val remove_event_listener :
     type':string ->
     callback:Event_listener.t option ->
-    ?options:[< `Event_listener_options | `Bool ] Js.t ->
+    ?options:[< `Event_listener_options | `Bool ] Jx.obj ->
     t ->
     unit
   [@@ocaml.doc
@@ -416,24 +416,24 @@ and Event_target : sig
      https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent} \
      [dispatchEvent] on MDN}."]
 end = struct
-  type t = [ `Event_target ] Js.t
+  type t = [ `Event_target ] Jx.obj
 
-  let t = Js.raw "EventTarget"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "EventTarget"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let make () = Js.obj_new t [||]
 
   let add_event_listener ~type' ~callback ?options this =
     let type' = Js.Any.of_string type' in
     let callback = (Js.Any.nullable_of_option Event_listener.to_any) callback in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
+    let options = (Js.Any.undefined_of_option E_jx.obj) options in
     Js.to_unit
       (Js.meth_call this "addEventListener" [| type'; callback; options |])
 
   let remove_event_listener ~type' ~callback ?options this =
     let type' = Js.Any.of_string type' in
     let callback = (Js.Any.nullable_of_option Event_listener.to_any) callback in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
+    let options = (Js.Any.undefined_of_option E_jx.obj) options in
     Js.to_unit
       (Js.meth_call this "removeEventListener" [| type'; callback; options |])
 
@@ -448,8 +448,8 @@ end
 and Event_listener : sig
   type t = Event.t -> unit
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end = struct
   type t = Event.t -> unit
 
@@ -466,18 +466,18 @@ and Event_listener_options : sig
   type t [@@ocaml.doc "The type for the [EventListenerOptions] dictionary."]
 
   val make : ?capture:bool -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val capture : t -> bool option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ?capture () =
     let capture = (Js.Any.nullable_of_option Js.Any.of_bool) capture in
     Js.obj [| ("capture", capture) |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let capture this =
     (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "capture")
@@ -487,14 +487,14 @@ and Add_event_listener_options : sig
   type t [@@ocaml.doc "The type for the [AddEventListenerOptions] dictionary."]
 
   val make : ?passive:bool -> ?once:bool -> ?signal:Abort_signal.t -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val to_event_listener_options : t -> Event_listener_options.t
   val passive : t -> bool option
   val once : t -> bool option
   val signal : t -> Abort_signal.t option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ?passive ?once ?signal () =
     let passive = (Js.Any.nullable_of_option Js.Any.of_bool) passive in
@@ -503,8 +503,8 @@ end = struct
     Js.obj [| ("passive", passive); ("once", once); ("signal", signal) |]
 
   let super this = Js.magic this
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let passive this =
     (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "passive")
@@ -516,14 +516,14 @@ end = struct
 end
 
 and Abort_controller : sig
-  type t = [ `Abort_controller ] Js.t
+  type t = [ `Abort_controller ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortController} \
      [AbortController]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
 
   val signal : t -> 'a Abort_signal.super
@@ -532,22 +532,22 @@ and Abort_controller : sig
      https://developer.mozilla.org/en-US/docs/Web/API/AbortController/signal} \
      [signal] on MDN}."]
 
-  val abort : ?reason:Js.any -> t -> unit
+  val abort : ?reason:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort} \
      [abort] on MDN}."]
 end = struct
-  type t = [ `Abort_controller ] Js.t
+  type t = [ `Abort_controller ] Jx.obj
 
-  let t = Js.raw "AbortController"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "AbortController"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let make () = Js.obj_new t [||]
   let signal this = Abort_signal.of_any (Js.get this "signal")
 
   let abort ?reason this =
-    let reason = (Js.Any.undefined_of_option Js.of_any) reason in
+    let reason = (Js.Any.undefined_of_option D_jx.obj) reason in
     Js.to_unit (Js.meth_call this "abort" [| reason |])
 end
 [@@ocaml.doc
@@ -555,22 +555,22 @@ end
    [AbortController] on MDN}."]
 
 and Abort_signal : sig
-  type t = [ `Abort_signal ] Js.t
+  type t = [ `Abort_signal ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal} \
      [AbortSignal]} interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Abort_signal | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Abort_signal | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal} \
      [AbortSignal]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
-  val abort : ?reason:Js.any -> unit -> 'a super
+  val abort : ?reason:Jx.any -> unit -> 'a super
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/abort} \
@@ -594,7 +594,7 @@ and Abort_signal : sig
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/aborted} \
      [aborted] on MDN}."]
 
-  val reason : t -> Js.any
+  val reason : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/reason} \
@@ -618,21 +618,21 @@ and Abort_signal : sig
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/onabort} \
      [onabort] on MDN}."]
 end = struct
-  type t = [ `Abort_signal ] Js.t
+  type t = [ `Abort_signal ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Abort_signal | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Abort_signal | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal} \
      [AbortSignal]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "AbortSignal"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "AbortSignal"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_event_target this = Js.magic this
 
   let abort ?reason () =
-    let reason = (Js.Any.undefined_of_option Js.of_any) reason in
+    let reason = (Js.Any.undefined_of_option D_jx.obj) reason in
     of_any (Js.meth_call t "abort" [| reason |])
 
   let timeout ~milliseconds () =
@@ -644,7 +644,7 @@ end = struct
     of_any (Js.meth_call t "_any" [| signals |])
 
   let aborted this = Js.Any.to_bool (Js.get this "aborted")
-  let reason this = Js.to_any (Js.get this "reason")
+  let reason this = E_jx.obj (Js.get this "reason")
 
   let throw_if_aborted this =
     Js.to_unit (Js.meth_call this "throwIfAborted" [||])
@@ -657,14 +657,14 @@ end
    [AbortSignal] on MDN}."]
 
 and Node_list : sig
-  type t = [ `Node_list ] Js.t
+  type t = [ `Node_list ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/NodeList} [NodeList]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val item : index:int -> t -> 'a Node.super option
   [@@ocaml.doc
@@ -676,11 +676,11 @@ and Node_list : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length} \
      [length] on MDN}."]
 end = struct
-  type t = [ `Node_list ] Js.t
+  type t = [ `Node_list ] Jx.obj
 
-  let t = Js.raw "NodeList"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "NodeList"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let item ~index this =
     let index = Js.Any.of_int index in
@@ -694,14 +694,14 @@ end
    [NodeList] on MDN}."]
 
 and Html_collection : sig
-  type t = [ `Html_collection ] Js.t
+  type t = [ `Html_collection ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection} \
      [HTMLCollection]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val length : t -> int
   [@@ocaml.doc
@@ -721,11 +721,11 @@ and Html_collection : sig
      https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection/namedItem} \
      [namedItem] on MDN}."]
 end = struct
-  type t = [ `Html_collection ] Js.t
+  type t = [ `Html_collection ] Jx.obj
 
-  let t = Js.raw "HTMLCollection"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "HTMLCollection"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let length this = Js.Any.to_int (Js.get this "length")
 
   let item ~index this =
@@ -743,14 +743,14 @@ end
    [HTMLCollection] on MDN}."]
 
 and Mutation_observer : sig
-  type t = [ `Mutation_observer ] Js.t
+  type t = [ `Mutation_observer ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver} \
      [MutationObserver]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : callback:Mutation_callback.t -> unit -> t
 
   val observe : target:Node.t -> ?options:Mutation_observer_init.t -> t -> unit
@@ -771,11 +771,11 @@ and Mutation_observer : sig
      https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords} \
      [takeRecords] on MDN}."]
 end = struct
-  type t = [ `Mutation_observer ] Js.t
+  type t = [ `Mutation_observer ] Jx.obj
 
-  let t = Js.raw "MutationObserver"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "MutationObserver"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~callback () =
     let callback = Mutation_callback.to_any callback in
@@ -801,8 +801,8 @@ end
 and Mutation_callback : sig
   type t = Mutation_record.t array -> Mutation_observer.t -> unit
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Mutation_callback
 
@@ -820,8 +820,8 @@ and Mutation_observer_init : sig
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val child_list : t -> bool option
   val attributes : t -> bool option
   val character_data : t -> bool option
@@ -830,7 +830,7 @@ and Mutation_observer_init : sig
   val character_data_old_value : t -> bool option
   val attribute_filter : t -> string array option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ?child_list ?attributes ?character_data ?subtree ?attribute_old_value
       ?character_data_old_value ?attribute_filter () =
@@ -861,8 +861,8 @@ end = struct
         ("attributeFilter", attribute_filter);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let child_list this =
     (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "childList")
@@ -889,14 +889,14 @@ end = struct
 end
 
 and Mutation_record : sig
-  type t = [ `Mutation_record ] Js.t
+  type t = [ `Mutation_record ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord} \
      [MutationRecord]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val type' : t -> string
   [@@ocaml.doc
@@ -952,11 +952,11 @@ and Mutation_record : sig
      https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord/oldValue} \
      [oldValue] on MDN}."]
 end = struct
-  type t = [ `Mutation_record ] Js.t
+  type t = [ `Mutation_record ] Jx.obj
 
-  let t = Js.raw "MutationRecord"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "MutationRecord"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let type' this = Js.Any.to_string (Js.get this "type")
   let target this = Node.of_any (Js.get this "target")
   let added_nodes this = Node_list.of_any (Js.get this "addedNodes")
@@ -983,19 +983,19 @@ end
    [MutationRecord] on MDN}."]
 
 and Node : sig
-  type t = [ `Node ] Js.t
+  type t = [ `Node ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Node} [Node]} interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Node} [Node]} interface \
      or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val element_node : int
   val attribute_node : int
   val text_node : int
@@ -1189,17 +1189,17 @@ and Node : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild} \
      [removeChild] on MDN}."]
 end = struct
-  type t = [ `Node ] Js.t
+  type t = [ `Node ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Node} [Node]} interface \
      or any base interface that it inherits."]
 
-  let t = Js.raw "Node"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Node"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_event_target this = Js.magic this
   let element_node = 1
   let attribute_node = 2
@@ -1331,38 +1331,39 @@ and Get_root_node_options : sig
   type t [@@ocaml.doc "The type for the [GetRootNodeOptions] dictionary."]
 
   val make : ?composed:bool -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val composed : t -> bool option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ?composed () =
     let composed = (Js.Any.nullable_of_option Js.Any.of_bool) composed in
     Js.obj [| ("composed", composed) |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let composed this =
     (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "composed")
 end
 
 and Document : sig
-  type t = [ `Document ] Js.t
+  type t = [ `Document ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Document} [Document]} \
      interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Document | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj
+    constraint 'a = [< `Document | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Document} [Document]} \
      interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : unit -> 'a super
 
   val implementation : t -> Dom_implementation.t
@@ -1445,7 +1446,7 @@ and Document : sig
 
   val create_element :
     local_name:string ->
-    ?options:[< `String | `Element_creation_options ] Js.t ->
+    ?options:[< `String | `Element_creation_options ] Jx.obj ->
     t ->
     'a Element.super
   [@@ocaml.doc
@@ -1456,7 +1457,7 @@ and Document : sig
   val create_element_ns :
     namespace:string option ->
     qualified_name:string ->
-    ?options:[< `String | `Element_creation_options ] Js.t ->
+    ?options:[< `String | `Element_creation_options ] Jx.obj ->
     t ->
     'a Element.super
   [@@ocaml.doc
@@ -1596,20 +1597,20 @@ and Document : sig
      [querySelector] on MDN}."]
 
   val replace_children :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Document/replaceChildren} \
      [replaceChildren] on MDN}."]
 
   val append :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Document/append} \
      [append] on MDN}."]
 
   val prepend :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Document/prepend} \
@@ -1639,17 +1640,18 @@ and Document : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Document/children} \
      [children] on MDN}."]
 end = struct
-  type t = [ `Document ] Js.t
+  type t = [ `Document ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Document | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj
+    constraint 'a = [< `Document | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Document} [Document]} \
      interface or any base interface that it inherits."]
 
-  let t = Js.raw "Document"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Document"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
   let make () = Js.obj_new t [||]
 
@@ -1688,13 +1690,13 @@ end = struct
 
   let create_element ~local_name ?options this =
     let local_name = Js.Any.of_string local_name in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
+    let options = (Js.Any.undefined_of_option E_jx.obj) options in
     Element.of_any (Js.meth_call this "createElement" [| local_name; options |])
 
   let create_element_ns ~namespace ~qualified_name ?options this =
     let namespace = (Js.Any.nullable_of_option Js.Any.of_string) namespace in
     let qualified_name = Js.Any.of_string qualified_name in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
+    let options = (Js.Any.undefined_of_option E_jx.obj) options in
     Element.of_any
       (Js.meth_call this "createElementNS"
          [| namespace; qualified_name; options |]
@@ -1816,15 +1818,15 @@ end = struct
       (Js.meth_call this "querySelector" [| selectors |])
 
   let replace_children ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "replaceChildren" [| nodes |])
 
   let append ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "append" [| nodes |])
 
   let prepend ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "prepend" [| nodes |])
 
   let child_element_count this = Js.Any.to_int (Js.get this "childElementCount")
@@ -1842,34 +1844,34 @@ end
    [Document] on MDN}."]
 
 and Xml_document : sig
-  type t = [ `Xml_document ] Js.t
+  type t = [ `Xml_document ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XMLDocument} \
      [XMLDocument]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Xml_document | `Document | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XMLDocument} \
      [XMLDocument]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 end = struct
-  type t = [ `Xml_document ] Js.t
+  type t = [ `Xml_document ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Xml_document | `Document | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XMLDocument} \
      [XMLDocument]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "XMLDocument"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "XMLDocument"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_document this = Js.magic this
 end
 [@@ocaml.doc
@@ -1880,30 +1882,30 @@ and Element_creation_options : sig
   type t [@@ocaml.doc "The type for the [ElementCreationOptions] dictionary."]
 
   val make : ?is:string -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val is : t -> string option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ?is () =
     let is = (Js.Any.nullable_of_option Js.Any.of_string) is in
     Js.obj [| ("is", is) |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let is this = (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "is")
 end
 
 and Dom_implementation : sig
-  type t = [ `Dom_implementation ] Js.t
+  type t = [ `Dom_implementation ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation} \
      [DOMImplementation]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val create_document_type :
     qualified_name:string ->
@@ -1939,11 +1941,11 @@ and Dom_implementation : sig
      https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation/hasFeature} \
      [hasFeature] on MDN}."]
 end = struct
-  type t = [ `Dom_implementation ] Js.t
+  type t = [ `Dom_implementation ] Jx.obj
 
-  let t = Js.raw "DOMImplementation"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "DOMImplementation"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let create_document_type ~qualified_name ~public_id ~system_id this =
     let qualified_name = Js.Any.of_string qualified_name in
@@ -1979,21 +1981,21 @@ end
    [DOMImplementation] on MDN}."]
 
 and Document_type : sig
-  type t = [ `Document_type ] Js.t
+  type t = [ `Document_type ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentType} \
      [DocumentType]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Document_type | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentType} \
      [DocumentType]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val name : t -> string
   [@@ocaml.doc
@@ -2013,18 +2015,18 @@ and Document_type : sig
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentType/systemId} \
      [systemId] on MDN}."]
 end = struct
-  type t = [ `Document_type ] Js.t
+  type t = [ `Document_type ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Document_type | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentType} \
      [DocumentType]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "DocumentType"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "DocumentType"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
   let name this = Js.Any.to_string (Js.get this "name")
   let public_id this = Js.Any.to_string (Js.get this "publicId")
@@ -2035,21 +2037,21 @@ end
    [DocumentType] on MDN}."]
 
 and Document_fragment : sig
-  type t = [ `Document_fragment ] Js.t
+  type t = [ `Document_fragment ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment} \
      [DocumentFragment]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Document_fragment | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment} \
      [DocumentFragment]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : unit -> 'a super
 
   val query_selector_all : selectors:string -> t -> Node_list.t
@@ -2065,21 +2067,21 @@ and Document_fragment : sig
      [querySelector] on MDN}."]
 
   val replace_children :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/replaceChildren} \
      [replaceChildren] on MDN}."]
 
   val append :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/append} \
      [append] on MDN}."]
 
   val prepend :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/prepend} \
@@ -2109,18 +2111,18 @@ and Document_fragment : sig
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/children} \
      [children] on MDN}."]
 end = struct
-  type t = [ `Document_fragment ] Js.t
+  type t = [ `Document_fragment ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Document_fragment | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment} \
      [DocumentFragment]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "DocumentFragment"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "DocumentFragment"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
   let make () = Js.obj_new t [||]
 
@@ -2134,15 +2136,15 @@ end = struct
       (Js.meth_call this "querySelector" [| selectors |])
 
   let replace_children ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "replaceChildren" [| nodes |])
 
   let append ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "append" [| nodes |])
 
   let prepend ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "prepend" [| nodes |])
 
   let child_element_count this = Js.Any.to_int (Js.get this "childElementCount")
@@ -2160,13 +2162,13 @@ end
    [DocumentFragment] on MDN}."]
 
 and Shadow_root : sig
-  type t = [ `Shadow_root ] Js.t
+  type t = [ `Shadow_root ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot} \
      [ShadowRoot]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Shadow_root | `Document_fragment | `Node | `Event_target ]
@@ -2175,8 +2177,8 @@ and Shadow_root : sig
      https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot} \
      [ShadowRoot]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val mode : t -> Shadow_root_mode.t
   [@@ocaml.doc
@@ -2224,9 +2226,9 @@ and Shadow_root : sig
      https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/onslotchange} \
      [onslotchange] on MDN}."]
 end = struct
-  type t = [ `Shadow_root ] Js.t
+  type t = [ `Shadow_root ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Shadow_root | `Document_fragment | `Node | `Event_target ]
@@ -2235,9 +2237,9 @@ end = struct
      https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot} \
      [ShadowRoot]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "ShadowRoot"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "ShadowRoot"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_document_fragment this = Js.magic this
   let mode this = Shadow_root_mode.of_any (Js.get this "mode")
   let delegates_focus this = Js.Any.to_bool (Js.get this "delegatesFocus")
@@ -2261,8 +2263,8 @@ and Shadow_root_mode : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val open' : t [@@ocaml.doc "The [open] enum value."]
 
@@ -2271,8 +2273,8 @@ end = struct
   type t = Js.string
 
   let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let open' = Js.of_string "open"
   let closed' = Js.of_string "closed"
 end
@@ -2281,8 +2283,8 @@ and Slot_assignment_mode : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val manual : t [@@ocaml.doc "The [manual] enum value."]
 
@@ -2291,27 +2293,27 @@ end = struct
   type t = Js.string
 
   let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let manual = Js.of_string "manual"
   let named = Js.of_string "named"
 end
 
 and Element : sig
-  type t = [ `Element ] Js.t
+  type t = [ `Element ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Element} [Element]} \
      interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Element | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Element | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Element} [Element]} \
      interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val namespace_uri : t -> string option
   [@@ocaml.doc
@@ -2568,35 +2570,35 @@ and Element : sig
      [remove] on MDN}."]
 
   val replace_with :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceWith} \
      [replaceWith] on MDN}."]
 
   val after :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Element/after} \
      [after] on MDN}."]
 
   val before :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Element/before} \
      [before] on MDN}."]
 end = struct
-  type t = [ `Element ] Js.t
+  type t = [ `Element ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Element | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Element | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Element} [Element]} \
      interface or any base interface that it inherits."]
 
-  let t = Js.raw "Element"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Element"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
 
   let namespace_uri this =
@@ -2758,15 +2760,15 @@ end = struct
   let remove this = Js.to_unit (Js.meth_call this "remove" [||])
 
   let replace_with ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "replaceWith" [| nodes |])
 
   let after ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "after" [| nodes |])
 
   let before ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "before" [| nodes |])
 end
 [@@ocaml.doc
@@ -2785,15 +2787,15 @@ and Shadow_root_init : sig
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val mode : t -> Shadow_root_mode.t
   val delegates_focus : t -> bool option
   val slot_assignment : t -> Slot_assignment_mode.t option
   val clonable : t -> bool option
   val serializable : t -> bool option
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ~mode ?delegates_focus ?slot_assignment ?clonable ?serializable () =
     let mode = Shadow_root_mode.to_any mode in
@@ -2816,8 +2818,8 @@ end = struct
         ("serializable", serializable);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let mode this = Shadow_root_mode.of_any (Js.get this "mode")
 
   let delegates_focus this =
@@ -2835,14 +2837,14 @@ end = struct
 end
 
 and Named_node_map : sig
-  type t = [ `Named_node_map ] Js.t
+  type t = [ `Named_node_map ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap} \
      [NamedNodeMap]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val length : t -> int
   [@@ocaml.doc
@@ -2894,11 +2896,11 @@ and Named_node_map : sig
      https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap/removeNamedItemNS} \
      [removeNamedItemNS] on MDN}."]
 end = struct
-  type t = [ `Named_node_map ] Js.t
+  type t = [ `Named_node_map ] Jx.obj
 
-  let t = Js.raw "NamedNodeMap"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "NamedNodeMap"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let length this = Js.Any.to_int (Js.get this "length")
 
   let item ~index this =
@@ -2942,19 +2944,19 @@ end
    [NamedNodeMap] on MDN}."]
 
 and Attr : sig
-  type t = [ `Attr ] Js.t
+  type t = [ `Attr ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Attr} [Attr]} interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Attr | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Attr | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Attr} [Attr]} interface \
      or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val namespace_uri : t -> string option
   [@@ocaml.doc
@@ -2998,17 +3000,17 @@ and Attr : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Attr/specified} \
      [specified] on MDN}."]
 end = struct
-  type t = [ `Attr ] Js.t
+  type t = [ `Attr ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Attr | `Node | `Event_target ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Attr | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Attr} [Attr]} interface \
      or any base interface that it inherits."]
 
-  let t = Js.raw "Attr"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Attr"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
 
   let namespace_uri this =
@@ -3032,21 +3034,21 @@ end
    MDN}."]
 
 and Character_data : sig
-  type t = [ `Character_data ] Js.t
+  type t = [ `Character_data ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData} \
      [CharacterData]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData} \
      [CharacterData]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val data : t -> string
   [@@ocaml.doc
@@ -3103,38 +3105,38 @@ and Character_data : sig
      [remove] on MDN}."]
 
   val replace_with :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData/replaceWith} \
      [replaceWith] on MDN}."]
 
   val after :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData/after} \
      [after] on MDN}."]
 
   val before :
-    nodes:[< `Node | `Trusted_script | `String ] Js.t array -> t -> unit
+    nodes:[< `Node | `Trusted_script | `String ] Jx.obj array -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData/before} \
      [before] on MDN}."]
 end = struct
-  type t = [ `Character_data ] Js.t
+  type t = [ `Character_data ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CharacterData} \
      [CharacterData]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "CharacterData"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "CharacterData"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_node this = Js.magic this
   let data this = Js.Any.to_string (Js.get this "data")
   let set_data this x = Js.set this "data" (Js.Any.of_string x)
@@ -3168,15 +3170,15 @@ end = struct
   let remove this = Js.to_unit (Js.meth_call this "remove" [||])
 
   let replace_with ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "replaceWith" [| nodes |])
 
   let after ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "after" [| nodes |])
 
   let before ~nodes this =
-    let nodes = (Js.Any.of_array Js.to_any) nodes in
+    let nodes = (Js.Any.of_array E_jx.obj) nodes in
     Js.to_unit (Js.meth_call this "before" [| nodes |])
 end
 [@@ocaml.doc
@@ -3184,20 +3186,20 @@ end
    [CharacterData] on MDN}."]
 
 and Text : sig
-  type t = [ `Text ] Js.t
+  type t = [ `Text ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Text} [Text]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Text | `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Text} [Text]} interface \
      or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : ?data:string -> unit -> 'a super
 
   val split_text : offset:int -> t -> 'a super
@@ -3210,18 +3212,18 @@ and Text : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Text/wholeText} \
      [wholeText] on MDN}."]
 end = struct
-  type t = [ `Text ] Js.t
+  type t = [ `Text ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Text | `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Text} [Text]} interface \
      or any base interface that it inherits."]
 
-  let t = Js.raw "Text"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Text"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_character_data this = Js.magic this
 
   let make ?data () =
@@ -3239,13 +3241,13 @@ end
    MDN}."]
 
 and Cdata_section : sig
-  type t = [ `Cdata_section ] Js.t
+  type t = [ `Cdata_section ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/CDATASection} \
      [CDATASection]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Cdata_section | `Text | `Character_data | `Node | `Event_target ]
@@ -3254,12 +3256,12 @@ and Cdata_section : sig
      https://developer.mozilla.org/en-US/docs/Web/API/CDATASection} \
      [CDATASection]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 end = struct
-  type t = [ `Cdata_section ] Js.t
+  type t = [ `Cdata_section ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Cdata_section | `Text | `Character_data | `Node | `Event_target ]
@@ -3268,9 +3270,9 @@ end = struct
      https://developer.mozilla.org/en-US/docs/Web/API/CDATASection} \
      [CDATASection]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "CDATASection"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "CDATASection"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_text this = Js.magic this
 end
 [@@ocaml.doc
@@ -3278,13 +3280,13 @@ end
    [CDATASection] on MDN}."]
 
 and Processing_instruction : sig
-  type t = [ `Processing_instruction ] Js.t
+  type t = [ `Processing_instruction ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction} \
      [ProcessingInstruction]} interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Processing_instruction | `Character_data | `Node | `Event_target ]
@@ -3294,8 +3296,8 @@ and Processing_instruction : sig
      [ProcessingInstruction]} interface or any base interface that it \
      inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
 
   val target : t -> string
   [@@ocaml.doc
@@ -3303,9 +3305,9 @@ and Processing_instruction : sig
      https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction/target} \
      [target] on MDN}."]
 end = struct
-  type t = [ `Processing_instruction ] Js.t
+  type t = [ `Processing_instruction ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint
       'a =
       [< `Processing_instruction | `Character_data | `Node | `Event_target ]
@@ -3315,9 +3317,9 @@ end = struct
      [ProcessingInstruction]} interface or any base interface that it \
      inherits."]
 
-  let t = Js.raw "ProcessingInstruction"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "ProcessingInstruction"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_character_data this = Js.magic this
   let target this = Js.Any.to_string (Js.get this "target")
 end
@@ -3327,35 +3329,35 @@ end
    [ProcessingInstruction] on MDN}."]
 
 and Comment : sig
-  type t = [ `Comment ] Js.t
+  type t = [ `Comment ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Comment} [Comment]} \
      interface."]
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Comment | `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Comment} [Comment]} \
      interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : ?data:string -> unit -> 'a super
 end = struct
-  type t = [ `Comment ] Js.t
+  type t = [ `Comment ] Jx.obj
 
-  type 'a super = 'a Js.t
+  type 'a super = 'a Jx.obj
     constraint 'a = [< `Comment | `Character_data | `Node | `Event_target ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Comment} [Comment]} \
      interface or any base interface that it inherits."]
 
-  let t = Js.raw "Comment"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Comment"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_character_data this = Js.magic this
 
   let make ?data () =
@@ -3367,14 +3369,14 @@ end
    on MDN}."]
 
 and Abstract_range : sig
-  type t = [ `Abstract_range ] Js.t
+  type t = [ `Abstract_range ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/AbstractRange} \
      [AbstractRange]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val start_container : t -> 'a Node.super
   [@@ocaml.doc
@@ -3406,11 +3408,11 @@ and Abstract_range : sig
      https://developer.mozilla.org/en-US/docs/Web/API/AbstractRange/collapsed} \
      [collapsed] on MDN}."]
 end = struct
-  type t = [ `Abstract_range ] Js.t
+  type t = [ `Abstract_range ] Jx.obj
 
-  let t = Js.raw "AbstractRange"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "AbstractRange"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let start_container this = Node.of_any (Js.get this "startContainer")
   let start_offset this = Js.Any.to_int (Js.get this "startOffset")
   let end_container this = Node.of_any (Js.get this "endContainer")
@@ -3432,14 +3434,14 @@ and Static_range_init : sig
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val start_container : t -> Node.t
   val start_offset : t -> int
   val end_container : t -> Node.t
   val end_offset : t -> int
 end = struct
-  type t = Js.any
+  type t = Jx.any
 
   let make ~start_container ~start_offset ~end_container ~end_offset () =
     let start_container = Node.to_any start_container in
@@ -3454,8 +3456,8 @@ end = struct
         ("endOffset", end_offset);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let start_container this = Node.of_any (Js.get this "startContainer")
   let start_offset this = Js.Any.to_int (Js.get this "startOffset")
   let end_container this = Node.of_any (Js.get this "endContainer")
@@ -3463,33 +3465,33 @@ end = struct
 end
 
 and Static_range : sig
-  type t = [ `Static_range ] Js.t
+  type t = [ `Static_range ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/StaticRange} \
      [StaticRange]} interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Static_range | `Abstract_range ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Static_range | `Abstract_range ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/StaticRange} \
      [StaticRange]} interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : init:Static_range_init.t -> unit -> 'a super
 end = struct
-  type t = [ `Static_range ] Js.t
+  type t = [ `Static_range ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Static_range | `Abstract_range ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Static_range | `Abstract_range ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/StaticRange} \
      [StaticRange]} interface or any base interface that it inherits."]
 
-  let t = Js.raw "StaticRange"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "StaticRange"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_abstract_range this = Js.magic this
 
   let make ~init () =
@@ -3501,20 +3503,20 @@ end
    [StaticRange] on MDN}."]
 
 and Range : sig
-  type t = [ `Range ] Js.t
+  type t = [ `Range ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Range} [Range]} \
      interface."]
 
-  type 'a super = 'a Js.t constraint 'a = [< `Range | `Abstract_range ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Range | `Abstract_range ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Range} [Range]} \
      interface or any base interface that it inherits."]
 
-  val of_any : Js.any -> 'a super
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> 'a super
+  val to_any : t -> Jx.any
   val make : unit -> 'a super
 
   val common_ancestor_container : t -> 'a Node.super
@@ -3644,17 +3646,17 @@ and Range : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Range/intersectsNode} \
      [intersectsNode] on MDN}."]
 end = struct
-  type t = [ `Range ] Js.t
+  type t = [ `Range ] Jx.obj
 
-  type 'a super = 'a Js.t constraint 'a = [< `Range | `Abstract_range ]
+  type 'a super = 'a Jx.obj constraint 'a = [< `Range | `Abstract_range ]
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Range} [Range]} \
      interface or any base interface that it inherits."]
 
-  let t = Js.raw "Range"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Range"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let to_abstract_range this = Js.magic this
   let make () = Js.obj_new t [||]
 
@@ -3748,14 +3750,14 @@ end
    MDN}."]
 
 and Node_iterator : sig
-  type t = [ `Node_iterator ] Js.t
+  type t = [ `Node_iterator ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator} \
      [NodeIterator]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val root : t -> 'a Node.super
   [@@ocaml.doc
@@ -3805,11 +3807,11 @@ and Node_iterator : sig
      https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator/detach} \
      [detach] on MDN}."]
 end = struct
-  type t = [ `Node_iterator ] Js.t
+  type t = [ `Node_iterator ] Jx.obj
 
-  let t = Js.raw "NodeIterator"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "NodeIterator"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let root this = Node.of_any (Js.get this "root")
   let reference_node this = Node.of_any (Js.get this "referenceNode")
 
@@ -3835,14 +3837,14 @@ end
    [NodeIterator] on MDN}."]
 
 and Tree_walker : sig
-  type t = [ `Tree_walker ] Js.t
+  type t = [ `Tree_walker ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker} \
      [TreeWalker]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val root : t -> 'a Node.super
   [@@ocaml.doc
@@ -3915,11 +3917,11 @@ and Tree_walker : sig
      https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker/nextNode} \
      [nextNode] on MDN}."]
 end = struct
-  type t = [ `Tree_walker ] Js.t
+  type t = [ `Tree_walker ] Jx.obj
 
-  let t = Js.raw "TreeWalker"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "TreeWalker"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let root this = Node.of_any (Js.get this "root")
   let what_to_show this = Js.Any.to_int (Js.get this "whatToShow")
 
@@ -3960,8 +3962,8 @@ end
 and Node_filter : sig
   type t = Node.t -> int
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val show_notation : int
   val show_document_fragment : int
   val show_document_type : int
@@ -4008,14 +4010,14 @@ end = struct
 end
 
 and Dom_token_list : sig
-  type t = [ `Dom_token_list ] Js.t
+  type t = [ `Dom_token_list ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList} \
      [DOMTokenList]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val length : t -> int
   [@@ocaml.doc
@@ -4083,11 +4085,11 @@ and Dom_token_list : sig
      https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value} \
      [value] on MDN}."]
 end = struct
-  type t = [ `Dom_token_list ] Js.t
+  type t = [ `Dom_token_list ] Jx.obj
 
-  let t = Js.raw "DOMTokenList"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "DOMTokenList"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let length this = Js.Any.to_int (Js.get this "length")
 
   let item ~index this =
@@ -4130,14 +4132,14 @@ end
    [DOMTokenList] on MDN}."]
 
 and X_path_result : sig
-  type t = [ `X_path_result ] Js.t
+  type t = [ `X_path_result ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XPathResult} \
      [XPathResult]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val any_type : int
   val number_type : int
   val string_type : int
@@ -4203,11 +4205,11 @@ and X_path_result : sig
      https://developer.mozilla.org/en-US/docs/Web/API/XPathResult/snapshotItem} \
      [snapshotItem] on MDN}."]
 end = struct
-  type t = [ `X_path_result ] Js.t
+  type t = [ `X_path_result ] Jx.obj
 
-  let t = Js.raw "XPathResult"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "XPathResult"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let any_type = 0
   let number_type = 1
   let string_type = 2
@@ -4245,14 +4247,14 @@ end
    [XPathResult] on MDN}."]
 
 and X_path_expression : sig
-  type t = [ `X_path_expression ] Js.t
+  type t = [ `X_path_expression ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XPathExpression} \
      [XPathExpression]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val evaluate :
     context_node:Node.t ->
@@ -4265,11 +4267,11 @@ and X_path_expression : sig
      https://developer.mozilla.org/en-US/docs/Web/API/XPathExpression/evaluate} \
      [evaluate] on MDN}."]
 end = struct
-  type t = [ `X_path_expression ] Js.t
+  type t = [ `X_path_expression ] Jx.obj
 
-  let t = Js.raw "XPathExpression"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "XPathExpression"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let evaluate ~context_node ?type' ?result this =
     let context_node = Node.to_any context_node in
@@ -4290,8 +4292,8 @@ end
 and X_path_ns_resolver : sig
   type t = string option -> string option
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end = struct
   type t = string option -> string option
 
@@ -4306,21 +4308,21 @@ end = struct
 end
 
 and X_path_evaluator : sig
-  type t = [ `X_path_evaluator ] Js.t
+  type t = [ `X_path_evaluator ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XPathEvaluator} \
      [XPathEvaluator]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
 end = struct
-  type t = [ `X_path_evaluator ] Js.t
+  type t = [ `X_path_evaluator ] Jx.obj
 
-  let t = Js.raw "XPathEvaluator"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "XPathEvaluator"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let make () = Js.obj_new t [||]
 end
 [@@ocaml.doc
@@ -4328,14 +4330,14 @@ end
    [XPathEvaluator] on MDN}."]
 
 and Xslt_processor : sig
-  type t = [ `Xslt_processor ] Js.t
+  type t = [ `Xslt_processor ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XSLTProcessor} \
      [XSLTProcessor]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
 
   val import_stylesheet : style:Node.t -> t -> unit
@@ -4358,13 +4360,13 @@ and Xslt_processor : sig
      [transformToDocument] on MDN}."]
 
   val set_parameter :
-    namespace_uri:string -> local_name:string -> value:Js.any -> t -> unit
+    namespace_uri:string -> local_name:string -> value:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XSLTProcessor/setParameter} \
      [setParameter] on MDN}."]
 
-  val get_parameter : namespace_uri:string -> local_name:string -> t -> Js.any
+  val get_parameter : namespace_uri:string -> local_name:string -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/XSLTProcessor/getParameter} \
@@ -4388,11 +4390,11 @@ and Xslt_processor : sig
      https://developer.mozilla.org/en-US/docs/Web/API/XSLTProcessor/reset} \
      [reset] on MDN}."]
 end = struct
-  type t = [ `Xslt_processor ] Js.t
+  type t = [ `Xslt_processor ] Jx.obj
 
-  let t = Js.raw "XSLTProcessor"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "XSLTProcessor"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
   let make () = Js.obj_new t [||]
 
   let import_stylesheet ~style this =
@@ -4412,14 +4414,14 @@ end = struct
   let set_parameter ~namespace_uri ~local_name ~value this =
     let namespace_uri = Js.Any.of_string namespace_uri in
     let local_name = Js.Any.of_string local_name in
-    let value = Js.of_any value in
+    let value = D_jx.obj value in
     Js.to_unit
       (Js.meth_call this "setParameter" [| namespace_uri; local_name; value |])
 
   let get_parameter ~namespace_uri ~local_name this =
     let namespace_uri = Js.Any.of_string namespace_uri in
     let local_name = Js.Any.of_string local_name in
-    Js.to_any (Js.meth_call this "getParameter" [| namespace_uri; local_name |])
+    E_jx.obj (Js.meth_call this "getParameter" [| namespace_uri; local_name |])
 
   let remove_parameter ~namespace_uri ~local_name this =
     let namespace_uri = Js.Any.of_string namespace_uri in

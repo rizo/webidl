@@ -1,6 +1,0 @@
-(library
-  (name js)
-  (public_name stdweb.js)
-  (modules Js)
-  (modes byte)
-  (libraries js_of_ocaml-compiler.runtime))

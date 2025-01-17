@@ -1,12 +1,17 @@
+open struct
+  module E_jx = Jx.Encode
+  module D_jx = Jx.Decode
+end
+
 module rec Window : sig
-  type t = [ `Window ] Js.t
+  type t = [ `Window ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Window} [Window]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val decode_uri : encoded_uri:string -> unit -> string
   [@@ocaml.doc
@@ -42,63 +47,62 @@ module rec Window : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Window/unescape} \
      [unescape] on MDN}."]
 
-  val eval : value:string -> unit -> Js.object'
+  val eval : value:string -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Window/eval} \
      [eval] on MDN}."]
 end = struct
-  type t = [ `Window ] Js.t
+  type t = [ `Window ] Jx.obj
 
-  let t = Js.raw "Window"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Window"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let decode_uri ~encoded_uri () =
-    let encoded_uri = Js.any (Js.of_string encoded_uri) in
-    Js.to_string (Js.meth_call t "decodeURI" [| encoded_uri |])
+    let encoded_uri = E_jx.string encoded_uri in
+    D_jx.string (D_jx.meth t "decodeURI" [| encoded_uri |])
 
   let decode_uri_component ~encoded_uri_component () =
-    let encoded_uri_component = Js.Any.of_string encoded_uri_component in
-    Js.Any.to_string
-      (Js.meth_call t "decodeURIComponent" [| encoded_uri_component |])
+    let encoded_uri_component = E_jx.string encoded_uri_component in
+    D_jx.string (D_jx.meth t "decodeURIComponent" [| encoded_uri_component |])
 
   let encode_uri ~uri () =
-    let uri = Js.Any.of_string uri in
-    Js.Any.to_string (Js.meth_call t "encodeURI" [| uri |])
+    let uri = E_jx.string uri in
+    D_jx.string (D_jx.meth t "encodeURI" [| uri |])
 
   let encode_uri_component ~uri_component () =
-    let uri_component = Js.Any.of_string uri_component in
-    Js.Any.to_string (Js.meth_call t "encodeURIComponent" [| uri_component |])
+    let uri_component = E_jx.string uri_component in
+    D_jx.string (D_jx.meth t "encodeURIComponent" [| uri_component |])
 
   let escape ~value () =
-    let value = Js.Any.of_string value in
-    Js.Any.to_string (Js.meth_call t "escape" [| value |])
+    let value = E_jx.string value in
+    D_jx.string (D_jx.meth t "escape" [| value |])
 
   let unescape ~value () =
-    let value = Js.Any.of_string value in
-    Js.Any.to_string (Js.meth_call t "unescape" [| value |])
+    let value = E_jx.string value in
+    D_jx.string (D_jx.meth t "unescape" [| value |])
 
   let eval ~value () =
-    let value = Js.Any.of_string value in
-    Js.of_any (Js.meth_call t "eval" [| value |])
+    let value = E_jx.string value in
+    D_jx.meth t "eval" [| value |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Window} [Window] \
    on MDN}."]
 
 and Getter : sig
-  type t = Js.any
+  type t = Jx.any
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Getter
 
 and Setter : sig
-  type t = Js.any -> unit
+  type t = Jx.any -> unit
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end =
   Setter
 
@@ -108,39 +112,32 @@ and Property_descriptor : sig
   val make :
     ?configurable:bool ->
     ?enumerable:bool ->
-    ?value:Js.any ->
+    ?value:Jx.any ->
     ?writable:bool option ->
     ?get:Getter.t option ->
     ?set:Setter.t option ->
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val configurable : t -> bool option
   val enumerable : t -> bool option
-  val value : t -> Js.any option
+  val value : t -> Jx.any option
   val writable : t -> bool option option
   val get : t -> Getter.t option option
   val set : t -> Setter.t option option
 end = struct
-  type t = Js.object'
+  type t = Jx.any
 
   let make ?configurable ?enumerable ?value ?writable ?get ?set () =
-    let configurable = Js.any ((Js.nullable_of_option Js.any) configurable) in
-    let enumerable = Js.any ((Js.nullable_of_option Js.any) enumerable) in
-    let value = Js.any ((Js.nullable_of_option Js.any) value) in
-    let writable =
-      (Js.Any.nullable_of_option (Js.Any.nullable_of_option Js.Any.of_bool))
-        writable
-    in
-    let get =
-      (Js.Any.nullable_of_option (Js.Any.nullable_of_option Getter.to_any)) get
-    in
-    let set =
-      (Js.Any.nullable_of_option (Js.Any.nullable_of_option Setter.to_any)) set
-    in
-    Js.obj
+    let configurable = (E_jx.nullable E_jx.bool) configurable in
+    let enumerable = (E_jx.nullable E_jx.bool) enumerable in
+    let value = (E_jx.nullable E_jx.obj) value in
+    let writable = (E_jx.nullable (E_jx.nullable E_jx.bool)) writable in
+    let get = (E_jx.nullable (E_jx.nullable Getter.to_any)) get in
+    let set = (E_jx.nullable (E_jx.nullable Setter.to_any)) set in
+    Jx.obj
       [|
         ("configurable", configurable);
         ("enumerable", enumerable);
@@ -150,53 +147,48 @@ end = struct
         ("set", set);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let configurable this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "configurable")
+    (D_jx.nullable D_jx.bool) (Js_ffi.get this "configurable")
 
-  let enumerable this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "enumerable")
-
-  let value this = (Js.Any.nullable_to_option Js.to_any) (Js.get this "value")
+  let enumerable this = (D_jx.nullable D_jx.bool) (Js_ffi.get this "enumerable")
+  let value this = (D_jx.nullable D_jx.obj) (Js_ffi.get this "value")
 
   let writable this =
-    (Js.Any.nullable_to_option (Js.Any.nullable_to_option Js.Any.to_bool))
-      (Js.get this "writable")
+    (D_jx.nullable (D_jx.nullable D_jx.bool)) (Js_ffi.get this "writable")
 
   let get this =
-    (Js.Any.nullable_to_option (Js.Any.nullable_to_option Getter.of_any))
-      (Js.get this "get")
+    (D_jx.nullable (D_jx.nullable Getter.of_any)) (Js_ffi.get this "get")
 
   let set this =
-    (Js.Any.nullable_to_option (Js.Any.nullable_to_option Setter.of_any))
-      (Js.get this "set")
+    (D_jx.nullable (D_jx.nullable Setter.of_any)) (Js_ffi.get this "set")
 end
 
 and Object : sig
-  type t = [ `Object ] Js.t
+  type t = [ `Object ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object} [Object]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : ?value:Js.any -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : ?value:Jx.any -> unit -> t
 
   val assign : target:t -> sources:t array -> unit -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object/assign} \
      [assign] on MDN}."]
 
-  val create : proto:t -> ?props:Property_descriptor.t Js.dict -> unit -> t
+  val create : proto:t -> ?props:Property_descriptor.t Jx.dict -> unit -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object/create} \
      [create] on MDN}."]
 
   val define_properties :
-    obj:t -> props:Property_descriptor.t Js.dict -> unit -> unit
+    obj:t -> props:Property_descriptor.t Jx.dict -> unit -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object/defineProperties} \
@@ -204,7 +196,7 @@ and Object : sig
 
   val define_property :
     obj:t ->
-    prop:[< `String | `Symbol ] Js.t ->
+    prop:[< `String | `Symbol ] Jx.obj ->
     descriptor:Property_descriptor.t ->
     unit ->
     unit
@@ -231,7 +223,7 @@ and Object : sig
 
   val get_own_property_descriptor :
     obj:t ->
-    prop:[< `String | `Symbol ] Js.t ->
+    prop:[< `String | `Symbol ] Jx.obj ->
     unit ->
     Property_descriptor.t option
   [@@ocaml.doc
@@ -252,7 +244,7 @@ and Object : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Object/getOwnPropertyNames} \
      [getOwnPropertyNames] on MDN}."]
 
-  val get_own_property_symbols : obj:t -> unit -> Js.symbol array
+  val get_own_property_symbols : obj:t -> unit -> [ `Symbol ] Jx.obj array
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object/getOwnPropertySymbols} \
@@ -296,23 +288,23 @@ and Object : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Object/preventExtensions} \
      [preventExtensions] on MDN}."]
 
-  val seal : obj:Js.object' -> unit -> unit
+  val seal : obj:Jx.any -> unit -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object/seal} \
      [seal] on MDN}."]
 
-  val set_prototype_of : obj:t -> prototype:Js.object' -> unit -> unit
+  val set_prototype_of : obj:t -> prototype:Jx.any -> unit -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object/setPrototypeOf} \
      [setPrototypeOf] on MDN}."]
 
-  val values : obj:t -> unit -> Js.any array
+  val values : obj:t -> unit -> Jx.any array
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object/values} \
      [values] on MDN}."]
 
-  val has_own_property : prop:[< `Symbol | `String ] Js.t -> t -> bool
+  val has_own_property : prop:[< `Symbol | `String ] Jx.obj -> t -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object/hasOwnProperty} \
@@ -331,7 +323,7 @@ and Object : sig
      [propertyIsEnumerable] on MDN}."]
 
   val to_locale_string :
-    locales:[< `String | `Sequence ] Js.t -> ?options:Js.any -> t -> string
+    locales:[< `String | `Sequence ] Jx.obj -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Object/toLocaleString} \
@@ -347,160 +339,156 @@ and Object : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Object ] Js.t
+  type t = [ `Object ] Jx.obj
 
-  let t = Js.raw "Object"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Object"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?value () =
-    let value = (Js.Any.undefined_of_option Js.of_any) value in
-    Js.obj_new t [| value |]
+    let value = (E_jx.undefined E_jx.obj) value in
+    Jx.obj_new t [| value |]
 
   let assign ~target ~sources () =
     let target = to_any target in
-    let sources = (Js.Any.of_array to_any) sources in
-    of_any (Js.meth_call t "assign" [| target; sources |])
+    let sources = (E_jx.array to_any) sources in
+    of_any (D_jx.meth t "assign" [| target; sources |])
 
   let create ~proto ?props () =
     let proto = to_any proto in
-    let props = Js.any ((Js.undefined_of_option Js.any) props) in
-    of_any (Js.meth_call t "create" [| proto; props |])
+    let props = (E_jx.undefined (E_jx.dict Property_descriptor.to_any)) props in
+    of_any (D_jx.meth t "create" [| proto; props |])
 
   let define_properties ~obj ~props () =
     let obj = to_any obj in
-    let props = Js.any props in
-    Js.to_unit (Js.meth_call t "defineProperties" [| obj; props |])
+    let props = E_jx.dict Property_descriptor.to_any props in
+    D_jx.unit (D_jx.meth t "defineProperties" [| obj; props |])
 
   let define_property ~obj ~prop ~descriptor () =
     let obj = to_any obj in
-    let prop = Js.to_any prop in
+    let prop = E_jx.obj prop in
     let descriptor = Property_descriptor.to_any descriptor in
-    Js.to_unit (Js.meth_call t "defineProperty" [| obj; prop; descriptor |])
+    D_jx.unit (D_jx.meth t "defineProperty" [| obj; prop; descriptor |])
 
   let entries ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array (Js.Any.to_array of_any))
-      (Js.meth_call t "entries" [| obj |])
+    (D_jx.array (D_jx.array of_any)) (D_jx.meth t "entries" [| obj |])
 
   let freeze ~obj () =
     let obj = to_any obj in
-    Js.to_unit (Js.meth_call t "freeze" [| obj |])
+    D_jx.unit (D_jx.meth t "freeze" [| obj |])
 
   let from_entries ~iterable () =
-    let iterable = (Js.Any.of_array (Js.Any.of_array to_any)) iterable in
-    of_any (Js.meth_call t "fromEntries" [| iterable |])
+    let iterable = (E_jx.array (E_jx.array to_any)) iterable in
+    of_any (D_jx.meth t "fromEntries" [| iterable |])
 
   let get_own_property_descriptor ~obj ~prop () =
     let obj = to_any obj in
-    let prop = Js.to_any prop in
-    (Js.Any.nullable_to_option Property_descriptor.of_any)
-      (Js.meth_call t "getOwnPropertyDescriptor" [| obj; prop |])
+    let prop = E_jx.obj prop in
+    (D_jx.nullable Property_descriptor.of_any)
+      (D_jx.meth t "getOwnPropertyDescriptor" [| obj; prop |])
 
   let get_own_property_descriptors ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array Property_descriptor.of_any)
-      (Js.meth_call t "getOwnPropertyDescriptors" [| obj |])
+    (D_jx.array Property_descriptor.of_any)
+      (D_jx.meth t "getOwnPropertyDescriptors" [| obj |])
 
   let get_own_property_names ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array Js.Any.to_string)
-      (Js.meth_call t "getOwnPropertyNames" [| obj |])
+    (D_jx.array D_jx.string) (D_jx.meth t "getOwnPropertyNames" [| obj |])
 
   let get_own_property_symbols ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array Js.of_any)
-      (Js.meth_call t "getOwnPropertySymbols" [| obj |])
+    (D_jx.array D_jx.obj) (D_jx.meth t "getOwnPropertySymbols" [| obj |])
 
   let get_prototype_of ~obj () =
     let obj = to_any obj in
-    (Js.Any.nullable_to_option of_any)
-      (Js.meth_call t "getPrototypeOf" [| obj |])
+    (D_jx.nullable of_any) (D_jx.meth t "getPrototypeOf" [| obj |])
 
   let is ~value1 ~value2 () =
     let value1 = to_any value1 in
     let value2 = to_any value2 in
-    Js.Any.to_bool (Js.meth_call t "is" [| value1; value2 |])
+    D_jx.bool (D_jx.meth t "is" [| value1; value2 |])
 
   let is_extensible ~obj () =
     let obj = to_any obj in
-    Js.Any.to_bool (Js.meth_call t "isExtensible" [| obj |])
+    D_jx.bool (D_jx.meth t "isExtensible" [| obj |])
 
   let is_frozen ~obj () =
     let obj = to_any obj in
-    Js.Any.to_bool (Js.meth_call t "isFrozen" [| obj |])
+    D_jx.bool (D_jx.meth t "isFrozen" [| obj |])
 
   let is_sealed ~obj () =
     let obj = to_any obj in
-    Js.Any.to_bool (Js.meth_call t "isSealed" [| obj |])
+    D_jx.bool (D_jx.meth t "isSealed" [| obj |])
 
   let keys ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array Js.Any.to_string) (Js.meth_call t "keys" [| obj |])
+    (D_jx.array D_jx.string) (D_jx.meth t "keys" [| obj |])
 
   let prevent_extensions ~obj () =
     let obj = to_any obj in
-    Js.to_unit (Js.meth_call t "preventExtensions" [| obj |])
+    D_jx.unit (D_jx.meth t "preventExtensions" [| obj |])
 
   let seal ~obj () =
-    let obj = Js.to_any obj in
-    Js.to_unit (Js.meth_call t "seal" [| obj |])
+    let obj = E_jx.obj obj in
+    D_jx.unit (D_jx.meth t "seal" [| obj |])
 
   let set_prototype_of ~obj ~prototype () =
     let obj = to_any obj in
-    let prototype = Js.to_any prototype in
-    Js.to_unit (Js.meth_call t "setPrototypeOf" [| obj; prototype |])
+    let prototype = E_jx.obj prototype in
+    D_jx.unit (D_jx.meth t "setPrototypeOf" [| obj; prototype |])
 
   let values ~obj () =
     let obj = to_any obj in
-    (Js.Any.to_array Js.to_any) (Js.meth_call t "values" [| obj |])
+    (D_jx.array D_jx.obj) (D_jx.meth t "values" [| obj |])
 
   let has_own_property ~prop this =
-    let prop = Js.to_any prop in
-    Js.Any.to_bool (Js.meth_call this "hasOwnProperty" [| prop |])
+    let prop = E_jx.obj prop in
+    D_jx.bool (D_jx.meth this "hasOwnProperty" [| prop |])
 
   let is_prototype_of ~obj this =
     let obj = to_any obj in
-    Js.Any.to_bool (Js.meth_call this "isPrototypeOf" [| obj |])
+    D_jx.bool (D_jx.meth this "isPrototypeOf" [| obj |])
 
   let property_is_enumerable ~prop this =
-    let prop = Js.Any.of_string prop in
-    Js.Any.to_bool (Js.meth_call this "propertyIsEnumerable" [| prop |])
+    let prop = E_jx.string prop in
+    D_jx.bool (D_jx.meth this "propertyIsEnumerable" [| prop |])
 
   let to_locale_string ~locales ?options this =
-    let locales = Js.to_any locales in
-    let options = (Js.Any.undefined_of_option Js.of_any) options in
-    Js.Any.to_string (Js.meth_call this "toLocaleString" [| locales; options |])
+    let locales = E_jx.obj locales in
+    let options = (E_jx.undefined E_jx.obj) options in
+    D_jx.string (D_jx.meth this "toLocaleString" [| locales; options |])
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let value_of this = of_any (Js.meth_call this "valueOf" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let value_of this = of_any (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Object} [Object] \
    on MDN}."]
 
 and Function : sig
-  type t = [ `Function ] Js.t
+  type t = [ `Function ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Function} [Function]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val with_params_and_body : params:string array -> body:string -> unit -> t
 
-  val apply : this_arg:t -> arg_array:Js.any array -> t -> Js.any
+  val apply : this_arg:t -> arg_array:Jx.any array -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Function/apply} \
      [apply] on MDN}."]
 
-  val bind : this_arg:t -> args:Js.any array -> t -> t
+  val bind : this_arg:t -> args:Jx.any array -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Function/bind} \
      [bind] on MDN}."]
 
-  val call : this_arg:t -> args:Js.any array -> t -> Js.any
+  val call : this_arg:t -> args:Jx.any array -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Function/call} \
      [call] on MDN}."]
@@ -521,49 +509,49 @@ and Function : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Function/name} \
      [name] on MDN}."]
 end = struct
-  type t = [ `Function ] Js.t
+  type t = [ `Function ] Jx.obj
 
-  let t = Js.raw "Function"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Function"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let with_params_and_body ~params ~body () =
-    let params = (Js.Any.of_array Js.Any.of_string) params in
-    let body = Js.Any.of_string body in
-    Js.obj_new t [| params; body |]
+    let params = (E_jx.array E_jx.string) params in
+    let body = E_jx.string body in
+    Jx.obj_new t [| params; body |]
 
   let apply ~this_arg ~arg_array this =
     let this_arg = to_any this_arg in
-    let arg_array = (Js.Any.of_array Js.of_any) arg_array in
-    Js.to_any (Js.meth_call this "apply" [| this_arg; arg_array |])
+    let arg_array = (E_jx.array Js.of_any) arg_array in
+    Js_ffi.to_any (D_jx.meth this "apply" [| this_arg; arg_array |])
 
   let bind ~this_arg ~args this =
     let this_arg = to_any this_arg in
-    let args = (Js.Any.of_array Js.of_any) args in
-    of_any (Js.meth_call this "bind" [| this_arg; args |])
+    let args = (E_jx.array Js.of_any) args in
+    of_any (D_jx.meth this "bind" [| this_arg; args |])
 
   let call ~this_arg ~args this =
     let this_arg = to_any this_arg in
-    let args = (Js.Any.of_array Js.of_any) args in
-    Js.to_any (Js.meth_call this "call" [| this_arg; args |])
+    let args = (E_jx.array Js.of_any) args in
+    Js_ffi.to_any (D_jx.meth this "call" [| this_arg; args |])
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let length this = Js.Any.to_int (Js.get this "length")
-  let name this = Js.Any.to_string (Js.get this "name")
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let length this = D_jx.int (Js_ffi.get this "length")
+  let name this = D_jx.string (Js_ffi.get this "name")
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Function} \
    [Function] on MDN}."]
 
 and Boolean : sig
-  type t = [ `Boolean ] Js.t
+  type t = [ `Boolean ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Boolean} [Boolean]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : ?value:bool -> unit -> t
 
   val to_string : t -> string
@@ -577,32 +565,32 @@ and Boolean : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Boolean/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Boolean ] Js.t
+  type t = [ `Boolean ] Jx.obj
 
-  let t = Js.raw "Boolean"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Boolean"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?value () =
-    let value = (Js.Any.undefined_of_option Js.Any.of_bool) value in
-    Js.obj_new t [| value |]
+    let value = (E_jx.undefined E_jx.bool) value in
+    Jx.obj_new t [| value |]
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let value_of this = Js.Any.to_bool (Js.meth_call this "valueOf" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let value_of this = D_jx.bool (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Boolean} [Boolean] \
    on MDN}."]
 
 and Symbol : sig
-  type t = [ `Symbol ] Js.t
+  type t = [ `Symbol ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Symbol} [Symbol]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : ?description:string -> unit -> t
 
   val for' : key:string -> unit -> t
@@ -657,7 +645,7 @@ and Symbol : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Symbol/split} \
      [split] on MDN}."]
 
-  val to_primitive : Js.object'
+  val to_primitive : Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Symbol/toPrimitive} \
@@ -669,7 +657,7 @@ and Symbol : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Symbol/toStringTag} \
      [toStringTag] on MDN}."]
 
-  val unscopables : Js.object'
+  val unscopables : Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Symbol/unscopables} \
@@ -680,77 +668,75 @@ and Symbol : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Symbol/toString} \
      [toString] on MDN}."]
 
-  val value_of : t -> Js.object'
+  val value_of : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Symbol/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Symbol ] Js.t
+  type t = [ `Symbol ] Jx.obj
 
-  let t = Js.raw "Symbol"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Symbol"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?description () =
-    let description =
-      (Js.Any.undefined_of_option Js.Any.of_string) description
-    in
-    Js.obj_new t [| description |]
+    let description = (E_jx.undefined E_jx.string) description in
+    Jx.obj_new t [| description |]
 
   let for' ~key () =
-    let key = Js.Any.of_string key in
-    of_any (Js.meth_call t "for" [| key |])
+    let key = E_jx.string key in
+    of_any (D_jx.meth t "for" [| key |])
 
   let key_for ~sym () =
-    let sym = Js.Any.of_string sym in
-    Js.Any.to_string (Js.meth_call t "keyFor" [| sym |])
+    let sym = E_jx.string sym in
+    D_jx.string (D_jx.meth t "keyFor" [| sym |])
 
-  let has_instance = Js.Any.to_bool (Js.get t "hasInstance")
-  let is_concat_spreadable = Js.Any.to_bool (Js.get t "isConcatSpreadable")
-  let iterator = (Js.Any.to_array of_any) (Js.get t "iterator")
-  let match' = (Js.Any.to_array Js.Any.to_string) (Js.get t "match")
-  let replace = Js.Any.to_string (Js.get t "replace")
-  let search = Js.Any.to_int (Js.get t "search")
-  let species = Function.of_any (Js.get t "species")
-  let split = (Js.Any.to_array Js.Any.to_string) (Js.get t "split")
-  let to_primitive = Js.of_any (Js.get t "toPrimitive")
-  let to_string_tag = Js.Any.to_string (Js.get t "toStringTag")
-  let unscopables = Js.of_any (Js.get t "unscopables")
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let value_of this = Js.of_any (Js.meth_call this "valueOf" [||])
+  let has_instance = D_jx.bool (Js_ffi.get t "hasInstance")
+  let is_concat_spreadable = D_jx.bool (Js_ffi.get t "isConcatSpreadable")
+  let iterator = (D_jx.array of_any) (Js_ffi.get t "iterator")
+  let match' = (D_jx.array D_jx.string) (Js_ffi.get t "match")
+  let replace = D_jx.string (Js_ffi.get t "replace")
+  let search = D_jx.int (Js_ffi.get t "search")
+  let species = Function.of_any (Js_ffi.get t "species")
+  let split = (D_jx.array D_jx.string) (Js_ffi.get t "split")
+  let to_primitive = Js.of_any (Js_ffi.get t "toPrimitive")
+  let to_string_tag = D_jx.string (Js_ffi.get t "toStringTag")
+  let unscopables = Js.of_any (Js_ffi.get t "unscopables")
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let value_of this = Js.of_any (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Symbol} [Symbol] \
    on MDN}."]
 
 and Number : sig
-  type t = [ `Number ] Js.t
+  type t = [ `Number ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Number} [Number]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : ?value:int -> unit -> t
 
-  val is_finite : number:Js.any -> unit -> bool
+  val is_finite : number:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Number/isFinite} \
      [isFinite] on MDN}."]
 
-  val is_integer : number:Js.any -> unit -> bool
+  val is_integer : number:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Number/isInteger} \
      [isInteger] on MDN}."]
 
-  val is_na_n : number:Js.any -> unit -> bool
+  val is_na_n : number:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Number/isNaN} \
      [isNaN] on MDN}."]
 
-  val is_safe_integer : number:Js.any -> unit -> bool
+  val is_safe_integer : number:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Number/isSafeInteger} \
@@ -788,7 +774,7 @@ and Number : sig
      [toFixed] on MDN}."]
 
   val to_locale_string :
-    locales:[< `String | `Sequence ] Js.t -> ?options:Js.any -> t -> string
+    locales:[< `String | `Sequence ] Jx.obj -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Number/toLocaleString} \
@@ -805,45 +791,45 @@ and Number : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Number/toString} \
      [toString] on MDN}."]
 
-  val value_of : t -> Js.object'
+  val value_of : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Number/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Number ] Js.t
+  type t = [ `Number ] Jx.obj
 
-  let t = Js.raw "Number"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Number"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?value () =
-    let value = (Js.Any.undefined_of_option Js.Any.of_int) value in
-    Js.obj_new t [| value |]
+    let value = (E_jx.undefined E_jx.int) value in
+    Jx.obj_new t [| value |]
 
   let is_finite ~number () =
     let number = Js.of_any number in
-    Js.Any.to_bool (Js.meth_call t "isFinite" [| number |])
+    D_jx.bool (D_jx.meth t "isFinite" [| number |])
 
   let is_integer ~number () =
     let number = Js.of_any number in
-    Js.Any.to_bool (Js.meth_call t "isInteger" [| number |])
+    D_jx.bool (D_jx.meth t "isInteger" [| number |])
 
   let is_na_n ~number () =
     let number = Js.of_any number in
-    Js.Any.to_bool (Js.meth_call t "isNaN" [| number |])
+    D_jx.bool (D_jx.meth t "isNaN" [| number |])
 
   let is_safe_integer ~number () =
     let number = Js.of_any number in
-    Js.Any.to_bool (Js.meth_call t "isSafeInteger" [| number |])
+    D_jx.bool (D_jx.meth t "isSafeInteger" [| number |])
 
   let parse_float ~str () =
-    let str = Js.Any.of_string str in
-    Js.Any.to_float (Js.meth_call t "parseFloat" [| str |])
+    let str = E_jx.string str in
+    D_jx.float (D_jx.meth t "parseFloat" [| str |])
 
   let parse_int ~str ~radix () =
-    let str = Js.Any.of_string str in
-    let radix = Js.Any.of_int radix in
-    Js.Any.to_int (Js.meth_call t "parseInt" [| str; radix |])
+    let str = E_jx.string str in
+    let radix = E_jx.int radix in
+    D_jx.int (D_jx.meth t "parseInt" [| str; radix |])
 
   let epsilon = 2.22044604925e-16
   let max_safe_integer = 9007199254740991
@@ -855,42 +841,42 @@ end = struct
   let positive_infinity = infinity
 
   let to_exponential ~fraction_digits this =
-    let fraction_digits = Js.Any.of_int fraction_digits in
-    Js.Any.to_string (Js.meth_call this "toExponential" [| fraction_digits |])
+    let fraction_digits = E_jx.int fraction_digits in
+    D_jx.string (D_jx.meth this "toExponential" [| fraction_digits |])
 
   let to_fixed ~fraction_digits this =
-    let fraction_digits = Js.Any.of_int fraction_digits in
-    Js.Any.to_string (Js.meth_call this "toFixed" [| fraction_digits |])
+    let fraction_digits = E_jx.int fraction_digits in
+    D_jx.string (D_jx.meth this "toFixed" [| fraction_digits |])
 
   let to_locale_string ~locales ?options this =
-    let locales = Js.to_any locales in
-    let options = (Js.Any.undefined_of_option Js.of_any) options in
-    Js.Any.to_string (Js.meth_call this "toLocaleString" [| locales; options |])
+    let locales = Js_ffi.to_any locales in
+    let options = (E_jx.undefined Js.of_any) options in
+    D_jx.string (D_jx.meth this "toLocaleString" [| locales; options |])
 
   let to_precision ~precision this =
-    let precision = Js.Any.of_int precision in
-    Js.Any.to_string (Js.meth_call this "toPrecision" [| precision |])
+    let precision = E_jx.int precision in
+    D_jx.string (D_jx.meth this "toPrecision" [| precision |])
 
   let to_string ~radix this =
-    let radix = Js.Any.of_int radix in
-    Js.Any.to_string (Js.meth_call this "toString" [| radix |])
+    let radix = E_jx.int radix in
+    D_jx.string (D_jx.meth this "toString" [| radix |])
 
-  let value_of this = Js.of_any (Js.meth_call this "valueOf" [||])
+  let value_of this = Js.of_any (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Number} [Number] \
    on MDN}."]
 
 and Big_int : sig
-  type t = [ `Big_int ] Js.t
+  type t = [ `Big_int ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/BigInt} [BigInt]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : value:[< `String | `Long | `Bool | `Big_int ] Js.t -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : value:[< `String | `Long | `Bool | `Big_int ] Jx.obj -> unit -> t
 
   val as_int_n : bits:int -> bigint:t -> t -> int
   [@@ocaml.doc
@@ -903,7 +889,7 @@ and Big_int : sig
      [asUintN] on MDN}."]
 
   val to_locale_string :
-    locales:[< `String | `Sequence ] Js.t -> ?options:Js.any -> t -> string
+    locales:[< `String | `Sequence ] Jx.obj -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/BigInt/toLocaleString} \
@@ -914,41 +900,41 @@ and Big_int : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/BigInt/toString} \
      [toString] on MDN}."]
 
-  val value_of : t -> Js.object'
+  val value_of : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/BigInt/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Big_int ] Js.t
+  type t = [ `Big_int ] Jx.obj
 
-  let t = Js.raw "BigInt"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "BigInt"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~value () =
-    let value = Js.to_any value in
-    Js.obj_new t [| value |]
+    let value = Js_ffi.to_any value in
+    Jx.obj_new t [| value |]
 
   let as_int_n ~bits ~bigint this =
-    let bits = Js.Any.of_int bits in
+    let bits = E_jx.int bits in
     let bigint = to_any bigint in
-    Js.Any.to_int (Js.meth_call this "asIntN" [| bits; bigint |])
+    D_jx.int (D_jx.meth this "asIntN" [| bits; bigint |])
 
   let as_uint_n ~bits ~bigint this =
-    let bits = Js.Any.of_int bits in
+    let bits = E_jx.int bits in
     let bigint = to_any bigint in
-    Js.Any.to_int (Js.meth_call this "asUintN" [| bits; bigint |])
+    D_jx.int (D_jx.meth this "asUintN" [| bits; bigint |])
 
   let to_locale_string ~locales ?options this =
-    let locales = Js.to_any locales in
-    let options = (Js.Any.undefined_of_option Js.of_any) options in
-    Js.Any.to_string (Js.meth_call this "toLocaleString" [| locales; options |])
+    let locales = Js_ffi.to_any locales in
+    let options = (E_jx.undefined Js.of_any) options in
+    D_jx.string (D_jx.meth this "toLocaleString" [| locales; options |])
 
   let to_string ~radix this =
-    let radix = Js.Any.of_int radix in
-    Js.Any.to_string (Js.meth_call this "toString" [| radix |])
+    let radix = E_jx.int radix in
+    D_jx.string (D_jx.meth this "toString" [| radix |])
 
-  let value_of this = Js.of_any (Js.meth_call this "valueOf" [||])
+  let value_of this = Js.of_any (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/BigInt} [BigInt] \
@@ -1171,173 +1157,173 @@ and Math : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Math/trunc} \
      [trunc] on MDN}."]
 end = struct
-  let t = Js.global "Math"
-  let e = Js.Any.to_float (Js.get t "E")
-  let ln10 = Js.Any.to_float (Js.get t "LN10")
-  let ln2 = Js.Any.to_float (Js.get t "LN2")
-  let log10_e = Js.Any.to_float (Js.get t "LOG10E")
-  let log2_e = Js.Any.to_float (Js.get t "LOG2E")
-  let pi = Js.Any.to_float (Js.get t "PI")
-  let sqrt1_2 = Js.Any.to_float (Js.get t "SQRT1_2")
-  let sqrt2 = Js.Any.to_float (Js.get t "SQRT2")
+  let t = D_jx.obj (Js_ffi.global "Math")
+  let e = D_jx.float (Js_ffi.get t "E")
+  let ln10 = D_jx.float (Js_ffi.get t "LN10")
+  let ln2 = D_jx.float (Js_ffi.get t "LN2")
+  let log10_e = D_jx.float (Js_ffi.get t "LOG10E")
+  let log2_e = D_jx.float (Js_ffi.get t "LOG2E")
+  let pi = D_jx.float (Js_ffi.get t "PI")
+  let sqrt1_2 = D_jx.float (Js_ffi.get t "SQRT1_2")
+  let sqrt2 = D_jx.float (Js_ffi.get t "SQRT2")
 
   let abs ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "abs" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "abs" [| x |])
 
   let acos ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "acos" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "acos" [| x |])
 
   let acosh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "acosh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "acosh" [| x |])
 
   let asin ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "asin" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "asin" [| x |])
 
   let asinh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "asinh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "asinh" [| x |])
 
   let atan ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "atan" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "atan" [| x |])
 
   let atanh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "atanh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "atanh" [| x |])
 
   let atan2 ~y ~x () =
-    let y = Js.Any.of_float y in
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "atan2" [| y; x |])
+    let y = E_jx.float y in
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "atan2" [| y; x |])
 
   let cbrt ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "cbrt" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "cbrt" [| x |])
 
   let ceil ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "ceil" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "ceil" [| x |])
 
   let clz32 ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "clz32" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "clz32" [| x |])
 
   let cos ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "cos" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "cos" [| x |])
 
   let cosh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "cosh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "cosh" [| x |])
 
   let exp ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "exp" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "exp" [| x |])
 
   let expm1 ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "expm1" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "expm1" [| x |])
 
   let floor ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "floor" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "floor" [| x |])
 
   let fround ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "fround" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "fround" [| x |])
 
   let hypot ~value1 ~value2 ~values () =
-    let value1 = Js.Any.of_float value1 in
-    let value2 = Js.Any.of_float value2 in
-    let values = (Js.Any.of_array Js.Any.of_float) values in
-    Js.Any.to_float (Js.meth_call t "hypot" [| value1; value2; values |])
+    let value1 = E_jx.float value1 in
+    let value2 = E_jx.float value2 in
+    let values = (E_jx.array E_jx.float) values in
+    D_jx.float (D_jx.meth t "hypot" [| value1; value2; values |])
 
   let imul ~x ~y () =
-    let x = Js.Any.of_float x in
-    let y = Js.Any.of_float y in
-    Js.Any.to_float (Js.meth_call t "imul" [| x; y |])
+    let x = E_jx.float x in
+    let y = E_jx.float y in
+    D_jx.float (D_jx.meth t "imul" [| x; y |])
 
   let log ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "log" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "log" [| x |])
 
   let log1p ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "log1p" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "log1p" [| x |])
 
   let log10 ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "log10" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "log10" [| x |])
 
   let log2 ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "log2" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "log2" [| x |])
 
   let max ~value1 ~value2 ~values () =
-    let value1 = Js.Any.of_float value1 in
-    let value2 = Js.Any.of_float value2 in
-    let values = (Js.Any.of_array Js.Any.of_float) values in
-    Js.Any.to_float (Js.meth_call t "max" [| value1; value2; values |])
+    let value1 = E_jx.float value1 in
+    let value2 = E_jx.float value2 in
+    let values = (E_jx.array E_jx.float) values in
+    D_jx.float (D_jx.meth t "max" [| value1; value2; values |])
 
   let min ~value1 ~value2 ~values () =
-    let value1 = Js.Any.of_float value1 in
-    let value2 = Js.Any.of_float value2 in
-    let values = (Js.Any.of_array Js.Any.of_float) values in
-    Js.Any.to_float (Js.meth_call t "min" [| value1; value2; values |])
+    let value1 = E_jx.float value1 in
+    let value2 = E_jx.float value2 in
+    let values = (E_jx.array E_jx.float) values in
+    D_jx.float (D_jx.meth t "min" [| value1; value2; values |])
 
   let pow ~x ~y () =
-    let x = Js.Any.of_float x in
-    let y = Js.Any.of_float y in
-    Js.Any.to_float (Js.meth_call t "pow" [| x; y |])
+    let x = E_jx.float x in
+    let y = E_jx.float y in
+    D_jx.float (D_jx.meth t "pow" [| x; y |])
 
-  let random () = Js.Any.to_float (Js.meth_call t "random" [||])
+  let random () = D_jx.float (D_jx.meth t "random" [||])
 
   let round ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "round" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "round" [| x |])
 
   let sign ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "sign" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "sign" [| x |])
 
   let sin ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "sin" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "sin" [| x |])
 
   let sinh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "sinh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "sinh" [| x |])
 
   let sqrt ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "sqrt" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "sqrt" [| x |])
 
   let tan ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "tan" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "tan" [| x |])
 
   let tanh ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "tanh" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "tanh" [| x |])
 
   let trunc ~x () =
-    let x = Js.Any.of_float x in
-    Js.Any.to_float (Js.meth_call t "trunc" [| x |])
+    let x = E_jx.float x in
+    D_jx.float (D_jx.meth t "trunc" [| x |])
 end
 
 and Date : sig
-  type t = [ `Date ] Js.t
+  type t = [ `Date ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Date} [Date]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : ?value:[< `Long | `String | `Date ] Js.t -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : ?value:[< `Long | `String | `Date ] Jx.obj -> unit -> t
 
   val with_year_and_month_and_date_and_hours_and_minutes_and_seconds_and_ms :
     year:int ->
@@ -1416,7 +1402,7 @@ and Date : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Date/getSeconds} \
      [getSeconds] on MDN}."]
 
-  val get_time : t -> Js.object'
+  val get_time : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Date/getTime} \
      [getTime] on MDN}."]
@@ -1573,21 +1559,19 @@ and Date : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Date/toJSON} \
      [toJSON] on MDN}."]
 
-  val to_locale_date_string :
-    ?locales:string -> ?options:Js.object' -> t -> string
+  val to_locale_date_string : ?locales:string -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Date/toLocaleDateString} \
      [toLocaleDateString] on MDN}."]
 
-  val to_locale_string : ?locales:string -> ?options:Js.object' -> t -> string
+  val to_locale_string : ?locales:string -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Date/toLocaleString} \
      [toLocaleString] on MDN}."]
 
-  val to_locale_time_string :
-    ?locales:string -> ?options:Js.object' -> t -> string
+  val to_locale_time_string : ?locales:string -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Date/toLocaleTimeString} \
@@ -1615,206 +1599,185 @@ and Date : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Date/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `Date ] Js.t
+  type t = [ `Date ] Jx.obj
 
-  let t = Js.raw "Date"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = D_jx.obj (Jx.expr "Date")
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?value () =
-    let value = (Js.Any.undefined_of_option Js.to_any) value in
-    Js.obj_new t [| value |]
+    let value = (E_jx.undefined Js_ffi.to_any) value in
+    Jx.obj_new t [| value |]
 
   let with_year_and_month_and_date_and_hours_and_minutes_and_seconds_and_ms
       ~year ~month ?date ?hours ?minutes ?seconds ?ms () =
-    let year = Js.Any.of_int year in
-    let month = Js.Any.of_int month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    let hours = (Js.Any.undefined_of_option Js.Any.of_int) hours in
-    let minutes = (Js.Any.undefined_of_option Js.Any.of_int) minutes in
-    let seconds = (Js.Any.undefined_of_option Js.Any.of_int) seconds in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.obj_new t [| year; month; date; hours; minutes; seconds; ms |]
+    let year = E_jx.int year in
+    let month = E_jx.int month in
+    let date = (E_jx.undefined E_jx.int) date in
+    let hours = (E_jx.undefined E_jx.int) hours in
+    let minutes = (E_jx.undefined E_jx.int) minutes in
+    let seconds = (E_jx.undefined E_jx.int) seconds in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    Jx.obj_new t [| year; month; date; hours; minutes; seconds; ms |]
 
-  let now () = of_any (Js.meth_call t "now" [||])
+  let now () = of_any (D_jx.meth t "now" [||])
 
   let parse ~string () =
-    let string = Js.Any.of_string string in
-    of_any (Js.meth_call t "parse" [| string |])
+    let string = E_jx.string string in
+    of_any (D_jx.meth t "parse" [| string |])
 
   let utc ~year ~month ?date ?hours ?minutes ?seconds ?ms () =
-    let year = Js.Any.of_int year in
-    let month = Js.Any.of_int month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    let hours = (Js.Any.undefined_of_option Js.Any.of_int) hours in
-    let minutes = (Js.Any.undefined_of_option Js.Any.of_int) minutes in
-    let seconds = (Js.Any.undefined_of_option Js.Any.of_int) seconds in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int
-      (Js.meth_call t "UTC" [| year; month; date; hours; minutes; seconds; ms |])
+    let year = E_jx.int year in
+    let month = E_jx.int month in
+    let date = (E_jx.undefined E_jx.int) date in
+    let hours = (E_jx.undefined E_jx.int) hours in
+    let minutes = (E_jx.undefined E_jx.int) minutes in
+    let seconds = (E_jx.undefined E_jx.int) seconds in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int
+      (D_jx.meth t "UTC" [| year; month; date; hours; minutes; seconds; ms |])
 
-  let get_date this = Js.Any.to_int (Js.meth_call this "getDate" [||])
-  let get_day this = Js.Any.to_int (Js.meth_call this "getDay" [||])
-  let get_full_year this = Js.Any.to_int (Js.meth_call this "getFullYear" [||])
-  let get_hours this = Js.Any.to_int (Js.meth_call this "getHours" [||])
-
-  let get_milliseconds this =
-    Js.Any.to_int (Js.meth_call this "getMilliseconds" [||])
-
-  let get_minutes this = Js.Any.to_int (Js.meth_call this "getMinutes" [||])
-  let get_month this = Js.Any.to_int (Js.meth_call this "getMonth" [||])
-  let get_seconds this = Js.Any.to_int (Js.meth_call this "getSeconds" [||])
-  let get_time this = Js.of_any (Js.meth_call this "getTime" [||])
+  let get_date this = D_jx.int (D_jx.meth this "getDate" [||])
+  let get_day this = D_jx.int (D_jx.meth this "getDay" [||])
+  let get_full_year this = D_jx.int (D_jx.meth this "getFullYear" [||])
+  let get_hours this = D_jx.int (D_jx.meth this "getHours" [||])
+  let get_milliseconds this = D_jx.int (D_jx.meth this "getMilliseconds" [||])
+  let get_minutes this = D_jx.int (D_jx.meth this "getMinutes" [||])
+  let get_month this = D_jx.int (D_jx.meth this "getMonth" [||])
+  let get_seconds this = D_jx.int (D_jx.meth this "getSeconds" [||])
+  let get_time this = Js.of_any (D_jx.meth this "getTime" [||])
 
   let get_timezone_offset this =
-    Js.Any.to_int (Js.meth_call this "getTimezoneOffset" [||])
+    D_jx.int (D_jx.meth this "getTimezoneOffset" [||])
 
-  let get_utc_date this = Js.Any.to_int (Js.meth_call this "getUTCDate" [||])
-  let get_utc_day this = Js.Any.to_int (Js.meth_call this "getUTCDay" [||])
-
-  let get_utc_full_year this =
-    Js.Any.to_int (Js.meth_call this "getUTCFullYear" [||])
-
-  let get_utc_hours this = Js.Any.to_int (Js.meth_call this "getUTCHours" [||])
+  let get_utc_date this = D_jx.int (D_jx.meth this "getUTCDate" [||])
+  let get_utc_day this = D_jx.int (D_jx.meth this "getUTCDay" [||])
+  let get_utc_full_year this = D_jx.int (D_jx.meth this "getUTCFullYear" [||])
+  let get_utc_hours this = D_jx.int (D_jx.meth this "getUTCHours" [||])
 
   let get_utc_milliseconds this =
-    Js.Any.to_int (Js.meth_call this "getUTCMilliseconds" [||])
+    D_jx.int (D_jx.meth this "getUTCMilliseconds" [||])
 
-  let get_utc_minutes this =
-    Js.Any.to_int (Js.meth_call this "getUTCMinutes" [||])
-
-  let get_utc_month this = Js.Any.to_int (Js.meth_call this "getUTCMonth" [||])
-
-  let get_utc_seconds this =
-    Js.Any.to_int (Js.meth_call this "getUTCSeconds" [||])
+  let get_utc_minutes this = D_jx.int (D_jx.meth this "getUTCMinutes" [||])
+  let get_utc_month this = D_jx.int (D_jx.meth this "getUTCMonth" [||])
+  let get_utc_seconds this = D_jx.int (D_jx.meth this "getUTCSeconds" [||])
 
   let set_date ~date this =
-    let date = Js.Any.of_int date in
-    Js.Any.to_int (Js.meth_call this "setDate" [| date |])
+    let date = E_jx.int date in
+    D_jx.int (D_jx.meth this "setDate" [| date |])
 
   let set_full_year ~year ?month ?date this =
-    let year = Js.Any.of_int year in
-    let month = (Js.Any.undefined_of_option Js.Any.of_int) month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    Js.Any.to_int (Js.meth_call this "setFullYear" [| year; month; date |])
+    let year = E_jx.int year in
+    let month = (E_jx.undefined E_jx.int) month in
+    let date = (E_jx.undefined E_jx.int) date in
+    D_jx.int (D_jx.meth this "setFullYear" [| year; month; date |])
 
   let set_hours ~hour ?min ?sec ?ms this =
-    let hour = Js.Any.of_int hour in
-    let min = (Js.Any.undefined_of_option Js.Any.of_int) min in
-    let sec = (Js.Any.undefined_of_option Js.Any.of_int) sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setHours" [| hour; min; sec; ms |])
+    let hour = E_jx.int hour in
+    let min = (E_jx.undefined E_jx.int) min in
+    let sec = (E_jx.undefined E_jx.int) sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setHours" [| hour; min; sec; ms |])
 
   let set_milliseconds ~ms this =
-    let ms = Js.Any.of_int ms in
-    Js.Any.to_int (Js.meth_call this "setMilliseconds" [| ms |])
+    let ms = E_jx.int ms in
+    D_jx.int (D_jx.meth this "setMilliseconds" [| ms |])
 
   let set_minutes ~min ?sec ?ms this =
-    let min = Js.Any.of_int min in
-    let sec = (Js.Any.undefined_of_option Js.Any.of_int) sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setMinutes" [| min; sec; ms |])
+    let min = E_jx.int min in
+    let sec = (E_jx.undefined E_jx.int) sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setMinutes" [| min; sec; ms |])
 
   let set_month ~month ?date this =
-    let month = Js.Any.of_int month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    Js.Any.to_int (Js.meth_call this "setMonth" [| month; date |])
+    let month = E_jx.int month in
+    let date = (E_jx.undefined E_jx.int) date in
+    D_jx.int (D_jx.meth this "setMonth" [| month; date |])
 
   let set_seconds ~sec ?ms this =
-    let sec = Js.Any.of_int sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setSeconds" [| sec; ms |])
+    let sec = E_jx.int sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setSeconds" [| sec; ms |])
 
   let set_time ~time this =
-    let time = Js.Any.of_int time in
-    Js.Any.to_int (Js.meth_call this "setTime" [| time |])
+    let time = E_jx.int time in
+    D_jx.int (D_jx.meth this "setTime" [| time |])
 
   let set_utc_date ~date this =
-    let date = Js.Any.of_int date in
-    Js.Any.to_int (Js.meth_call this "setUTCDate" [| date |])
+    let date = E_jx.int date in
+    D_jx.int (D_jx.meth this "setUTCDate" [| date |])
 
   let set_utc_full_year ~year ?month ?date this =
-    let year = Js.Any.of_int year in
-    let month = (Js.Any.undefined_of_option Js.Any.of_int) month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    Js.Any.to_int (Js.meth_call this "setUTCFullYear" [| year; month; date |])
+    let year = E_jx.int year in
+    let month = (E_jx.undefined E_jx.int) month in
+    let date = (E_jx.undefined E_jx.int) date in
+    D_jx.int (D_jx.meth this "setUTCFullYear" [| year; month; date |])
 
   let set_utc_hours ~hour ?min ?sec ?ms this =
-    let hour = Js.Any.of_int hour in
-    let min = (Js.Any.undefined_of_option Js.Any.of_int) min in
-    let sec = (Js.Any.undefined_of_option Js.Any.of_int) sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setUTCHours" [| hour; min; sec; ms |])
+    let hour = E_jx.int hour in
+    let min = (E_jx.undefined E_jx.int) min in
+    let sec = (E_jx.undefined E_jx.int) sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setUTCHours" [| hour; min; sec; ms |])
 
   let set_utc_milliseconds ~ms this =
-    let ms = Js.Any.of_int ms in
-    Js.Any.to_int (Js.meth_call this "setUTCMilliseconds" [| ms |])
+    let ms = E_jx.int ms in
+    D_jx.int (D_jx.meth this "setUTCMilliseconds" [| ms |])
 
   let set_utc_minutes ~min ?sec ?ms this =
-    let min = Js.Any.of_int min in
-    let sec = (Js.Any.undefined_of_option Js.Any.of_int) sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setUTCMinutes" [| min; sec; ms |])
+    let min = E_jx.int min in
+    let sec = (E_jx.undefined E_jx.int) sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setUTCMinutes" [| min; sec; ms |])
 
   let set_utc_month ~month ?date this =
-    let month = Js.Any.of_int month in
-    let date = (Js.Any.undefined_of_option Js.Any.of_int) date in
-    Js.Any.to_int (Js.meth_call this "setUTCMonth" [| month; date |])
+    let month = E_jx.int month in
+    let date = (E_jx.undefined E_jx.int) date in
+    D_jx.int (D_jx.meth this "setUTCMonth" [| month; date |])
 
   let set_utc_seconds ~sec ?ms this =
-    let sec = Js.Any.of_int sec in
-    let ms = (Js.Any.undefined_of_option Js.Any.of_int) ms in
-    Js.Any.to_int (Js.meth_call this "setUTCSeconds" [| sec; ms |])
+    let sec = E_jx.int sec in
+    let ms = (E_jx.undefined E_jx.int) ms in
+    D_jx.int (D_jx.meth this "setUTCSeconds" [| sec; ms |])
 
-  let to_date_string this =
-    Js.Any.to_string (Js.meth_call this "toDateString" [||])
-
-  let to_iso_string this =
-    Js.Any.to_string (Js.meth_call this "toISOString" [||])
-
-  let to_json this = Js.Any.to_string (Js.meth_call this "toJSON" [||])
+  let to_date_string this = D_jx.string (D_jx.meth this "toDateString" [||])
+  let to_iso_string this = D_jx.string (D_jx.meth this "toISOString" [||])
+  let to_json this = D_jx.string (D_jx.meth this "toJSON" [||])
 
   let to_locale_date_string ?locales ?options this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
-    Js.Any.to_string
-      (Js.meth_call this "toLocaleDateString" [| locales; options |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    let options = (E_jx.undefined Js_ffi.to_any) options in
+    D_jx.string (D_jx.meth this "toLocaleDateString" [| locales; options |])
 
   let to_locale_string ?locales ?options this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
-    Js.Any.to_string (Js.meth_call this "toLocaleString" [| locales; options |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    let options = (E_jx.undefined Js_ffi.to_any) options in
+    D_jx.string (D_jx.meth this "toLocaleString" [| locales; options |])
 
   let to_locale_time_string ?locales ?options this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
-    Js.Any.to_string
-      (Js.meth_call this "toLocaleTimeString" [| locales; options |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    let options = (E_jx.undefined Js_ffi.to_any) options in
+    D_jx.string (D_jx.meth this "toLocaleTimeString" [| locales; options |])
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-
-  let to_time_string this =
-    Js.Any.to_string (Js.meth_call this "toTimeString" [||])
-
-  let to_utc_string this =
-    Js.Any.to_string (Js.meth_call this "toUTCString" [||])
-
-  let value_of this = Js.Any.to_int (Js.meth_call this "valueOf" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let to_time_string this = D_jx.string (D_jx.meth this "toTimeString" [||])
+  let to_utc_string this = D_jx.string (D_jx.meth this "toUTCString" [||])
+  let value_of this = D_jx.int (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Date} [Date] on \
    MDN}."]
 
 and String : sig
-  type t = [ `String ] Js.t
+  type t = [ `String ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/String} [String]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : value:Js.any -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : value:Jx.any -> unit -> t
 
   val from_char_code : code_units:string array -> unit -> string
   [@@ocaml.doc
@@ -1877,13 +1840,13 @@ and String : sig
      [lastIndexOf] on MDN}."]
 
   val locale_compare :
-    that:Js.object' -> ?locales:string -> ?options:Js.object' -> t -> int
+    that:Jx.any -> ?locales:string -> ?options:Jx.any -> t -> int
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/String/localeCompare} \
      [localeCompare] on MDN}."]
 
-  val match' : regexp:Js.object' -> t -> Js.object'
+  val match' : regexp:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/match} \
      [match] on MDN}."]
@@ -1909,13 +1872,12 @@ and String : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/repeat} \
      [repeat] on MDN}."]
 
-  val replace :
-    search_value:Js.object' -> replace_value:Js.object' -> t -> string
+  val replace : search_value:Jx.any -> replace_value:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/replace} \
      [replace] on MDN}."]
 
-  val search : regexp:Js.object' -> t -> Js.object'
+  val search : regexp:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/search} \
      [search] on MDN}."]
@@ -1976,168 +1938,157 @@ and String : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/trim} \
      [trim] on MDN}."]
 
-  val value_of : t -> Js.object'
+  val value_of : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String/valueOf} \
      [valueOf] on MDN}."]
 end = struct
-  type t = [ `String ] Js.t
+  type t = [ `String ] Jx.obj
 
-  let t = Js.raw "String"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "String"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~value () =
     let value = Js.of_any value in
-    Js.obj_new t [| value |]
+    Jx.obj_new t [| value |]
 
   let from_char_code ~code_units () =
-    let code_units = (Js.Any.of_array Js.Any.of_string) code_units in
-    Js.Any.to_string (Js.meth_call t "fromCharCode" [| code_units |])
+    let code_units = (E_jx.array E_jx.string) code_units in
+    D_jx.string (D_jx.meth t "fromCharCode" [| code_units |])
 
   let from_code_point ~code_points () =
-    let code_points = (Js.Any.of_array Js.Any.of_string) code_points in
-    Js.Any.to_string (Js.meth_call t "fromCodePoint" [| code_points |])
+    let code_points = (E_jx.array E_jx.string) code_points in
+    D_jx.string (D_jx.meth t "fromCodePoint" [| code_points |])
 
   let raw ~template ~substitutions () =
-    let template = Js.Any.of_string template in
-    let substitutions = (Js.Any.of_array Js.Any.of_string) substitutions in
-    Js.Any.to_string (Js.meth_call t "raw" [| template; substitutions |])
+    let template = E_jx.string template in
+    let substitutions = (E_jx.array E_jx.string) substitutions in
+    D_jx.string (D_jx.meth t "raw" [| template; substitutions |])
 
   let char_at ~pos this =
-    let pos = Js.Any.of_int pos in
-    Js.Any.to_string (Js.meth_call this "charAt" [| pos |])
+    let pos = E_jx.int pos in
+    D_jx.string (D_jx.meth this "charAt" [| pos |])
 
   let char_code_at ~pos this =
-    let pos = Js.Any.of_int pos in
-    Js.Any.to_string (Js.meth_call this "charCodeAt" [| pos |])
+    let pos = E_jx.int pos in
+    D_jx.string (D_jx.meth this "charCodeAt" [| pos |])
 
   let code_point_at ~pos this =
-    let pos = Js.Any.of_int pos in
-    Js.Any.to_string (Js.meth_call this "codePointAt" [| pos |])
+    let pos = E_jx.int pos in
+    D_jx.string (D_jx.meth this "codePointAt" [| pos |])
 
   let concat ~strings this =
-    let strings = (Js.Any.of_array Js.Any.of_string) strings in
-    Js.Any.to_string (Js.meth_call this "concat" [| strings |])
+    let strings = (E_jx.array E_jx.string) strings in
+    D_jx.string (D_jx.meth this "concat" [| strings |])
 
   let ends_with ~search_string ?end_position this =
-    let search_string = Js.Any.of_string search_string in
-    let end_position =
-      (Js.Any.undefined_of_option Js.Any.of_int) end_position
-    in
-    Js.Any.to_bool
-      (Js.meth_call this "endsWith" [| search_string; end_position |])
+    let search_string = E_jx.string search_string in
+    let end_position = (E_jx.undefined E_jx.int) end_position in
+    D_jx.bool (D_jx.meth this "endsWith" [| search_string; end_position |])
 
   let includes ~search_string ?position this =
-    let search_string = Js.Any.of_string search_string in
-    let position = (Js.Any.undefined_of_option Js.Any.of_int) position in
-    Js.Any.to_bool (Js.meth_call this "includes" [| search_string; position |])
+    let search_string = E_jx.string search_string in
+    let position = (E_jx.undefined E_jx.int) position in
+    D_jx.bool (D_jx.meth this "includes" [| search_string; position |])
 
   let index_of ~search_string ?position this =
-    let search_string = Js.Any.of_string search_string in
-    let position = (Js.Any.undefined_of_option Js.Any.of_int) position in
-    Js.Any.to_int (Js.meth_call this "indexOf" [| search_string; position |])
+    let search_string = E_jx.string search_string in
+    let position = (E_jx.undefined E_jx.int) position in
+    D_jx.int (D_jx.meth this "indexOf" [| search_string; position |])
 
   let last_index_of ~search_string ?position this =
-    let search_string = Js.Any.of_string search_string in
-    let position = (Js.Any.undefined_of_option Js.Any.of_int) position in
-    Js.Any.to_int (Js.meth_call this "lastIndexOf" [| search_string; position |])
+    let search_string = E_jx.string search_string in
+    let position = (E_jx.undefined E_jx.int) position in
+    D_jx.int (D_jx.meth this "lastIndexOf" [| search_string; position |])
 
   let locale_compare ~that ?locales ?options this =
-    let that = Js.to_any that in
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
-    Js.Any.to_int
-      (Js.meth_call this "localeCompare" [| that; locales; options |])
+    let that = Js_ffi.to_any that in
+    let locales = (E_jx.undefined E_jx.string) locales in
+    let options = (E_jx.undefined Js_ffi.to_any) options in
+    D_jx.int (D_jx.meth this "localeCompare" [| that; locales; options |])
 
   let match' ~regexp this =
-    let regexp = Js.to_any regexp in
-    Js.of_any (Js.meth_call this "match" [| regexp |])
+    let regexp = Js_ffi.to_any regexp in
+    Js.of_any (D_jx.meth this "match" [| regexp |])
 
   let normalize ?form this =
-    let form = (Js.Any.undefined_of_option Js.Any.of_string) form in
-    Js.Any.to_string (Js.meth_call this "normalize" [| form |])
+    let form = (E_jx.undefined E_jx.string) form in
+    D_jx.string (D_jx.meth this "normalize" [| form |])
 
   let pad_end ~max_length ~fill_string this =
-    let max_length = Js.Any.of_int max_length in
-    let fill_string = Js.Any.of_string fill_string in
-    Js.Any.to_string (Js.meth_call this "padEnd" [| max_length; fill_string |])
+    let max_length = E_jx.int max_length in
+    let fill_string = E_jx.string fill_string in
+    D_jx.string (D_jx.meth this "padEnd" [| max_length; fill_string |])
 
   let pad_start ~max_length ~fill_string this =
-    let max_length = Js.Any.of_int max_length in
-    let fill_string = Js.Any.of_string fill_string in
-    Js.Any.to_string (Js.meth_call this "padStart" [| max_length; fill_string |])
+    let max_length = E_jx.int max_length in
+    let fill_string = E_jx.string fill_string in
+    D_jx.string (D_jx.meth this "padStart" [| max_length; fill_string |])
 
   let repeat ~count this =
-    let count = Js.Any.of_int count in
-    Js.Any.to_string (Js.meth_call this "repeat" [| count |])
+    let count = E_jx.int count in
+    D_jx.string (D_jx.meth this "repeat" [| count |])
 
   let replace ~search_value ~replace_value this =
-    let search_value = Js.to_any search_value in
-    let replace_value = Js.to_any replace_value in
-    Js.Any.to_string
-      (Js.meth_call this "replace" [| search_value; replace_value |])
+    let search_value = Js_ffi.to_any search_value in
+    let replace_value = Js_ffi.to_any replace_value in
+    D_jx.string (D_jx.meth this "replace" [| search_value; replace_value |])
 
   let search ~regexp this =
-    let regexp = Js.to_any regexp in
-    Js.of_any (Js.meth_call this "search" [| regexp |])
+    let regexp = Js_ffi.to_any regexp in
+    Js.of_any (D_jx.meth this "search" [| regexp |])
 
   let slice ~start ~end' this =
-    let start = Js.Any.of_int start in
-    let end' = Js.Any.of_int end' in
-    Js.Any.to_string (Js.meth_call this "slice" [| start; end' |])
+    let start = E_jx.int start in
+    let end' = E_jx.int end' in
+    D_jx.string (D_jx.meth this "slice" [| start; end' |])
 
   let split ~separator ~limit this =
-    let separator = Js.Any.of_string separator in
-    let limit = Js.Any.of_int limit in
-    (Js.Any.to_array Js.Any.to_string)
-      (Js.meth_call this "split" [| separator; limit |])
+    let separator = E_jx.string separator in
+    let limit = E_jx.int limit in
+    (D_jx.array D_jx.string) (D_jx.meth this "split" [| separator; limit |])
 
   let starts_with ~search_string ?position this =
-    let search_string = Js.Any.of_string search_string in
-    let position = (Js.Any.undefined_of_option Js.Any.of_int) position in
-    Js.Any.to_bool (Js.meth_call this "startsWith" [| search_string; position |])
+    let search_string = E_jx.string search_string in
+    let position = (E_jx.undefined E_jx.int) position in
+    D_jx.bool (D_jx.meth this "startsWith" [| search_string; position |])
 
   let substring ~start ~end' this =
-    let start = Js.Any.of_int start in
-    let end' = Js.Any.of_int end' in
-    Js.Any.to_string (Js.meth_call this "substring" [| start; end' |])
+    let start = E_jx.int start in
+    let end' = E_jx.int end' in
+    D_jx.string (D_jx.meth this "substring" [| start; end' |])
 
   let to_locale_lower_case ?locales this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    Js.Any.to_string (Js.meth_call this "toLocaleLowerCase" [| locales |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    D_jx.string (D_jx.meth this "toLocaleLowerCase" [| locales |])
 
   let to_locale_upper_case ?locales this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    Js.Any.to_string (Js.meth_call this "toLocaleUpperCase" [| locales |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    D_jx.string (D_jx.meth this "toLocaleUpperCase" [| locales |])
 
-  let to_lower_case this =
-    Js.Any.to_string (Js.meth_call this "toLowerCase" [||])
-
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-
-  let to_upper_case this =
-    Js.Any.to_string (Js.meth_call this "toUpperCase" [||])
-
-  let trim this = Js.Any.to_string (Js.meth_call this "trim" [||])
-  let value_of this = Js.of_any (Js.meth_call this "valueOf" [||])
+  let to_lower_case this = D_jx.string (D_jx.meth this "toLowerCase" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let to_upper_case this = D_jx.string (D_jx.meth this "toUpperCase" [||])
+  let trim this = D_jx.string (D_jx.meth this "trim" [||])
+  let value_of this = Js.of_any (D_jx.meth this "valueOf" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/String} [String] \
    on MDN}."]
 
 and Reg_exp : sig
-  type t = [ `Reg_exp ] Js.t
+  type t = [ `Reg_exp ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/RegExp} [RegExp]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val with_pattern_and_flags :
-    pattern:[< `String | `Reg_exp ] Js.t -> ?flags:string -> unit -> t
+    pattern:[< `String | `Reg_exp ] Jx.obj -> ?flags:string -> unit -> t
 
   val exec : string:string -> t -> string array
   [@@ocaml.doc
@@ -2196,120 +2147,120 @@ and Reg_exp : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/RegExp/unicode} \
      [unicode] on MDN}."]
 end = struct
-  type t = [ `Reg_exp ] Js.t
+  type t = [ `Reg_exp ] Jx.obj
 
-  let t = Js.raw "RegExp"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "RegExp"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let with_pattern_and_flags ~pattern ?flags () =
-    let pattern = Js.to_any pattern in
-    let flags = (Js.Any.undefined_of_option Js.Any.of_string) flags in
-    Js.obj_new t [| pattern; flags |]
+    let pattern = Js_ffi.to_any pattern in
+    let flags = (E_jx.undefined E_jx.string) flags in
+    Jx.obj_new t [| pattern; flags |]
 
   let exec ~string this =
-    let string = Js.Any.of_string string in
-    (Js.Any.to_array Js.Any.to_string) (Js.meth_call this "exec" [| string |])
+    let string = E_jx.string string in
+    (D_jx.array D_jx.string) (D_jx.meth this "exec" [| string |])
 
-  let flags this = Js.Any.to_string (Js.get this "flags")
-  let global this = Js.Any.to_bool (Js.get this "global")
-  let ignore_case this = Js.Any.to_bool (Js.get this "ignoreCase")
-  let multiline this = Js.Any.to_bool (Js.get this "multiline")
-  let source this = Js.Any.to_string (Js.get this "source")
-  let sticky this = Js.Any.to_bool (Js.get this "sticky")
+  let flags this = D_jx.string (Js_ffi.get this "flags")
+  let global this = D_jx.bool (Js_ffi.get this "global")
+  let ignore_case this = D_jx.bool (Js_ffi.get this "ignoreCase")
+  let multiline this = D_jx.bool (Js_ffi.get this "multiline")
+  let source this = D_jx.string (Js_ffi.get this "source")
+  let sticky this = D_jx.bool (Js_ffi.get this "sticky")
 
   let test ~s this =
-    let s = Js.Any.of_string s in
-    Js.Any.to_bool (Js.meth_call this "test" [| s |])
+    let s = E_jx.string s in
+    D_jx.bool (D_jx.meth this "test" [| s |])
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let unicode this = Js.Any.to_bool (Js.get this "unicode")
-  let set_unicode this x = Js.set this "unicode" (Js.Any.of_bool x)
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let unicode this = D_jx.bool (Js_ffi.get this "unicode")
+  let set_unicode this x = Js_ffi.set this "unicode" (E_jx.bool x)
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/RegExp} [RegExp] \
    on MDN}."]
 
 and Array : sig
-  type t = [ `Array ] Js.t
+  type t = [ `Array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Array} [Array]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
   val make : len:int -> unit -> t
-  val make : args:Js.any array -> unit -> t
+  val make : args:Jx.any array -> unit -> t
 
-  val from : items:Js.any -> ?mapfn:Js.object' -> ?this_arg:Js.any -> unit -> t
+  val from : items:Jx.any -> ?mapfn:Jx.any -> ?this_arg:Jx.any -> unit -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/from} \
      [from] on MDN}."]
 
-  val is_array : arg:Js.any -> unit -> bool
+  val is_array : arg:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/isArray} \
      [isArray] on MDN}."]
 
-  val of' : items:Js.any array -> unit -> t
+  val of' : items:Jx.any array -> unit -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/of} [of] \
      on MDN}."]
 
-  val concat : arguments:Js.any array -> t -> t
+  val concat : arguments:Jx.any array -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/concat} \
      [concat] on MDN}."]
 
-  val copy_within : target:int -> ?start:int -> ?end':int -> t -> Js.object'
+  val copy_within : target:int -> ?start:int -> ?end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Array/copyWithin} \
      [copyWithin] on MDN}."]
 
-  val entries : t -> Js.object'
+  val entries : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/entries} \
      [entries] on MDN}."]
 
-  val every : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> bool
+  val every : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/every} \
      [every] on MDN}."]
 
-  val fill : value:Js.object' -> ?start:int -> ?end':int -> t -> Js.object'
+  val fill : value:Jx.any -> ?start:int -> ?end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/fill} \
      [fill] on MDN}."]
 
-  val filter : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> t
+  val filter : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/filter} \
      [filter] on MDN}."]
 
-  val find : predicate:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val find : predicate:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/find} \
      [find] on MDN}."]
 
-  val find_index : predicate:Js.object' -> ?this_arg:Js.any -> t -> int
+  val find_index : predicate:Jx.any -> ?this_arg:Jx.any -> t -> int
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/findIndex} \
      [findIndex] on MDN}."]
 
-  val for_each : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val for_each : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/forEach} \
      [forEach] on MDN}."]
 
-  val includes : search_element:Js.any -> from_index:int -> t -> bool
+  val includes : search_element:Jx.any -> from_index:int -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/includes} \
      [includes] on MDN}."]
 
-  val index_of : search_element:Js.any -> ?from_index:int -> t -> int
+  val index_of : search_element:Jx.any -> ?from_index:int -> t -> int
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/indexOf} \
      [indexOf] on MDN}."]
@@ -2319,50 +2270,49 @@ and Array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/join} \
      [join] on MDN}."]
 
-  val keys : t -> Js.object'
+  val keys : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/keys} \
      [keys] on MDN}."]
 
-  val last_index_of : search_element:Js.any -> ?from_index:int -> t -> int
+  val last_index_of : search_element:Jx.any -> ?from_index:int -> t -> int
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Array/lastIndexOf} \
      [lastIndexOf] on MDN}."]
 
-  val map : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> t
+  val map : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/map} [map] \
      on MDN}."]
 
-  val pop : t -> Js.object'
+  val pop : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/pop} [pop] \
      on MDN}."]
 
-  val push : items:Js.any array -> t -> int
+  val push : items:Jx.any array -> t -> int
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/push} \
      [push] on MDN}."]
 
-  val reduce : callbackfn:Js.object' -> ?initial_value:Js.any -> t -> Js.object'
+  val reduce : callbackfn:Jx.any -> ?initial_value:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/reduce} \
      [reduce] on MDN}."]
 
-  val reduce_right :
-    callbackfn:Js.object' -> ?initial_value:Js.any -> t -> Js.object'
+  val reduce_right : callbackfn:Jx.any -> ?initial_value:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Array/reduceRight} \
      [reduceRight] on MDN}."]
 
-  val reverse : t -> Js.object'
+  val reverse : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/reverse} \
      [reverse] on MDN}."]
 
-  val shift : t -> Js.any
+  val shift : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/shift} \
      [shift] on MDN}."]
@@ -2372,23 +2322,22 @@ and Array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/slice} \
      [slice] on MDN}."]
 
-  val some : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> bool
+  val some : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/some} \
      [some] on MDN}."]
 
-  val sort : comparefn:Js.object' -> t -> unit
+  val sort : comparefn:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/sort} \
      [sort] on MDN}."]
 
-  val splice : start:int -> delete_count:int -> items:Js.any array -> t -> t
+  val splice : start:int -> delete_count:int -> items:Jx.any array -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/splice} \
      [splice] on MDN}."]
 
-  val to_locale_time_string :
-    ?locales:string -> ?options:Js.object' -> t -> string
+  val to_locale_time_string : ?locales:string -> ?options:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Array/toLocaleTimeString} \
@@ -2399,12 +2348,12 @@ and Array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/toString} \
      [toString] on MDN}."]
 
-  val unshift : items:Js.any array -> t -> int
+  val unshift : items:Jx.any array -> t -> int
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/unshift} \
      [unshift] on MDN}."]
 
-  val values : t -> Js.object'
+  val values : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/values} \
      [values] on MDN}."]
@@ -2419,197 +2368,190 @@ and Array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array/length} \
      [length] on MDN}."]
 end = struct
-  type t = [ `Array ] Js.t
+  type t = [ `Array ] Jx.obj
 
-  let t = Js.raw "Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~len () =
-    let len = Js.Any.of_int len in
-    Js.obj_new t [| len |]
+    let len = E_jx.int len in
+    Jx.obj_new t [| len |]
 
   let make ~args () =
-    let args = (Js.Any.of_array Js.of_any) args in
-    Js.obj_new t [| args |]
+    let args = (E_jx.array Js.of_any) args in
+    Jx.obj_new t [| args |]
 
   let from ~items ?mapfn ?this_arg () =
     let items = Js.of_any items in
-    let mapfn = (Js.Any.undefined_of_option Js.to_any) mapfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    of_any (Js.meth_call t "from" [| items; mapfn; this_arg |])
+    let mapfn = (E_jx.undefined Js_ffi.to_any) mapfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    of_any (D_jx.meth t "from" [| items; mapfn; this_arg |])
 
   let is_array ~arg () =
     let arg = Js.of_any arg in
-    Js.Any.to_bool (Js.meth_call t "isArray" [| arg |])
+    D_jx.bool (D_jx.meth t "isArray" [| arg |])
 
   let of' ~items () =
-    let items = (Js.Any.of_array Js.of_any) items in
-    of_any (Js.meth_call t "of" [| items |])
+    let items = (E_jx.array Js.of_any) items in
+    of_any (D_jx.meth t "of" [| items |])
 
   let concat ~arguments this =
-    let arguments = (Js.Any.of_array Js.of_any) arguments in
-    of_any (Js.meth_call this "concat" [| arguments |])
+    let arguments = (E_jx.array Js.of_any) arguments in
+    of_any (D_jx.meth this "concat" [| arguments |])
 
   let copy_within ~target ?start ?end' this =
-    let target = Js.Any.of_int target in
-    let start = (Js.Any.undefined_of_option Js.Any.of_int) start in
-    let end' = (Js.Any.undefined_of_option Js.Any.of_int) end' in
-    Js.of_any (Js.meth_call this "copyWithin" [| target; start; end' |])
+    let target = E_jx.int target in
+    let start = (E_jx.undefined E_jx.int) start in
+    let end' = (E_jx.undefined E_jx.int) end' in
+    Js.of_any (D_jx.meth this "copyWithin" [| target; start; end' |])
 
-  let entries this = Js.of_any (Js.meth_call this "entries" [||])
+  let entries this = Js.of_any (D_jx.meth this "entries" [||])
 
   let every ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_bool (Js.meth_call this "every" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.bool (D_jx.meth this "every" [| callbackfn; this_arg |])
 
   let fill ~value ?start ?end' this =
-    let value = Js.to_any value in
-    let start = (Js.Any.undefined_of_option Js.Any.of_int) start in
-    let end' = (Js.Any.undefined_of_option Js.Any.of_int) end' in
-    Js.of_any (Js.meth_call this "fill" [| value; start; end' |])
+    let value = Js_ffi.to_any value in
+    let start = (E_jx.undefined E_jx.int) start in
+    let end' = (E_jx.undefined E_jx.int) end' in
+    Js.of_any (D_jx.meth this "fill" [| value; start; end' |])
 
   let filter ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    of_any (Js.meth_call this "filter" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    of_any (D_jx.meth this "filter" [| callbackfn; this_arg |])
 
   let find ~predicate ?this_arg this =
-    let predicate = Js.to_any predicate in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "find" [| predicate; this_arg |])
+    let predicate = Js_ffi.to_any predicate in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "find" [| predicate; this_arg |])
 
   let find_index ~predicate ?this_arg this =
-    let predicate = Js.to_any predicate in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_int (Js.meth_call this "findIndex" [| predicate; this_arg |])
+    let predicate = Js_ffi.to_any predicate in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.int (D_jx.meth this "findIndex" [| predicate; this_arg |])
 
   let for_each ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "forEach" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "forEach" [| callbackfn; this_arg |])
 
   let includes ~search_element ~from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = Js.Any.of_int from_index in
-    Js.Any.to_bool
-      (Js.meth_call this "includes" [| search_element; from_index |])
+    let from_index = E_jx.int from_index in
+    D_jx.bool (D_jx.meth this "includes" [| search_element; from_index |])
 
   let index_of ~search_element ?from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = (Js.Any.undefined_of_option Js.Any.of_int) from_index in
-    Js.Any.to_int (Js.meth_call this "indexOf" [| search_element; from_index |])
+    let from_index = (E_jx.undefined E_jx.int) from_index in
+    D_jx.int (D_jx.meth this "indexOf" [| search_element; from_index |])
 
   let join ~separator this =
-    let separator = Js.Any.of_string separator in
-    Js.Any.to_string (Js.meth_call this "join" [| separator |])
+    let separator = E_jx.string separator in
+    D_jx.string (D_jx.meth this "join" [| separator |])
 
-  let keys this = Js.of_any (Js.meth_call this "keys" [||])
+  let keys this = Js.of_any (D_jx.meth this "keys" [||])
 
   let last_index_of ~search_element ?from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = (Js.Any.undefined_of_option Js.Any.of_int) from_index in
-    Js.Any.to_int
-      (Js.meth_call this "lastIndexOf" [| search_element; from_index |])
+    let from_index = (E_jx.undefined E_jx.int) from_index in
+    D_jx.int (D_jx.meth this "lastIndexOf" [| search_element; from_index |])
 
   let map ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    of_any (Js.meth_call this "map" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    of_any (D_jx.meth this "map" [| callbackfn; this_arg |])
 
-  let pop this = Js.of_any (Js.meth_call this "pop" [||])
+  let pop this = Js.of_any (D_jx.meth this "pop" [||])
 
   let push ~items this =
-    let items = (Js.Any.of_array Js.of_any) items in
-    Js.Any.to_int (Js.meth_call this "push" [| items |])
+    let items = (E_jx.array Js.of_any) items in
+    D_jx.int (D_jx.meth this "push" [| items |])
 
   let reduce ~callbackfn ?initial_value this =
-    let callbackfn = Js.to_any callbackfn in
-    let initial_value = (Js.Any.undefined_of_option Js.of_any) initial_value in
-    Js.of_any (Js.meth_call this "reduce" [| callbackfn; initial_value |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let initial_value = (E_jx.undefined Js.of_any) initial_value in
+    Js.of_any (D_jx.meth this "reduce" [| callbackfn; initial_value |])
 
   let reduce_right ~callbackfn ?initial_value this =
-    let callbackfn = Js.to_any callbackfn in
-    let initial_value = (Js.Any.undefined_of_option Js.of_any) initial_value in
-    Js.of_any (Js.meth_call this "reduceRight" [| callbackfn; initial_value |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let initial_value = (E_jx.undefined Js.of_any) initial_value in
+    Js.of_any (D_jx.meth this "reduceRight" [| callbackfn; initial_value |])
 
-  let reverse this = Js.of_any (Js.meth_call this "reverse" [||])
-  let shift this = Js.to_any (Js.meth_call this "shift" [||])
+  let reverse this = Js.of_any (D_jx.meth this "reverse" [||])
+  let shift this = Js_ffi.to_any (D_jx.meth this "shift" [||])
 
   let slice ~start ~end' this =
-    let start = Js.Any.of_int start in
-    let end' = Js.Any.of_int end' in
-    of_any (Js.meth_call this "slice" [| start; end' |])
+    let start = E_jx.int start in
+    let end' = E_jx.int end' in
+    of_any (D_jx.meth this "slice" [| start; end' |])
 
   let some ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_bool (Js.meth_call this "some" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.bool (D_jx.meth this "some" [| callbackfn; this_arg |])
 
   let sort ~comparefn this =
-    let comparefn = Js.to_any comparefn in
-    Js.to_unit (Js.meth_call this "sort" [| comparefn |])
+    let comparefn = Js_ffi.to_any comparefn in
+    D_jx.unit (D_jx.meth this "sort" [| comparefn |])
 
   let splice ~start ~delete_count ~items this =
-    let start = Js.Any.of_int start in
-    let delete_count = Js.Any.of_int delete_count in
-    let items = (Js.Any.of_array Js.of_any) items in
-    of_any (Js.meth_call this "splice" [| start; delete_count; items |])
+    let start = E_jx.int start in
+    let delete_count = E_jx.int delete_count in
+    let items = (E_jx.array Js.of_any) items in
+    of_any (D_jx.meth this "splice" [| start; delete_count; items |])
 
   let to_locale_time_string ?locales ?options this =
-    let locales = (Js.Any.undefined_of_option Js.Any.of_string) locales in
-    let options = (Js.Any.undefined_of_option Js.to_any) options in
-    Js.Any.to_string
-      (Js.meth_call this "toLocaleTimeString" [| locales; options |])
+    let locales = (E_jx.undefined E_jx.string) locales in
+    let options = (E_jx.undefined Js_ffi.to_any) options in
+    D_jx.string (D_jx.meth this "toLocaleTimeString" [| locales; options |])
 
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
 
   let unshift ~items this =
-    let items = (Js.Any.of_array Js.of_any) items in
-    Js.Any.to_int (Js.meth_call this "unshift" [| items |])
+    let items = (E_jx.array Js.of_any) items in
+    D_jx.int (D_jx.meth this "unshift" [| items |])
 
-  let values this = Js.of_any (Js.meth_call this "values" [||])
-  let length this = Js.Any.to_int (Js.get this "length")
-  let set_length this x = Js.set this "length" (Js.Any.of_int x)
+  let values this = Js.of_any (D_jx.meth this "values" [||])
+  let length this = D_jx.int (Js_ffi.get this "length")
+  let set_length this x = Js_ffi.set this "length" (E_jx.int x)
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Array} [Array] on \
    MDN}."]
 
 and Typed_array : sig
-  type t = [ `Typed_array ] Js.t
+  type t = [ `Typed_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray} \
      [TypedArray]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val from :
-    source:Js.object' ->
-    ?mapfn:Js.object' ->
-    ?this_arg:Js.any ->
-    unit ->
-    Js.object'
+    source:Jx.any -> ?mapfn:Jx.any -> ?this_arg:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/from} \
      [from] on MDN}."]
 
-  val of' : items:Js.any array -> unit -> Js.object'
+  val of' : items:Jx.any array -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/of} \
      [of] on MDN}."]
 
-  val buffer : t -> Js.object'
+  val buffer : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/buffer} \
      [buffer] on MDN}."]
 
-  val set_buffer : t -> Js.object' -> unit
+  val set_buffer : t -> Jx.any -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/buffer} \
@@ -2639,60 +2581,59 @@ and Typed_array : sig
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/byteOffset} \
      [byteOffset] on MDN}."]
 
-  val copy_within :
-    target:Js.object' -> start:int -> ?end':int -> t -> Js.object'
+  val copy_within : target:Jx.any -> start:int -> ?end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/copyWithin} \
      [copyWithin] on MDN}."]
 
-  val entries : t -> Js.object'
+  val entries : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/entries} \
      [entries] on MDN}."]
 
-  val every : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> bool
+  val every : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/every} \
      [every] on MDN}."]
 
-  val fill : value:Js.object' -> ?start:int -> ?end':int -> t -> Js.object'
+  val fill : value:Jx.any -> ?start:int -> ?end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/fill} \
      [fill] on MDN}."]
 
-  val filter : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> Js.object'
+  val filter : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/filter} \
      [filter] on MDN}."]
 
-  val find : predicate:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val find : predicate:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/find} \
      [find] on MDN}."]
 
-  val find_index : predicate:Js.object' -> ?this_arg:Js.any -> t -> int
+  val find_index : predicate:Jx.any -> ?this_arg:Jx.any -> t -> int
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/findIndex} \
      [findIndex] on MDN}."]
 
-  val for_each : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val for_each : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/forEach} \
      [forEach] on MDN}."]
 
-  val includes : search_element:Js.any -> from_index:int -> t -> bool
+  val includes : search_element:Jx.any -> from_index:int -> t -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/includes} \
      [includes] on MDN}."]
 
-  val index_of : search_element:Js.any -> ?from_index:int -> t -> int
+  val index_of : search_element:Jx.any -> ?from_index:int -> t -> int
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/indexOf} \
@@ -2703,12 +2644,12 @@ and Typed_array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/join} \
      [join] on MDN}."]
 
-  val keys : t -> Js.object'
+  val keys : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/keys} \
      [keys] on MDN}."]
 
-  val last_index_of : search_element:Js.any -> ?from_index:int -> t -> int
+  val last_index_of : search_element:Jx.any -> ?from_index:int -> t -> int
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/lastIndexOf} \
@@ -2726,25 +2667,24 @@ and Typed_array : sig
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/length} \
      [length] on MDN}."]
 
-  val map : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> Js.object'
+  val map : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/map} \
      [map] on MDN}."]
 
-  val reduce : callbackfn:Js.object' -> ?initial_value:Js.any -> t -> Js.object'
+  val reduce : callbackfn:Jx.any -> ?initial_value:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/reduce} \
      [reduce] on MDN}."]
 
-  val reduce_right :
-    callbackfn:Js.object' -> ?initial_value:Js.any -> t -> Js.object'
+  val reduce_right : callbackfn:Jx.any -> ?initial_value:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/reduceRight} \
      [reduceRight] on MDN}."]
 
-  val reverse : t -> Js.object'
+  val reverse : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/reverse} \
@@ -2755,28 +2695,28 @@ and Typed_array : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/set} \
      [set] on MDN}."]
 
-  val set : typed_array:Js.object' -> ?offset:int -> t -> unit
+  val set : typed_array:Jx.any -> ?offset:int -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/set} \
      [set] on MDN}."]
 
-  val slice : start:int -> end':int -> t -> Js.object'
+  val slice : start:int -> end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/slice} \
      [slice] on MDN}."]
 
-  val some : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> bool
+  val some : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/some} \
      [some] on MDN}."]
 
-  val sort : comparefn:Js.object' -> t -> unit
+  val sort : comparefn:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/sort} \
      [sort] on MDN}."]
 
-  val subarray : ?begin':int -> ?end':int -> t -> Js.object'
+  val subarray : ?begin':int -> ?end':int -> t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/subarray} \
@@ -2794,7 +2734,7 @@ and Typed_array : sig
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/toString} \
      [toString] on MDN}."]
 
-  val values : t -> Js.object'
+  val values : t -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/values} \
@@ -2812,668 +2752,664 @@ and Typed_array : sig
      https://developer.mozilla.org/en-US/docs/Web/API/TypedArray/BYTES_PER_ELEMENT} \
      [BYTES_PER_ELEMENT] on MDN}."]
 end = struct
-  type t = [ `Typed_array ] Js.t
+  type t = [ `Typed_array ] Jx.obj
 
-  let t = Js.raw "TypedArray"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "TypedArray"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let from ~source ?mapfn ?this_arg () =
-    let source = Js.to_any source in
-    let mapfn = (Js.Any.undefined_of_option Js.to_any) mapfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.of_any (Js.meth_call t "from" [| source; mapfn; this_arg |])
+    let source = Js_ffi.to_any source in
+    let mapfn = (E_jx.undefined Js_ffi.to_any) mapfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    Js.of_any (D_jx.meth t "from" [| source; mapfn; this_arg |])
 
   let of' ~items () =
-    let items = (Js.Any.of_array Js.of_any) items in
-    Js.of_any (Js.meth_call t "of" [| items |])
+    let items = (E_jx.array Js.of_any) items in
+    Js.of_any (D_jx.meth t "of" [| items |])
 
-  let buffer this = Js.of_any (Js.get this "buffer")
-  let set_buffer this x = Js.set this "buffer" (Js.to_any x)
-  let byte_length this = Js.Any.to_int (Js.get this "byteLength")
-  let set_byte_length this x = Js.set this "byteLength" (Js.Any.of_int x)
-  let byte_offset this = Js.Any.to_int (Js.get this "byteOffset")
-  let set_byte_offset this x = Js.set this "byteOffset" (Js.Any.of_int x)
+  let buffer this = Js.of_any (Js_ffi.get this "buffer")
+  let set_buffer this x = Js_ffi.set this "buffer" (Js_ffi.to_any x)
+  let byte_length this = D_jx.int (Js_ffi.get this "byteLength")
+  let set_byte_length this x = Js_ffi.set this "byteLength" (E_jx.int x)
+  let byte_offset this = D_jx.int (Js_ffi.get this "byteOffset")
+  let set_byte_offset this x = Js_ffi.set this "byteOffset" (E_jx.int x)
 
   let copy_within ~target ~start ?end' this =
-    let target = Js.to_any target in
-    let start = Js.Any.of_int start in
-    let end' = (Js.Any.undefined_of_option Js.Any.of_int) end' in
-    Js.of_any (Js.meth_call this "copyWithin" [| target; start; end' |])
+    let target = Js_ffi.to_any target in
+    let start = E_jx.int start in
+    let end' = (E_jx.undefined E_jx.int) end' in
+    Js.of_any (D_jx.meth this "copyWithin" [| target; start; end' |])
 
-  let entries this = Js.of_any (Js.meth_call this "entries" [||])
+  let entries this = Js.of_any (D_jx.meth this "entries" [||])
 
   let every ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_bool (Js.meth_call this "every" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.bool (D_jx.meth this "every" [| callbackfn; this_arg |])
 
   let fill ~value ?start ?end' this =
-    let value = Js.to_any value in
-    let start = (Js.Any.undefined_of_option Js.Any.of_int) start in
-    let end' = (Js.Any.undefined_of_option Js.Any.of_int) end' in
-    Js.of_any (Js.meth_call this "fill" [| value; start; end' |])
+    let value = Js_ffi.to_any value in
+    let start = (E_jx.undefined E_jx.int) start in
+    let end' = (E_jx.undefined E_jx.int) end' in
+    Js.of_any (D_jx.meth this "fill" [| value; start; end' |])
 
   let filter ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.of_any (Js.meth_call this "filter" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    Js.of_any (D_jx.meth this "filter" [| callbackfn; this_arg |])
 
   let find ~predicate ?this_arg this =
-    let predicate = Js.to_any predicate in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "find" [| predicate; this_arg |])
+    let predicate = Js_ffi.to_any predicate in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "find" [| predicate; this_arg |])
 
   let find_index ~predicate ?this_arg this =
-    let predicate = Js.to_any predicate in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_int (Js.meth_call this "findIndex" [| predicate; this_arg |])
+    let predicate = Js_ffi.to_any predicate in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.int (D_jx.meth this "findIndex" [| predicate; this_arg |])
 
   let for_each ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "forEach" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "forEach" [| callbackfn; this_arg |])
 
   let includes ~search_element ~from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = Js.Any.of_int from_index in
-    Js.Any.to_bool
-      (Js.meth_call this "includes" [| search_element; from_index |])
+    let from_index = E_jx.int from_index in
+    D_jx.bool (D_jx.meth this "includes" [| search_element; from_index |])
 
   let index_of ~search_element ?from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = (Js.Any.undefined_of_option Js.Any.of_int) from_index in
-    Js.Any.to_int (Js.meth_call this "indexOf" [| search_element; from_index |])
+    let from_index = (E_jx.undefined E_jx.int) from_index in
+    D_jx.int (D_jx.meth this "indexOf" [| search_element; from_index |])
 
   let join ~separator this =
-    let separator = Js.Any.of_string separator in
-    Js.Any.to_string (Js.meth_call this "join" [| separator |])
+    let separator = E_jx.string separator in
+    D_jx.string (D_jx.meth this "join" [| separator |])
 
-  let keys this = Js.of_any (Js.meth_call this "keys" [||])
+  let keys this = Js.of_any (D_jx.meth this "keys" [||])
 
   let last_index_of ~search_element ?from_index this =
     let search_element = Js.of_any search_element in
-    let from_index = (Js.Any.undefined_of_option Js.Any.of_int) from_index in
-    Js.Any.to_int
-      (Js.meth_call this "lastIndexOf" [| search_element; from_index |])
+    let from_index = (E_jx.undefined E_jx.int) from_index in
+    D_jx.int (D_jx.meth this "lastIndexOf" [| search_element; from_index |])
 
-  let length this = Js.Any.to_int (Js.get this "length")
-  let set_length this x = Js.set this "length" (Js.Any.of_int x)
+  let length this = D_jx.int (Js_ffi.get this "length")
+  let set_length this x = Js_ffi.set this "length" (E_jx.int x)
 
   let map ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.of_any (Js.meth_call this "map" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    Js.of_any (D_jx.meth this "map" [| callbackfn; this_arg |])
 
   let reduce ~callbackfn ?initial_value this =
-    let callbackfn = Js.to_any callbackfn in
-    let initial_value = (Js.Any.undefined_of_option Js.of_any) initial_value in
-    Js.of_any (Js.meth_call this "reduce" [| callbackfn; initial_value |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let initial_value = (E_jx.undefined Js.of_any) initial_value in
+    Js.of_any (D_jx.meth this "reduce" [| callbackfn; initial_value |])
 
   let reduce_right ~callbackfn ?initial_value this =
-    let callbackfn = Js.to_any callbackfn in
-    let initial_value = (Js.Any.undefined_of_option Js.of_any) initial_value in
-    Js.of_any (Js.meth_call this "reduceRight" [| callbackfn; initial_value |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let initial_value = (E_jx.undefined Js.of_any) initial_value in
+    Js.of_any (D_jx.meth this "reduceRight" [| callbackfn; initial_value |])
 
-  let reverse this = Js.of_any (Js.meth_call this "reverse" [||])
+  let reverse this = Js.of_any (D_jx.meth this "reverse" [||])
 
   let set ~array ?offset this =
     let array = Array.to_any array in
-    let offset = (Js.Any.undefined_of_option Js.Any.of_int) offset in
-    Js.to_unit (Js.meth_call this "set" [| array; offset |])
+    let offset = (E_jx.undefined E_jx.int) offset in
+    D_jx.unit (D_jx.meth this "set" [| array; offset |])
 
   let set ~typed_array ?offset this =
-    let typed_array = Js.to_any typed_array in
-    let offset = (Js.Any.undefined_of_option Js.Any.of_int) offset in
-    Js.to_unit (Js.meth_call this "set" [| typed_array; offset |])
+    let typed_array = Js_ffi.to_any typed_array in
+    let offset = (E_jx.undefined E_jx.int) offset in
+    D_jx.unit (D_jx.meth this "set" [| typed_array; offset |])
 
   let slice ~start ~end' this =
-    let start = Js.Any.of_int start in
-    let end' = Js.Any.of_int end' in
-    Js.of_any (Js.meth_call this "slice" [| start; end' |])
+    let start = E_jx.int start in
+    let end' = E_jx.int end' in
+    Js.of_any (D_jx.meth this "slice" [| start; end' |])
 
   let some ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.Any.to_bool (Js.meth_call this "some" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.bool (D_jx.meth this "some" [| callbackfn; this_arg |])
 
   let sort ~comparefn this =
-    let comparefn = Js.to_any comparefn in
-    Js.to_unit (Js.meth_call this "sort" [| comparefn |])
+    let comparefn = Js_ffi.to_any comparefn in
+    D_jx.unit (D_jx.meth this "sort" [| comparefn |])
 
   let subarray ?begin' ?end' this =
-    let begin' = (Js.Any.undefined_of_option Js.Any.of_int) begin' in
-    let end' = (Js.Any.undefined_of_option Js.Any.of_int) end' in
-    Js.of_any (Js.meth_call this "subarray" [| begin'; end' |])
+    let begin' = (E_jx.undefined E_jx.int) begin' in
+    let end' = (E_jx.undefined E_jx.int) end' in
+    Js.of_any (D_jx.meth this "subarray" [| begin'; end' |])
 
-  let to_locale_string this =
-    Js.Any.to_string (Js.meth_call this "toLocaleString" [||])
-
-  let to_string this = Js.Any.to_string (Js.meth_call this "toString" [||])
-  let values this = Js.of_any (Js.meth_call this "values" [||])
-  let bytes_per_element this = Js.Any.to_int (Js.get this "BYTES_PER_ELEMENT")
+  let to_locale_string this = D_jx.string (D_jx.meth this "toLocaleString" [||])
+  let to_string this = D_jx.string (D_jx.meth this "toString" [||])
+  let values this = Js.of_any (D_jx.meth this "values" [||])
+  let bytes_per_element this = D_jx.int (Js_ffi.get this "BYTES_PER_ELEMENT")
 
   let set_bytes_per_element this x =
-    Js.set this "BYTES_PER_ELEMENT" (Js.Any.of_int x)
+    Js_ffi.set this "BYTES_PER_ELEMENT" (E_jx.int x)
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/TypedArray} \
    [TypedArray] on MDN}."]
 
 and Int8_array : sig
-  type t = [ `Int8_array ] Js.t
+  type t = [ `Int8_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Int8Array} [Int8Array]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Int8_array ] Js.t
+  type t = [ `Int8_array ] Jx.obj
 
-  let t = Js.raw "Int8Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Int8Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Int8Array} \
    [Int8Array] on MDN}."]
 
 and Uint8_array : sig
-  type t = [ `Uint8_array ] Js.t
+  type t = [ `Uint8_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Uint8Array} \
      [Uint8Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Uint8_array ] Js.t
+  type t = [ `Uint8_array ] Jx.obj
 
-  let t = Js.raw "Uint8Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Uint8Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Uint8Array} \
    [Uint8Array] on MDN}."]
 
 and Uint8_clamped_array : sig
-  type t = [ `Uint8_clamped_array ] Js.t
+  type t = [ `Uint8_clamped_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Uint8ClampedArray} \
      [Uint8ClampedArray]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Uint8_clamped_array ] Js.t
+  type t = [ `Uint8_clamped_array ] Jx.obj
 
-  let t = Js.raw "Uint8ClampedArray"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Uint8ClampedArray"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Uint8ClampedArray} \
    [Uint8ClampedArray] on MDN}."]
 
 and Int16_array : sig
-  type t = [ `Int16_array ] Js.t
+  type t = [ `Int16_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Int16Array} \
      [Int16Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Int16_array ] Js.t
+  type t = [ `Int16_array ] Jx.obj
 
-  let t = Js.raw "Int16Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Int16Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Int16Array} \
    [Int16Array] on MDN}."]
 
 and Uint16_array : sig
-  type t = [ `Uint16_array ] Js.t
+  type t = [ `Uint16_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Uint16Array} \
      [Uint16Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Uint16_array ] Js.t
+  type t = [ `Uint16_array ] Jx.obj
 
-  let t = Js.raw "Uint16Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Uint16Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Uint16Array} \
    [Uint16Array] on MDN}."]
 
 and Int32_array : sig
-  type t = [ `Int32_array ] Js.t
+  type t = [ `Int32_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Int32Array} \
      [Int32Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Int32_array ] Js.t
+  type t = [ `Int32_array ] Jx.obj
 
-  let t = Js.raw "Int32Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Int32Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Int32Array} \
    [Int32Array] on MDN}."]
 
 and Uint32_array : sig
-  type t = [ `Uint32_array ] Js.t
+  type t = [ `Uint32_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Uint32Array} \
      [Uint32Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Uint32_array ] Js.t
+  type t = [ `Uint32_array ] Jx.obj
 
-  let t = Js.raw "Uint32Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Uint32Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Uint32Array} \
    [Uint32Array] on MDN}."]
 
 and Float32_array : sig
-  type t = [ `Float32_array ] Js.t
+  type t = [ `Float32_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Float32Array} \
      [Float32Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Float32_array ] Js.t
+  type t = [ `Float32_array ] Jx.obj
 
-  let t = Js.raw "Float32Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Float32Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Float32Array} \
    [Float32Array] on MDN}."]
 
 and Float64_array : sig
-  type t = [ `Float64_array ] Js.t
+  type t = [ `Float64_array ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Float64Array} \
      [Float64Array]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : unit -> t
-  val make : arg_list:Js.any array -> unit -> t
+  val make : arg_list:Jx.any array -> unit -> t
   val make : length:int -> unit -> t
   val make : array:'todo_buffer -> unit -> t
-  val make : obj:Js.object' -> unit -> t
+  val make : obj:Jx.any -> unit -> t
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 end = struct
-  type t = [ `Float64_array ] Js.t
+  type t = [ `Float64_array ] Jx.obj
 
-  let t = Js.raw "Float64Array"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let make () = Js.obj_new t [||]
+  let t = Jx.expr "Float64Array"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let make () = Jx.obj_new t [||]
 
   let make ~arg_list () =
-    let arg_list = (Js.Any.of_array Js.of_any) arg_list in
-    Js.obj_new t [| arg_list |]
+    let arg_list = (E_jx.array Js.of_any) arg_list in
+    Jx.obj_new t [| arg_list |]
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let make ~array () =
     let array = to_any array in
-    Js.obj_new t [| array |]
+    Jx.obj_new t [| array |]
 
   let make ~obj () =
-    let obj = Js.to_any obj in
-    Js.obj_new t [| obj |]
+    let obj = Js_ffi.to_any obj in
+    Jx.obj_new t [| obj |]
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Float64Array} \
    [Float64Array] on MDN}."]
 
 and Map : sig
-  type t = [ `Map ] Js.t
+  type t = [ `Map ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Map} [Map]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : ?iterable:Js.object' -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : ?iterable:Jx.any -> unit -> t
 
   val clear : t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/clear} \
      [clear] on MDN}."]
 
-  val delete : key:Js.any -> t -> bool
+  val delete : key:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/delete} \
      [delete] on MDN}."]
 
-  val entries : t -> Js.object'
+  val entries : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/entries} \
      [entries] on MDN}."]
 
-  val for_each : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val for_each : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/forEach} \
      [forEach] on MDN}."]
 
-  val get : key:Js.any -> t -> unit
+  val get : key:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/get} [get] \
      on MDN}."]
 
-  val has : key:Js.any -> t -> bool
+  val has : key:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/has} [has] \
      on MDN}."]
 
-  val keys : t -> Js.object'
+  val keys : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/keys} [keys] \
      on MDN}."]
 
-  val set : key:Js.any -> value:Js.any -> t -> t
+  val set : key:Jx.any -> value:Jx.any -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/set} [set] \
      on MDN}."]
@@ -3488,67 +3424,67 @@ and Map : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/size} [size] \
      on MDN}."]
 
-  val values : t -> Js.object'
+  val values : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map/values} \
      [values] on MDN}."]
 end = struct
-  type t = [ `Map ] Js.t
+  type t = [ `Map ] Jx.obj
 
-  let t = Js.raw "Map"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Map"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?iterable () =
-    let iterable = (Js.Any.undefined_of_option Js.to_any) iterable in
-    Js.obj_new t [| iterable |]
+    let iterable = (E_jx.undefined Js_ffi.to_any) iterable in
+    Jx.obj_new t [| iterable |]
 
-  let clear this = Js.to_unit (Js.meth_call this "clear" [||])
+  let clear this = D_jx.unit (D_jx.meth this "clear" [||])
 
   let delete ~key this =
     let key = Js.of_any key in
-    Js.Any.to_bool (Js.meth_call this "delete" [| key |])
+    D_jx.bool (D_jx.meth this "delete" [| key |])
 
-  let entries this = Js.of_any (Js.meth_call this "entries" [||])
+  let entries this = Js.of_any (D_jx.meth this "entries" [||])
 
   let for_each ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "forEach" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "forEach" [| callbackfn; this_arg |])
 
   let get ~key this =
     let key = Js.of_any key in
-    Js.to_unit (Js.meth_call this "get" [| key |])
+    D_jx.unit (D_jx.meth this "get" [| key |])
 
   let has ~key this =
     let key = Js.of_any key in
-    Js.Any.to_bool (Js.meth_call this "has" [| key |])
+    D_jx.bool (D_jx.meth this "has" [| key |])
 
-  let keys this = Js.of_any (Js.meth_call this "keys" [||])
+  let keys this = Js.of_any (D_jx.meth this "keys" [||])
 
   let set ~key ~value this =
     let key = Js.of_any key in
     let value = Js.of_any value in
-    of_any (Js.meth_call this "set" [| key; value |])
+    of_any (D_jx.meth this "set" [| key; value |])
 
-  let size this = Js.Any.to_int (Js.get this "size")
-  let set_size this x = Js.set this "size" (Js.Any.of_int x)
-  let values this = Js.of_any (Js.meth_call this "values" [||])
+  let size this = D_jx.int (Js_ffi.get this "size")
+  let set_size this x = Js_ffi.set this "size" (E_jx.int x)
+  let values this = Js.of_any (D_jx.meth this "values" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Map} [Map] on MDN}."]
 
 and Set : sig
-  type t = [ `Set ] Js.t
+  type t = [ `Set ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Set} [Set]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : ?input:Iterator.t -> unit -> t
 
-  val add : value:Js.any -> t -> Js.object'
+  val add : value:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/add} [add] \
      on MDN}."]
@@ -3558,27 +3494,27 @@ and Set : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/clear} \
      [clear] on MDN}."]
 
-  val delete : value:Js.any -> t -> bool
+  val delete : value:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/delete} \
      [delete] on MDN}."]
 
-  val entries : t -> Js.object'
+  val entries : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/entries} \
      [entries] on MDN}."]
 
-  val for_each : callbackfn:Js.object' -> ?this_arg:Js.any -> t -> unit
+  val for_each : callbackfn:Jx.any -> ?this_arg:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/forEach} \
      [forEach] on MDN}."]
 
-  val has : value:Js.any -> t -> bool
+  val has : value:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/has} [has] \
      on MDN}."]
 
-  val keys : t -> Js.object'
+  val keys : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/keys} [keys] \
      on MDN}."]
@@ -3593,176 +3529,176 @@ and Set : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/size} [size] \
      on MDN}."]
 
-  val values : t -> Js.object'
+  val values : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set/values} \
      [values] on MDN}."]
 end = struct
-  type t = [ `Set ] Js.t
+  type t = [ `Set ] Jx.obj
 
-  let t = Js.raw "Set"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Set"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?input () =
-    let input = (Js.Any.undefined_of_option Iterator.to_any) input in
-    Js.obj_new t [| input |]
+    let input = (E_jx.undefined Iterator.to_any) input in
+    Jx.obj_new t [| input |]
 
   let add ~value this =
     let value = Js.of_any value in
-    Js.of_any (Js.meth_call this "add" [| value |])
+    Js.of_any (D_jx.meth this "add" [| value |])
 
-  let clear this = Js.to_unit (Js.meth_call this "clear" [||])
+  let clear this = D_jx.unit (D_jx.meth this "clear" [||])
 
   let delete ~value this =
     let value = Js.of_any value in
-    Js.Any.to_bool (Js.meth_call this "delete" [| value |])
+    D_jx.bool (D_jx.meth this "delete" [| value |])
 
-  let entries this = Js.of_any (Js.meth_call this "entries" [||])
+  let entries this = Js.of_any (D_jx.meth this "entries" [||])
 
   let for_each ~callbackfn ?this_arg this =
-    let callbackfn = Js.to_any callbackfn in
-    let this_arg = (Js.Any.undefined_of_option Js.of_any) this_arg in
-    Js.to_unit (Js.meth_call this "forEach" [| callbackfn; this_arg |])
+    let callbackfn = Js_ffi.to_any callbackfn in
+    let this_arg = (E_jx.undefined Js.of_any) this_arg in
+    D_jx.unit (D_jx.meth this "forEach" [| callbackfn; this_arg |])
 
   let has ~value this =
     let value = Js.of_any value in
-    Js.Any.to_bool (Js.meth_call this "has" [| value |])
+    D_jx.bool (D_jx.meth this "has" [| value |])
 
-  let keys this = Js.of_any (Js.meth_call this "keys" [||])
-  let size this = Js.Any.to_int (Js.get this "size")
-  let set_size this x = Js.set this "size" (Js.Any.of_int x)
-  let values this = Js.of_any (Js.meth_call this "values" [||])
+  let keys this = Js.of_any (D_jx.meth this "keys" [||])
+  let size this = D_jx.int (Js_ffi.get this "size")
+  let set_size this x = Js_ffi.set this "size" (E_jx.int x)
+  let values this = Js.of_any (D_jx.meth this "values" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Set} [Set] on MDN}."]
 
 and Weak_map : sig
-  type t = [ `Weak_map ] Js.t
+  type t = [ `Weak_map ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/WeakMap} [WeakMap]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : ?iterable:Js.object' -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : ?iterable:Jx.any -> unit -> t
 
-  val delete : key:Js.any -> t -> bool
+  val delete : key:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakMap/delete} \
      [delete] on MDN}."]
 
-  val get : key:Js.any -> t -> unit
+  val get : key:Jx.any -> t -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakMap/get} \
      [get] on MDN}."]
 
-  val has : key:Js.any -> t -> bool
+  val has : key:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakMap/has} \
      [has] on MDN}."]
 
-  val set : key:Js.any -> value:Js.any -> t -> t
+  val set : key:Jx.any -> value:Jx.any -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakMap/set} \
      [set] on MDN}."]
 end = struct
-  type t = [ `Weak_map ] Js.t
+  type t = [ `Weak_map ] Jx.obj
 
-  let t = Js.raw "WeakMap"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "WeakMap"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?iterable () =
-    let iterable = (Js.Any.undefined_of_option Js.to_any) iterable in
-    Js.obj_new t [| iterable |]
+    let iterable = (E_jx.undefined Js_ffi.to_any) iterable in
+    Jx.obj_new t [| iterable |]
 
   let delete ~key this =
     let key = Js.of_any key in
-    Js.Any.to_bool (Js.meth_call this "delete" [| key |])
+    D_jx.bool (D_jx.meth this "delete" [| key |])
 
   let get ~key this =
     let key = Js.of_any key in
-    Js.to_unit (Js.meth_call this "get" [| key |])
+    D_jx.unit (D_jx.meth this "get" [| key |])
 
   let has ~key this =
     let key = Js.of_any key in
-    Js.Any.to_bool (Js.meth_call this "has" [| key |])
+    D_jx.bool (D_jx.meth this "has" [| key |])
 
   let set ~key ~value this =
     let key = Js.of_any key in
     let value = Js.of_any value in
-    of_any (Js.meth_call this "set" [| key; value |])
+    of_any (D_jx.meth this "set" [| key; value |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakMap} [WeakMap] \
    on MDN}."]
 
 and Weak_set : sig
-  type t = [ `Weak_set ] Js.t
+  type t = [ `Weak_set ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/WeakSet} [WeakSet]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : ?iterable:Js.object' -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : ?iterable:Jx.any -> unit -> t
 
-  val add : value:Js.any -> t -> t
+  val add : value:Jx.any -> t -> t
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakSet/add} \
      [add] on MDN}."]
 
-  val delete : value:Js.any -> t -> bool
+  val delete : value:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakSet/delete} \
      [delete] on MDN}."]
 
-  val has : value:Js.any -> t -> bool
+  val has : value:Jx.any -> t -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakSet/has} \
      [has] on MDN}."]
 end = struct
-  type t = [ `Weak_set ] Js.t
+  type t = [ `Weak_set ] Jx.obj
 
-  let t = Js.raw "WeakSet"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "WeakSet"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ?iterable () =
-    let iterable = (Js.Any.undefined_of_option Js.to_any) iterable in
-    Js.obj_new t [| iterable |]
+    let iterable = (E_jx.undefined Js_ffi.to_any) iterable in
+    Jx.obj_new t [| iterable |]
 
   let add ~value this =
     let value = Js.of_any value in
-    of_any (Js.meth_call this "add" [| value |])
+    of_any (D_jx.meth this "add" [| value |])
 
   let delete ~value this =
     let value = Js.of_any value in
-    Js.Any.to_bool (Js.meth_call this "delete" [| value |])
+    D_jx.bool (D_jx.meth this "delete" [| value |])
 
   let has ~value this =
     let value = Js.of_any value in
-    Js.Any.to_bool (Js.meth_call this "has" [| value |])
+    D_jx.bool (D_jx.meth this "has" [| value |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/WeakSet} [WeakSet] \
    on MDN}."]
 
 and Array_buffer : sig
-  type t = [ `Array_buffer ] Js.t
+  type t = [ `Array_buffer ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer} \
      [ArrayBuffer]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : length:int -> unit -> t
 
-  val is_view : arg:Js.any -> unit -> bool
+  val is_view : arg:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer/isView} \
@@ -3780,36 +3716,36 @@ and Array_buffer : sig
      https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer/byteLength} \
      [byteLength] on MDN}."]
 end = struct
-  type t = [ `Array_buffer ] Js.t
+  type t = [ `Array_buffer ] Jx.obj
 
-  let t = Js.raw "ArrayBuffer"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "ArrayBuffer"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
   let is_view ~arg () =
     let arg = Js.of_any arg in
-    Js.Any.to_bool (Js.meth_call t "isView" [| arg |])
+    D_jx.bool (D_jx.meth t "isView" [| arg |])
 
-  let byte_length this = Js.Any.to_int (Js.get this "byteLength")
-  let set_byte_length this x = Js.set this "byteLength" (Js.Any.of_int x)
+  let byte_length this = D_jx.int (Js_ffi.get this "byteLength")
+  let set_byte_length this x = Js_ffi.set this "byteLength" (E_jx.int x)
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/ArrayBuffer} \
    [ArrayBuffer] on MDN}."]
 
 and Shared_array_buffer : sig
-  type t = [ `Shared_array_buffer ] Js.t
+  type t = [ `Shared_array_buffer ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/SharedArrayBuffer} \
      [SharedArrayBuffer]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val make : length:int -> unit -> t
 
   val byte_length : t -> int
@@ -3830,47 +3766,47 @@ and Shared_array_buffer : sig
      https://developer.mozilla.org/en-US/docs/Web/API/SharedArrayBuffer/slice} \
      [slice] on MDN}."]
 end = struct
-  type t = [ `Shared_array_buffer ] Js.t
+  type t = [ `Shared_array_buffer ] Jx.obj
 
-  let t = Js.raw "SharedArrayBuffer"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "SharedArrayBuffer"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~length () =
-    let length = Js.Any.of_int length in
-    Js.obj_new t [| length |]
+    let length = E_jx.int length in
+    Jx.obj_new t [| length |]
 
-  let byte_length this = Js.Any.to_int (Js.get this "byteLength")
-  let set_byte_length this x = Js.set this "byteLength" (Js.Any.of_int x)
+  let byte_length this = D_jx.int (Js_ffi.get this "byteLength")
+  let set_byte_length this x = Js_ffi.set this "byteLength" (E_jx.int x)
 
   let slice ~start ~end' this =
-    let start = Js.Any.of_int start in
-    let end' = Js.Any.of_int end' in
-    of_any (Js.meth_call this "slice" [| start; end' |])
+    let start = E_jx.int start in
+    let end' = E_jx.int end' in
+    of_any (D_jx.meth this "slice" [| start; end' |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/SharedArrayBuffer} \
    [SharedArrayBuffer] on MDN}."]
 
 and Data_view : sig
-  type t = [ `Data_view ] Js.t
+  type t = [ `Data_view ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/DataView} [DataView]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val with_buffer_and_byte_offset_and_byte_length :
-    buffer:Js.object' -> ?byte_offset:int -> ?byte_length:int -> unit -> t
+    buffer:Jx.any -> ?byte_offset:int -> ?byte_length:int -> unit -> t
 
-  val buffer : t -> Js.object'
+  val buffer : t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/DataView/buffer} \
      [buffer] on MDN}."]
 
-  val set_buffer : t -> Js.object' -> unit
+  val set_buffer : t -> Jx.any -> unit
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/DataView/buffer} \
      [buffer] on MDN}."]
@@ -3977,479 +3913,440 @@ and Data_view : sig
      https://developer.mozilla.org/en-US/docs/Web/API/DataView/setUint32} \
      [setUint32] on MDN}."]
 end = struct
-  type t = [ `Data_view ] Js.t
+  type t = [ `Data_view ] Jx.obj
 
-  let t = Js.raw "DataView"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "DataView"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let with_buffer_and_byte_offset_and_byte_length ~buffer ?byte_offset
       ?byte_length () =
-    let buffer = Js.to_any buffer in
-    let byte_offset = (Js.Any.undefined_of_option Js.Any.of_int) byte_offset in
-    let byte_length = (Js.Any.undefined_of_option Js.Any.of_int) byte_length in
-    Js.obj_new t [| buffer; byte_offset; byte_length |]
+    let buffer = Js_ffi.to_any buffer in
+    let byte_offset = (E_jx.undefined E_jx.int) byte_offset in
+    let byte_length = (E_jx.undefined E_jx.int) byte_length in
+    Jx.obj_new t [| buffer; byte_offset; byte_length |]
 
-  let buffer this = Js.of_any (Js.get this "buffer")
-  let set_buffer this x = Js.set this "buffer" (Js.to_any x)
-  let byte_length this = Js.Any.to_int (Js.get this "byteLength")
-  let set_byte_length this x = Js.set this "byteLength" (Js.Any.of_int x)
-  let byte_offset this = Js.Any.to_int (Js.get this "byteOffset")
-  let set_byte_offset this x = Js.set this "byteOffset" (Js.Any.of_int x)
+  let buffer this = Js.of_any (Js_ffi.get this "buffer")
+  let set_buffer this x = Js_ffi.set this "buffer" (Js_ffi.to_any x)
+  let byte_length this = D_jx.int (Js_ffi.get this "byteLength")
+  let set_byte_length this x = Js_ffi.set this "byteLength" (E_jx.int x)
+  let byte_offset this = D_jx.int (Js_ffi.get this "byteOffset")
+  let set_byte_offset this x = Js_ffi.set this "byteOffset" (E_jx.int x)
 
   let get_float32 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_float byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_float
-      (Js.meth_call this "getFloat32" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.float byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.float (D_jx.meth this "getFloat32" [| byte_offset; little_endian |])
 
   let get_float64 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_float byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_float
-      (Js.meth_call this "getFloat64" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.float byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.float (D_jx.meth this "getFloat64" [| byte_offset; little_endian |])
 
   let get_int16 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_int (Js.meth_call this "getInt16" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.int (D_jx.meth this "getInt16" [| byte_offset; little_endian |])
 
   let get_int32 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_int (Js.meth_call this "getInt32" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.int (D_jx.meth this "getInt32" [| byte_offset; little_endian |])
 
   let get_uint16 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_int
-      (Js.meth_call this "getUint16" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.int (D_jx.meth this "getUint16" [| byte_offset; little_endian |])
 
   let get_uint32 ~byte_offset ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.Any.to_int
-      (Js.meth_call this "getUint32" [| byte_offset; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.int (D_jx.meth this "getUint32" [| byte_offset; little_endian |])
 
   let set_float32 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_float byte_offset in
-    let value = Js.Any.of_float value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setFloat32" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.float byte_offset in
+    let value = E_jx.float value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit
+      (D_jx.meth this "setFloat32" [| byte_offset; value; little_endian |])
 
   let set_float64 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_float byte_offset in
-    let value = Js.Any.of_float value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setFloat64" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.float byte_offset in
+    let value = E_jx.float value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit
+      (D_jx.meth this "setFloat64" [| byte_offset; value; little_endian |])
 
   let set_int16 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let value = Js.Any.of_int value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setInt16" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let value = E_jx.int value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit (D_jx.meth this "setInt16" [| byte_offset; value; little_endian |])
 
   let set_int32 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let value = Js.Any.of_int value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setInt32" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let value = E_jx.int value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit (D_jx.meth this "setInt32" [| byte_offset; value; little_endian |])
 
   let set_uint16 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let value = Js.Any.of_int value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setUint16" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let value = E_jx.int value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit
+      (D_jx.meth this "setUint16" [| byte_offset; value; little_endian |])
 
   let set_uint32 ~byte_offset ~value ?little_endian this =
-    let byte_offset = Js.Any.of_int byte_offset in
-    let value = Js.Any.of_int value in
-    let little_endian =
-      (Js.Any.undefined_of_option Js.Any.of_bool) little_endian
-    in
-    Js.to_unit
-      (Js.meth_call this "setUint32" [| byte_offset; value; little_endian |])
+    let byte_offset = E_jx.int byte_offset in
+    let value = E_jx.int value in
+    let little_endian = (E_jx.undefined E_jx.bool) little_endian in
+    D_jx.unit
+      (D_jx.meth this "setUint32" [| byte_offset; value; little_endian |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/DataView} \
    [DataView] on MDN}."]
 
 and Json : sig
-  type t = [ `Json ] Js.t
+  type t = [ `Json ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/JSON} [JSON]} interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
-  val parse : text:string -> ?reviver:Js.object' -> unit -> Js.object'
+  val parse : text:string -> ?reviver:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/JSON/parse} \
      [parse] on MDN}."]
 
   val stringify :
-    value:Js.object' -> ?replacer:Js.object' -> ?space:Js.object' -> t -> string
+    value:Jx.any -> ?replacer:Jx.any -> ?space:Jx.any -> t -> string
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/JSON/stringify} \
      [stringify] on MDN}."]
 end = struct
-  type t = [ `Json ] Js.t
+  type t = [ `Json ] Jx.obj
 
-  let t = Js.raw "JSON"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "JSON"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let parse ~text ?reviver () =
-    let text = Js.Any.of_string text in
-    let reviver = (Js.Any.undefined_of_option Js.to_any) reviver in
-    Js.of_any (Js.meth_call t "parse" [| text; reviver |])
+    let text = E_jx.string text in
+    let reviver = (E_jx.undefined E_jx.obj) reviver in
+    D_jx.obj (D_jx.meth t "parse" [| text; reviver |])
 
   let stringify ~value ?replacer ?space this =
-    let value = Js.to_any value in
-    let replacer = (Js.Any.undefined_of_option Js.to_any) replacer in
-    let space = (Js.Any.undefined_of_option Js.to_any) space in
-    Js.Any.to_string (Js.meth_call this "stringify" [| value; replacer; space |])
+    let value = E_jx.obj value in
+    let replacer = (E_jx.undefined E_jx.obj) replacer in
+    let space = (E_jx.undefined E_jx.obj) space in
+    D_jx.string (D_jx.meth this "stringify" [| value; replacer; space |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/JSON} [JSON] on \
    MDN}."]
 
 and Iterator : sig
-  type t = [ `Iterator ] Js.t
+  type t = [ `Iterator ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Iterator} [Iterator]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end = struct
-  type t = [ `Iterator ] Js.t
+  type t = [ `Iterator ] Jx.obj
 
-  let t = Js.raw "Iterator"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Iterator"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Iterator} \
    [Iterator] on MDN}."]
 
 and Promise : sig
-  type t = [ `Promise ] Js.t
+  type t = [ `Promise ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Promise} [Promise]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
-  val make : executor:Js.object' -> unit -> t
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val make : executor:Jx.any -> unit -> t
 
-  val all : iterable:Js.object' -> unit -> Js.any Js.promise
+  val all : iterable:Jx.any -> unit -> Jx.any Jx.promise
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/all} \
      [all] on MDN}."]
 
-  val race : iterable:Js.object' -> unit -> Js.any Js.promise
+  val race : iterable:Jx.any -> unit -> Jx.any Jx.promise
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/race} \
      [race] on MDN}."]
 
-  val reject : r:Js.object' -> unit -> Js.any Js.promise
+  val reject : r:Jx.any -> unit -> Jx.any Jx.promise
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/reject} \
      [reject] on MDN}."]
 
-  val resolve : x:Js.object' -> unit -> Js.any Js.promise
+  val resolve : x:Jx.any -> unit -> Jx.any Jx.promise
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/resolve} \
      [resolve] on MDN}."]
 
-  val catch : on_rejected:Js.object' -> t -> Js.object'
+  val catch : on_rejected:Jx.any -> t -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/catch} \
      [catch] on MDN}."]
 
-  val then' :
-    on_fulfilled:Js.object' -> on_reject:Js.object' -> t -> Js.any Js.promise
+  val then' : on_fulfilled:Jx.any -> on_reject:Jx.any -> t -> Jx.any Jx.promise
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise/then} \
      [then] on MDN}."]
 end = struct
-  type t = [ `Promise ] Js.t
+  type t = [ `Promise ] Jx.obj
 
-  let t = Js.raw "Promise"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Promise"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let make ~executor () =
-    let executor = Js.to_any executor in
-    Js.obj_new t [| executor |]
+    let executor = Js_ffi.to_any executor in
+    Jx.obj_new t [| executor |]
 
   let all ~iterable () =
-    let iterable = Js.to_any iterable in
-    Js.meth_call t "all" [| iterable |]
+    let iterable = Js_ffi.to_any iterable in
+    D_jx.meth t "all" [| iterable |]
 
   let race ~iterable () =
-    let iterable = Js.to_any iterable in
-    Js.meth_call t "race" [| iterable |]
+    let iterable = Js_ffi.to_any iterable in
+    D_jx.meth t "race" [| iterable |]
 
   let reject ~r () =
-    let r = Js.to_any r in
-    Js.meth_call t "reject" [| r |]
+    let r = Js_ffi.to_any r in
+    D_jx.meth t "reject" [| r |]
 
   let resolve ~x () =
-    let x = Js.to_any x in
-    Js.meth_call t "resolve" [| x |]
+    let x = Js_ffi.to_any x in
+    D_jx.meth t "resolve" [| x |]
 
   let catch ~on_rejected this =
-    let on_rejected = Js.to_any on_rejected in
-    Js.of_any (Js.meth_call this "catch" [| on_rejected |])
+    let on_rejected = Js_ffi.to_any on_rejected in
+    Js.of_any (D_jx.meth this "catch" [| on_rejected |])
 
   let then' ~on_fulfilled ~on_reject this =
-    let on_fulfilled = Js.to_any on_fulfilled in
-    let on_reject = Js.to_any on_reject in
-    Js.meth_call this "then" [| on_fulfilled; on_reject |]
+    let on_fulfilled = Js_ffi.to_any on_fulfilled in
+    let on_reject = Js_ffi.to_any on_reject in
+    D_jx.meth this "then" [| on_fulfilled; on_reject |]
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Promise} [Promise] \
    on MDN}."]
 
 and Reflect : sig
-  type t = [ `Reflect ] Js.t
+  type t = [ `Reflect ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect} [Reflect]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val apply :
-    target:Js.object' ->
-    this_argument:Js.any ->
-    argument_list:Js.any array ->
+    target:Jx.any ->
+    this_argument:Jx.any ->
+    argument_list:Jx.any array ->
     unit ->
-    Js.object'
+    Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect/apply} \
      [apply] on MDN}."]
 
   val define_property :
-    target:Js.object' ->
+    target:Jx.any ->
     property_key:string ->
-    argument_list:Js.any array ->
+    argument_list:Jx.any array ->
     unit ->
-    Js.object'
+    Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/defineProperty} \
      [defineProperty] on MDN}."]
 
-  val delete_property :
-    target:Js.object' -> property_key:string -> unit -> Js.object'
+  val delete_property : target:Jx.any -> property_key:string -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/deleteProperty} \
      [deleteProperty] on MDN}."]
 
   val get :
-    target:Js.object' ->
-    property_key:string ->
-    ?reciever:Js.object' ->
-    unit ->
-    Js.object'
+    target:Jx.any -> property_key:string -> ?reciever:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect/get} \
      [get] on MDN}."]
 
   val get_own_property_descriptor :
-    target:Js.object' -> property_key:string -> unit -> Property_descriptor.t
+    target:Jx.any -> property_key:string -> unit -> Property_descriptor.t
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/getOwnPropertyDescriptor} \
      [getOwnPropertyDescriptor] on MDN}."]
 
-  val get_prototype_of : target:Js.object' -> unit -> Js.object'
+  val get_prototype_of : target:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/getPrototypeOf} \
      [getPrototypeOf] on MDN}."]
 
-  val has : target:Js.object' -> property_key:string -> unit -> bool
+  val has : target:Jx.any -> property_key:string -> unit -> bool
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect/has} \
      [has] on MDN}."]
 
-  val is_extensible : target:Js.object' -> unit -> bool
+  val is_extensible : target:Jx.any -> unit -> bool
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/isExtensible} \
      [isExtensible] on MDN}."]
 
-  val own_keys : target:Js.object' -> unit -> Js.object'
+  val own_keys : target:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect/ownKeys} \
      [ownKeys] on MDN}."]
 
-  val prevent_extensions : target:Js.object' -> unit -> Js.object'
+  val prevent_extensions : target:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/preventExtensions} \
      [preventExtensions] on MDN}."]
 
   val set :
-    target:Js.object' ->
+    target:Jx.any ->
     property_key:string ->
-    v:Js.any ->
-    ?reciever:Js.object' ->
+    v:Jx.any ->
+    ?reciever:Jx.any ->
     unit ->
-    Js.object'
+    Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect/set} \
      [set] on MDN}."]
 
-  val set_prototype_of :
-    target:Js.object' -> proto:Js.object' -> unit -> Js.object'
+  val set_prototype_of : target:Jx.any -> proto:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Reflect/setPrototypeOf} \
      [setPrototypeOf] on MDN}."]
 end = struct
-  type t = [ `Reflect ] Js.t
+  type t = [ `Reflect ] Jx.obj
 
-  let t = Js.raw "Reflect"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Reflect"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let apply ~target ~this_argument ~argument_list () =
-    let target = Js.to_any target in
+    let target = Js_ffi.to_any target in
     let this_argument = Js.of_any this_argument in
-    let argument_list = (Js.Any.of_array Js.of_any) argument_list in
-    Js.of_any (Js.meth_call t "apply" [| target; this_argument; argument_list |])
+    let argument_list = (E_jx.array Js.of_any) argument_list in
+    Js.of_any (D_jx.meth t "apply" [| target; this_argument; argument_list |])
 
   let define_property ~target ~property_key ~argument_list () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
-    let argument_list = (Js.Any.of_array Js.of_any) argument_list in
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
+    let argument_list = (E_jx.array Js.of_any) argument_list in
     Js.of_any
-      (Js.meth_call t "defineProperty" [| target; property_key; argument_list |])
+      (D_jx.meth t "defineProperty" [| target; property_key; argument_list |])
 
   let delete_property ~target ~property_key () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
-    Js.of_any (Js.meth_call t "deleteProperty" [| target; property_key |])
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
+    Js.of_any (D_jx.meth t "deleteProperty" [| target; property_key |])
 
   let get ~target ~property_key ?reciever () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
-    let reciever = (Js.Any.undefined_of_option Js.to_any) reciever in
-    Js.of_any (Js.meth_call t "get" [| target; property_key; reciever |])
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
+    let reciever = (E_jx.undefined Js_ffi.to_any) reciever in
+    Js.of_any (D_jx.meth t "get" [| target; property_key; reciever |])
 
   let get_own_property_descriptor ~target ~property_key () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
     Property_descriptor.of_any
-      (Js.meth_call t "getOwnPropertyDescriptor" [| target; property_key |])
+      (D_jx.meth t "getOwnPropertyDescriptor" [| target; property_key |])
 
   let get_prototype_of ~target () =
-    let target = Js.to_any target in
-    Js.of_any (Js.meth_call t "getPrototypeOf" [| target |])
+    let target = Js_ffi.to_any target in
+    Js.of_any (D_jx.meth t "getPrototypeOf" [| target |])
 
   let has ~target ~property_key () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
-    Js.Any.to_bool (Js.meth_call t "has" [| target; property_key |])
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
+    D_jx.bool (D_jx.meth t "has" [| target; property_key |])
 
   let is_extensible ~target () =
-    let target = Js.to_any target in
-    Js.Any.to_bool (Js.meth_call t "isExtensible" [| target |])
+    let target = Js_ffi.to_any target in
+    D_jx.bool (D_jx.meth t "isExtensible" [| target |])
 
   let own_keys ~target () =
-    let target = Js.to_any target in
-    Js.of_any (Js.meth_call t "ownKeys" [| target |])
+    let target = Js_ffi.to_any target in
+    Js.of_any (D_jx.meth t "ownKeys" [| target |])
 
   let prevent_extensions ~target () =
-    let target = Js.to_any target in
-    Js.of_any (Js.meth_call t "preventExtensions" [| target |])
+    let target = Js_ffi.to_any target in
+    Js.of_any (D_jx.meth t "preventExtensions" [| target |])
 
   let set ~target ~property_key ~v ?reciever () =
-    let target = Js.to_any target in
-    let property_key = Js.Any.of_string property_key in
+    let target = Js_ffi.to_any target in
+    let property_key = E_jx.string property_key in
     let v = Js.of_any v in
-    let reciever = (Js.Any.undefined_of_option Js.to_any) reciever in
-    Js.of_any (Js.meth_call t "set" [| target; property_key; v; reciever |])
+    let reciever = (E_jx.undefined Js_ffi.to_any) reciever in
+    Js.of_any (D_jx.meth t "set" [| target; property_key; v; reciever |])
 
   let set_prototype_of ~target ~proto () =
-    let target = Js.to_any target in
-    let proto = Js.to_any proto in
-    Js.of_any (Js.meth_call t "setPrototypeOf" [| target; proto |])
+    let target = Js_ffi.to_any target in
+    let proto = Js_ffi.to_any proto in
+    Js.of_any (D_jx.meth t "setPrototypeOf" [| target; proto |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Reflect} [Reflect] \
    on MDN}."]
 
 and Proxy : sig
-  type t = [ `Proxy ] Js.t
+  type t = [ `Proxy ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Proxy} [Proxy]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
+  val with_target_and_handler : target:Jx.any -> handler:Jx.any -> unit -> t
 
-  val with_target_and_handler :
-    target:Js.object' -> handler:Js.object' -> unit -> t
-
-  val revocable : target:Js.object' -> handler:Js.object' -> unit -> Js.object'
+  val revocable : target:Jx.any -> handler:Jx.any -> unit -> Jx.any
   [@@ocaml.doc
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Proxy/revocable} \
      [revocable] on MDN}."]
 end = struct
-  type t = [ `Proxy ] Js.t
+  type t = [ `Proxy ] Jx.obj
 
-  let t = Js.raw "Proxy"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Proxy"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let with_target_and_handler ~target ~handler () =
-    let target = Js.to_any target in
-    let handler = Js.to_any handler in
-    Js.obj_new t [| target; handler |]
+    let target = Js_ffi.to_any target in
+    let handler = Js_ffi.to_any handler in
+    Jx.obj_new t [| target; handler |]
 
   let revocable ~target ~handler () =
-    let target = Js.to_any target in
-    let handler = Js.to_any handler in
-    Js.of_any (Js.meth_call t "revocable" [| target; handler |])
+    let target = Js_ffi.to_any target in
+    let handler = Js_ffi.to_any handler in
+    Js.of_any (D_jx.meth t "revocable" [| target; handler |])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Proxy} [Proxy] on \
@@ -4461,13 +4358,13 @@ and Intl : sig
     "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Intl/Collator} \
      [Collator] on MDN}."]
 
-  val date_time_format : Js.object'
+  val date_time_format : Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Intl/DateTimeFormat} \
      [DateTimeFormat] on MDN}."]
 
-  val number_format : Js.object'
+  val number_format : Jx.any
   [@@ocaml.doc
     "See {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Intl/NumberFormat} \
@@ -4479,35 +4376,34 @@ and Intl : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Intl/getCanonicalLocales} \
      [getCanonicalLocales] on MDN}."]
 end = struct
-  let t = Js.global "Intl"
-  let collator = Collator.of_any (Js.get t "Collator")
-  let date_time_format = Js.of_any (Js.get t "DateTimeFormat")
-  let number_format = Js.of_any (Js.get t "NumberFormat")
+  let t = Js_ffi.global "Intl"
+  let collator = Collator.of_any (Js_ffi.get t "Collator")
+  let date_time_format = Js.of_any (Js_ffi.get t "DateTimeFormat")
+  let number_format = Js.of_any (Js_ffi.get t "NumberFormat")
 
   let get_canonical_locales ~locales () =
-    let locales = (Js.Any.of_array Js.Any.of_string) locales in
-    (Js.Any.to_array Js.Any.to_string)
-      (Js.meth_call t "getCanonicalLocales" [| locales |])
+    let locales = (E_jx.array E_jx.string) locales in
+    (D_jx.array D_jx.string) (D_jx.meth t "getCanonicalLocales" [| locales |])
 end
 
 and Collator : sig
-  type t = [ `Collator ] Js.t
+  type t = [ `Collator ] Jx.obj
   [@@ocaml.doc
     "The type for the {{: \
      https://developer.mozilla.org/en-US/docs/Web/API/Collator} [Collator]} \
      interface."]
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val with_locales_and_options :
-    ?locales:[< `String | `Sequence ] Js.t ->
+    ?locales:[< `String | `Sequence ] Jx.obj ->
     ?options:Collator_init.t ->
     unit ->
     t
 
   val supported_locales_of :
-    locales:[< `String | `Sequence ] Js.t ->
+    locales:[< `String | `Sequence ] Jx.obj ->
     ?options:Supported_locales_options.t ->
     unit ->
     string array
@@ -4528,32 +4424,30 @@ and Collator : sig
      https://developer.mozilla.org/en-US/docs/Web/API/Collator/resolvedOptions} \
      [resolvedOptions] on MDN}."]
 end = struct
-  type t = [ `Collator ] Js.t
+  type t = [ `Collator ] Jx.obj
 
-  let t = Js.raw "Collator"
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let t = Jx.expr "Collator"
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let with_locales_and_options ?locales ?options () =
-    let locales = (Js.Any.undefined_of_option Js.to_any) locales in
-    let options = (Js.Any.undefined_of_option Collator_init.to_any) options in
-    Js.obj_new t [| locales; options |]
+    let locales = (E_jx.undefined E_jx.obj) locales in
+    let options = (E_jx.undefined Collator_init.to_any) options in
+    Jx.obj_new t [| locales; options |]
 
   let supported_locales_of ~locales ?options () =
-    let locales = Js.to_any locales in
-    let options =
-      (Js.Any.undefined_of_option Supported_locales_options.to_any) options
-    in
-    (Js.Any.to_array Js.Any.to_string)
-      (Js.meth_call t "supportedLocalesOf" [| locales; options |])
+    let locales = E_jx.obj locales in
+    let options = (E_jx.undefined Supported_locales_options.to_any) options in
+    (D_jx.array D_jx.string)
+      (D_jx.meth t "supportedLocalesOf" [| locales; options |])
 
   let compare ~string1 ~string2 this =
-    let string1 = Js.Any.of_string string1 in
-    let string2 = Js.Any.of_string string2 in
-    Js.Any.to_bool (Js.meth_call this "compare" [| string1; string2 |])
+    let string1 = E_jx.string string1 in
+    let string2 = E_jx.string string2 in
+    D_jx.bool (D_jx.meth this "compare" [| string1; string2 |])
 
   let resolved_options this =
-    Collator_options.of_any (Js.meth_call this "resolvedOptions" [||])
+    Collator_options.of_any (D_jx.meth this "resolvedOptions" [||])
 end
 [@@ocaml.doc
   "See {{: https://developer.mozilla.org/en-US/docs/Web/API/Collator} \
@@ -4573,8 +4467,8 @@ and Collator_options : sig
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val locale : t -> string option
   val usage : t -> Collator_usage.t option
   val sensitivity : t -> Collator_sensitivity.t option
@@ -4583,24 +4477,18 @@ and Collator_options : sig
   val numeric : t -> bool option
   val case_first : t -> Collator_case.t option
 end = struct
-  type t = Js.object'
+  type t = Jx.any
 
   let make ?locale ?usage ?sensitivity ?ignore_punctuation ?collation ?numeric
       ?case_first () =
-    let locale = (Js.Any.nullable_of_option Js.Any.of_string) locale in
-    let usage = (Js.Any.nullable_of_option Collator_usage.to_any) usage in
-    let sensitivity =
-      (Js.Any.nullable_of_option Collator_sensitivity.to_any) sensitivity
-    in
-    let ignore_punctuation =
-      (Js.Any.nullable_of_option Js.Any.of_bool) ignore_punctuation
-    in
-    let collation = (Js.Any.nullable_of_option Js.Any.of_string) collation in
-    let numeric = (Js.Any.nullable_of_option Js.Any.of_bool) numeric in
-    let case_first =
-      (Js.Any.nullable_of_option Collator_case.to_any) case_first
-    in
-    Js.obj
+    let locale = (E_jx.nullable E_jx.string) locale in
+    let usage = (E_jx.nullable Collator_usage.to_any) usage in
+    let sensitivity = (E_jx.nullable Collator_sensitivity.to_any) sensitivity in
+    let ignore_punctuation = (E_jx.nullable E_jx.bool) ignore_punctuation in
+    let collation = (E_jx.nullable E_jx.string) collation in
+    let numeric = (E_jx.nullable E_jx.bool) numeric in
+    let case_first = (E_jx.nullable Collator_case.to_any) case_first in
+    Jx.obj
       [|
         ("locale", locale);
         ("usage", usage);
@@ -4611,38 +4499,32 @@ end = struct
         ("caseFirst", case_first);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-
-  let locale this =
-    (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "locale")
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let locale this = (D_jx.nullable D_jx.string) (Js_ffi.get this "locale")
 
   let usage this =
-    (Js.Any.nullable_to_option Collator_usage.of_any) (Js.get this "usage")
+    (D_jx.nullable Collator_usage.of_any) (Js_ffi.get this "usage")
 
   let sensitivity this =
-    (Js.Any.nullable_to_option Collator_sensitivity.of_any)
-      (Js.get this "sensitivity")
+    (D_jx.nullable Collator_sensitivity.of_any) (Js_ffi.get this "sensitivity")
 
   let ignore_punctuation this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "ignorePunctuation")
+    (D_jx.nullable D_jx.bool) (Js_ffi.get this "ignorePunctuation")
 
-  let collation this =
-    (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "collation")
-
-  let numeric this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "numeric")
+  let collation this = (D_jx.nullable D_jx.string) (Js_ffi.get this "collation")
+  let numeric this = (D_jx.nullable D_jx.bool) (Js_ffi.get this "numeric")
 
   let case_first this =
-    (Js.Any.nullable_to_option Collator_case.of_any) (Js.get this "caseFirst")
+    (D_jx.nullable Collator_case.of_any) (Js_ffi.get this "caseFirst")
 end
 
 and Collator_sensitivity : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val base : t [@@ocaml.doc "The [base] enum value."]
 
@@ -4652,23 +4534,23 @@ and Collator_sensitivity : sig
 
   val variant : t [@@ocaml.doc "The [variant] enum value."]
 end = struct
-  type t = Js.string
+  type t = Jx.any
 
-  let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let base = Js.of_string "base"
-  let accent = Js.of_string "accent"
-  let case = Js.of_string "case"
-  let variant = Js.of_string "variant"
+  let to_string = D_jx.string
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let base = E_jx.string "base"
+  let accent = E_jx.string "accent"
+  let case = E_jx.string "case"
+  let variant = E_jx.string "variant"
 end
 
 and Collator_case : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val upper : t [@@ocaml.doc "The [upper] enum value."]
 
@@ -4676,54 +4558,54 @@ and Collator_case : sig
 
   val false' : t [@@ocaml.doc "The [false] enum value."]
 end = struct
-  type t = Js.string
+  type t = Jx.any
 
-  let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let upper = Js.of_string "upper"
-  let lowe = Js.of_string "lowe"
-  let false' = Js.of_string "false"
+  let to_string = D_jx.string
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let upper = E_jx.string "upper"
+  let lowe = E_jx.string "lowe"
+  let false' = E_jx.string "false"
 end
 
 and Collator_locale_matcher : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val lookup : t [@@ocaml.doc "The [lookup] enum value."]
 
   val best_fit : t [@@ocaml.doc "The [best fit] enum value."]
 end = struct
-  type t = Js.string
+  type t = Jx.any
 
-  let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let lookup = Js.of_string "lookup"
-  let best_fit = Js.of_string "best fit"
+  let to_string = D_jx.string
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let lookup = E_jx.string "lookup"
+  let best_fit = E_jx.string "best fit"
 end
 
 and Collator_usage : sig
   type t
 
   val to_string : t -> string
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 
   val sort : t [@@ocaml.doc "The [sort] enum value."]
 
   val search : t [@@ocaml.doc "The [search] enum value."]
 end = struct
-  type t = Js.string
+  type t = Jx.any
 
-  let to_string = Js.to_string
-  let to_any = Js.to_any
-  let of_any = Js.of_any
-  let sort = Js.of_string "sort"
-  let search = Js.of_string "search"
+  let to_string = D_jx.string
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
+  let sort = E_jx.string "sort"
+  let search = E_jx.string "search"
 end
 
 and Collator_init : sig
@@ -4740,8 +4622,8 @@ and Collator_init : sig
     unit ->
     t
 
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val usage : t -> Collator_usage.t option
   val locale_matcher : t -> Collator_locale_matcher.t option
   val collation : t -> string option
@@ -4750,26 +4632,20 @@ and Collator_init : sig
   val sensitivity : t -> Collator_sensitivity.t option
   val ignore_punctuation : t -> bool option
 end = struct
-  type t = Js.object'
+  type t = Jx.any
 
   let make ?usage ?locale_matcher ?collation ?numeric ?case_first ?sensitivity
       ?ignore_punctuation () =
-    let usage = (Js.Any.nullable_of_option Collator_usage.to_any) usage in
+    let usage = (E_jx.nullable Collator_usage.to_any) usage in
     let locale_matcher =
-      (Js.Any.nullable_of_option Collator_locale_matcher.to_any) locale_matcher
+      (E_jx.nullable Collator_locale_matcher.to_any) locale_matcher
     in
-    let collation = (Js.Any.nullable_of_option Js.Any.of_string) collation in
-    let numeric = (Js.Any.nullable_of_option Js.Any.of_bool) numeric in
-    let case_first =
-      (Js.Any.nullable_of_option Collator_case.to_any) case_first
-    in
-    let sensitivity =
-      (Js.Any.nullable_of_option Collator_sensitivity.to_any) sensitivity
-    in
-    let ignore_punctuation =
-      (Js.Any.nullable_of_option Js.Any.of_bool) ignore_punctuation
-    in
-    Js.obj
+    let collation = (E_jx.nullable E_jx.string) collation in
+    let numeric = (E_jx.nullable E_jx.bool) numeric in
+    let case_first = (E_jx.nullable Collator_case.to_any) case_first in
+    let sensitivity = (E_jx.nullable Collator_sensitivity.to_any) sensitivity in
+    let ignore_punctuation = (E_jx.nullable E_jx.bool) ignore_punctuation in
+    Jx.obj
       [|
         ("usage", usage);
         ("localeMatcher", locale_matcher);
@@ -4780,53 +4656,49 @@ end = struct
         ("ignorePunctuation", ignore_punctuation);
       |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let usage this =
-    (Js.Any.nullable_to_option Collator_usage.of_any) (Js.get this "usage")
+    (D_jx.nullable Collator_usage.of_any) (Js_ffi.get this "usage")
 
   let locale_matcher this =
-    (Js.Any.nullable_to_option Collator_locale_matcher.of_any)
-      (Js.get this "localeMatcher")
+    (D_jx.nullable Collator_locale_matcher.of_any)
+      (Js_ffi.get this "localeMatcher")
 
-  let collation this =
-    (Js.Any.nullable_to_option Js.Any.to_string) (Js.get this "collation")
-
-  let numeric this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "numeric")
+  let collation this = (D_jx.nullable D_jx.string) (Js_ffi.get this "collation")
+  let numeric this = (D_jx.nullable D_jx.bool) (Js_ffi.get this "numeric")
 
   let case_first this =
-    (Js.Any.nullable_to_option Collator_case.of_any) (Js.get this "caseFirst")
+    (D_jx.nullable Collator_case.of_any) (Js_ffi.get this "caseFirst")
 
   let sensitivity this =
-    (Js.Any.nullable_to_option Collator_sensitivity.of_any)
-      (Js.get this "sensitivity")
+    (D_jx.nullable Collator_sensitivity.of_any) (Js_ffi.get this "sensitivity")
 
   let ignore_punctuation this =
-    (Js.Any.nullable_to_option Js.Any.to_bool) (Js.get this "ignorePunctuation")
+    (D_jx.nullable D_jx.bool) (Js_ffi.get this "ignorePunctuation")
 end
 
 and Supported_locales_options : sig
   type t [@@ocaml.doc "The type for the [SupportedLocalesOptions] dictionary."]
 
   val make : ?locale_matcher:Collator_locale_matcher.t -> unit -> t
-  val of_any : Js.any -> t
-  val to_any : t -> Js.any
+  val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
   val locale_matcher : t -> Collator_locale_matcher.t option
 end = struct
-  type t = Js.object'
+  type t = Jx.any
 
   let make ?locale_matcher () =
     let locale_matcher =
-      (Js.Any.nullable_of_option Collator_locale_matcher.to_any) locale_matcher
+      (E_jx.nullable Collator_locale_matcher.to_any) locale_matcher
     in
-    Js.obj [| ("localeMatcher", locale_matcher) |]
+    Jx.obj [| ("localeMatcher", locale_matcher) |]
 
-  let to_any = Js.to_any
-  let of_any = Js.of_any
+  let to_any = E_jx.obj
+  let of_any = D_jx.obj
 
   let locale_matcher this =
-    (Js.Any.nullable_to_option Collator_locale_matcher.of_any)
-      (Js.get this "localeMatcher")
+    (D_jx.nullable Collator_locale_matcher.of_any)
+      (Js_ffi.get this "localeMatcher")
 end

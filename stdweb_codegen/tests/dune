@@ -1,6 +1,6 @@
 
 
-; Scratch.webidl
+; --- Scratch.webidl ---
 (rule
  (deps Scratch.webidl)
  (targets Scratch.actual.ml)
@@ -12,28 +12,33 @@
     (run %{bin:ocamlformat} --impl -)))))
 
 
-(rule
- (alias runtest)
- (action
-  (diff Scratch.actual.ml Scratch.ml)))
+;(rule
+; (alias runtest)
+; (action
+;  (diff Scratch.actual.ml Scratch.ml)))
 
 (library
   (name scratch)
   (modules Scratch)
-  (libraries js))
+  (libraries jx))
 
-;; Basic.webidl
-;(rule
-; (deps Basic.webidl)
-; (action
-;  (with-stdout-to
-;   Basic.actual.mli
-;   (pipe-stdout
-;    (run %{bin:stdweb_codegen} %{deps} -)
-;    (run %{bin:ocamlformat} --intf -)))))
-;
-;
-;(rule
-; (alias runtest)
-; (action
-;  (diff Basic.actual.mli Basic.expected.mli)))
+; Basic
+(rule
+ (deps Basic.webidl)
+ (action
+  (with-stdout-to
+   Basic.actual.ml
+   (pipe-stdout
+    (run %{bin:stdweb_codegen} %{deps} -)
+    (run %{bin:ocamlformat} --impl -)))))
+
+
+(rule
+ (alias runtest)
+ (action
+  (diff Basic.actual.ml Basic.ml)))
+
+(library
+  (name basic_test)
+  (modules Basic_test Basic)
+  (libraries jx))

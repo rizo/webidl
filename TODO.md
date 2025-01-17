@@ -6,7 +6,7 @@
 - [ ] Empty stringifier.
 - [ ] ~~Implement `Dates[]` syntax.~~
   - Deprecated? Find reference.
-- [ ] Translate `(t or undefined)` to `t Js.optional`.
+- [ ] Translate `(t or undefined)` to `t Js.undefined`.
 - [ ] `Js.any` alias for `Js.t`
 - [ ] Should getters for "optional" dict members be `Js.nullable`?
 - [ ] Consider inlining callback interface types.
@@ -33,3 +33,7 @@ type t = [< `Event | `String ] Js.t -> string -> int -> int -> Js.any -> Js.any
 - [ ] Better tracking of type variables for union types. We need to consult the types ctx.
 - [ ] Unresolved includes are not reported.
 - [ ] Consider turning ``[ `Object ] Js.t`` into `'a Js.t`.
+- [ ] Optimization: check constant strings and use `string_ascii` js codecs.
+- [ ] Should Js container values be allowed to hold OCaml values when used in the Encode/Decode context?
+- [ ] Warn on `void` and assume `undefined`.
+- [ ] Aliases for `string`, `int`, etc.

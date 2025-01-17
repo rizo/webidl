@@ -1,4 +1,4 @@
 (library
   (name maplibre_gl)
   (modules Maplibre_gl)
-  (libraries js_ffi))
+  (libraries jx))

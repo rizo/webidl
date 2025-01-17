@@ -20,6 +20,7 @@
           float , FLOAT ;
           double , DOUBLE ;
           any , ANY ;
+          bigint , BIGINT ;
           (* void , VOID ; *)
           boolean , BOOLEAN ;
           object_ , OBJECT ;

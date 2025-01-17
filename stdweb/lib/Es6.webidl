@@ -6,7 +6,7 @@ interface Window {
     static USVString encodeURIComponent(USVString uriComponent);
     static DOMString escape(DOMString value);
     static DOMString unescape(DOMString value);
-    static object eval(DOMString value);
+    static any eval(DOMString value);
 
     //static attribute float Infinity;
     //static attribute any NaN;
@@ -115,7 +115,7 @@ interface Symbol {
   static DOMString keyFor(DOMString sym);
   static readonly attribute boolean hasInstance;
   static readonly attribute boolean isConcatSpreadable;
-  static readonly attribute sequence<Symbol> iterator;
+  static readonly attribute sequence<symbol> iterator;
   static readonly attribute sequence<DOMString> match;
   static readonly attribute DOMString replace;
   static readonly attribute unsigned long search;
@@ -422,7 +422,7 @@ interface RegExp {
 interface Array {
   constructor();
   constructor(unsigned long len);
-  constructor(any... args);
+  constructor(T... args);
   static Array from(any items, optional object mapfn, optional any thisArg);
   static boolean isArray(any arg);
   static Array of(any... items);
@@ -440,8 +440,8 @@ interface Array {
   DOMString join(DOMString separator);
   object keys();
   long lastIndexOf(any searchElement, optional long fromIndex);
-  Array map(object callbackfn, optional any thisArg);
-  object pop();
+  Array map(any fn, optional any thisArg);
+  any pop();
   unsigned long push(any... items);
   object reduce(object callbackfn, optional any initialValue);
   object reduceRight(object callbackfn, optional any initialValue);

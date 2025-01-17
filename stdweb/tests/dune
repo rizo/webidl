@@ -4,7 +4,7 @@
 (executable
   (name test_dom)
   (modules Test_dom)
-  (libraries dom js)
+  (libraries dom jx)
   (modes js))
 
 (alias

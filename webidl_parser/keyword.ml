@@ -11,6 +11,7 @@ let unrestricted = "unrestricted"
 let float = "float"
 let double = "double"
 let any = "any"
+let bigint = "bigint"
 
 (* let void = "void" *)
 let boolean = "boolean"

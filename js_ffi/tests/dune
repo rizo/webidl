@@ -1,9 +1,0 @@
-(executable
-  (name index)
-  (libraries js_ffi)
-  (modes js))
-
-
-(alias
- (name all)
- (deps index.html))

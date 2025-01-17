@@ -9,7 +9,7 @@
 
 
 %token LBRACE RBRACE LBRACKET RBRACKET LPAR RPAR LT GT
-%token UNSIGNED BYTE OCTET SHORT LONG
+%token UNSIGNED BYTE OCTET SHORT LONG BIGINT
 %token DOMSTRING USVSTRING BYTESTRING
 %token UNRESTRICTED FLOAT DOUBLE
 %token ANY BOOLEAN OBJECT SYMBOL OR
@@ -560,6 +560,7 @@ primitiveType :
     | BOOLEAN { `Boolean }
     | BYTE { `Byte }
     | OCTET { `Octet }
+    | BIGINT { `Bigint }
 
 unrestrictedFloatType :
   | UNRESTRICTED floatType { (`Unrestricted $2 :> unrestricted_float_type) }

@@ -1,11 +1,13 @@
 let
   onix = import (builtins.fetchGit {
     url = "https://github.com/rizo/onix.git";
-    rev = "965220946cb33005e60ab568cf8dade3371d8150";
+    rev = "41bf9e887fa8f1399ac328f1868d6d2ba27aab9f";
   }) { verbosity = "info"; };
 
 in onix.env {
   path = ./.;
+
+  env-file = ./onix.env;
 
   vars = {
     "with-test" = true;

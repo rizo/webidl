@@ -19,7 +19,7 @@
   (name dom)
   (public_name stdweb.dom)
   (modules Dom)
-  (libraries js))
+  (libraries jx))
 
 
 ; Es6
@@ -43,7 +43,7 @@
   (name es6)
   (public_name stdweb.es6)
   (modules Es6)
-  (libraries js))
+  (libraries jx))
 
 
 ; Es6_ast

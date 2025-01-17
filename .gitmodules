@@ -1,0 +1,3 @@
+[submodule "vendor/jx"]
+	path = vendor/jx
+	url = https://github.com/rizo/jx
