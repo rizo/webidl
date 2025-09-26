@@ -8,8 +8,8 @@ end
 
 module Wi = Webidl_ast
 module Ml = Ppxlib_ast.Ast_helper
-module Asttypes = Astlib.Ast_414.Asttypes
-module Parsetree = Astlib.Ast_414.Parsetree
+module Asttypes = Astlib.Ast_502.Asttypes
+module Parsetree = Astlib.Ast_502.Parsetree
 open Prelude
 
 let cat ?(sep = "") xs = String.concat sep xs
@@ -273,6 +273,9 @@ module Ml' = struct
       Ml.Typ.constr ?loc ?attrs ident args
 
     let seq ?loc ?attrs arg = m_t ?loc ?attrs "Seq" [ arg ]
+
+    let variant_empty_open ?loc ?attrs () =
+      Ml.Typ.mk ?loc ?attrs (Ptyp_variant ([], Open, None))
   end
 
   module Exp = struct
@@ -424,7 +427,7 @@ module Gen_common = struct
     | `Unsigned `Short
     | `Unsigned `Long
     | `Unsigned `Long_long
-    | `Short | `Long | `Long_long -> `Ml_val "int"
+    | `Short | `Long | `Long_long -> `Js_obj "number"
     | `Bigint -> `Js_obj "bigint"
 
   let gen_primitive_type this =
@@ -469,9 +472,9 @@ module Gen_sig = struct
 
   let gen_string (this : Wi.string_type) =
     match this with
-    | `Byte_string -> Ml'.Typ.mk0 "string"
-    | `Dom_string -> Ml'.Typ.mk0 "string"
-    | `Usv_string -> Ml'.Typ.mk0 "string"
+    | `Byte_string -> Ml_js.Typ.mk0 "string"
+    | `Dom_string -> Ml_js.Typ.mk0 "string"
+    | `Usv_string -> Ml_js.Typ.mk0 "string"
 
   let gen_type_name ~(ctx : Analyze.ctx) ?scope ?(return = false) id =
     (* scope has not been renamed *)
@@ -498,7 +501,7 @@ module Gen_sig = struct
     | `Sequence that ->
       let arg = gen_type_ext ~ctx that in
       Ml_js.Typ.array arg
-    | `Object -> Ml_js.Typ.mk1 "obj" (Ml.Typ.any ())
+    | `Object -> Ml_js.Typ.mk1 "obj" (Ml'.Typ.variant_empty_open ())
     | `Symbol -> Ml_js.Typ.mk0 "symbol"
     | #Wi.buffer_type -> todo "buffer"
     (* TODO: review, for now gen as sequence *)
@@ -847,7 +850,7 @@ module Gen_sig = struct
   (* --- Callback interface --- *)
 
   let gen_mono_any_conv () =
-    let ret = Ml.Typ.constr (ident_noloc [ "Js"; "any" ]) [] in
+    let ret = Ml.Typ.constr (ident_noloc [ "Jx"; "any" ]) [] in
     let to_any_t = Ml.Typ.arrow Nolabel Ml'.Typ.t0 ret in
     let of_any_t = Ml.Typ.arrow Nolabel ret Ml'.Typ.t0 in
     let to_any_vd = Ml.Val.mk (mknoloc "to_any") to_any_t in
@@ -1116,13 +1119,13 @@ module Gen_str = struct
       Ml.Str.value Nonrecursive
         [
           Ml.Vb.mk
-            (Ml.Pat.var (mknoloc "to_any"))
+            (Ml.Pat.var (mknoloc "of_any"))
             (Ml.Exp.fun_ Nolabel None this_pat this_exp);
         ];
       Ml.Str.value Nonrecursive
         [
           Ml.Vb.mk
-            (Ml.Pat.var (mknoloc "of_any"))
+            (Ml.Pat.var (mknoloc "to_any"))
             (Ml.Exp.fun_ Nolabel None this_pat this_exp);
         ];
     ]
@@ -1254,6 +1257,7 @@ module Gen_str = struct
     (* TODO: no optional attrs? *)
     let exp = gen_conv_ext_apply ~scope `js_of_ml this.type_ x_exp in
     let exp = Jx_builder.set (if is_static then t_exp else this_exp) key exp in
+    (* TODO: Use n-ary pexp constructor *)
     let exp = Ml.Exp.fun_ Nolabel None x_pat exp in
     let exp =
       if is_static then exp else Ml.Exp.fun_ Nolabel None this_pat exp
@@ -1504,12 +1508,12 @@ module Gen_str = struct
     gen_interface_member interface_member
 
   let gen_interface_any_conv () =
-    let to_any_pat = Ml.Pat.var (mknoloc "to_any") in
     let of_any_pat = Ml.Pat.var (mknoloc "of_any") in
-    let to_any = Ml.Vb.mk to_any_pat (ident_exp [ "Jx"; "to_any" ]) in
-    let of_any = Ml.Vb.mk of_any_pat (ident_exp [ "Jx"; "of_any" ]) in
+    let to_any_pat = Ml.Pat.var (mknoloc "to_any") in
+    let of_any = Ml.Vb.mk of_any_pat (ident_exp [ "D_jx"; "obj" ]) in
+    let to_any = Ml.Vb.mk to_any_pat (ident_exp [ "E_jx"; "obj" ]) in
     [
-      Ml.Str.value Nonrecursive [ to_any ]; Ml.Str.value Nonrecursive [ of_any ];
+      Ml.Str.value Nonrecursive [ of_any ]; Ml.Str.value Nonrecursive [ to_any ];
     ]
 
   let gen_interface ~(ctx : Analyze.ctx) (this : Wi.Interface.t) =
@@ -1676,13 +1680,13 @@ module Gen_str = struct
 
   let gen_enum_to_any () =
     let pat = Ml.Pat.var (mknoloc "to_any") in
-    let exp = ident_exp [ "Jx"; "to_any" ] in
+    let exp = ident_exp [ "E_jx"; "string" ] in
     let vb = Ml.Vb.mk pat exp in
     Ml.Str.value Nonrecursive [ vb ]
 
   let gen_enum_of_any () =
     let pat = Ml.Pat.var (mknoloc "of_any") in
-    let exp = ident_exp [ "Jx"; "of_any" ] in
+    let exp = ident_exp [ "D_jx"; "string" ] in
     let vb = Ml.Vb.mk pat exp in
     Ml.Str.value Nonrecursive [ vb ]
 
@@ -1709,7 +1713,7 @@ module Gen_str = struct
         )
         this.values
     in
-    let any_conv_items = [ gen_enum_to_any (); gen_enum_of_any () ] in
+    let any_conv_items = [ gen_enum_of_any (); gen_enum_to_any () ] in
     Ml.Mod.structure ((t_item :: to_str_val :: any_conv_items) @ cases_items)
 
   (* Namespace *)

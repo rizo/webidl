@@ -17,7 +17,7 @@
 
 ## Principles
 
-1. Prioritize OCaml patterns and types when possible.
+- Prioritize OCaml patterns and types when possible.
   - This might add additional conversion overhead, but substantially simplifies working with the bindings.
   - For users who want to fully reduce conversion overhead it is possible to use the low-level FFI API.
   - In the future we could provide a secondary generator tht prioritizes Js values.

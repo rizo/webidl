@@ -37,3 +37,4 @@ type t = [< `Event | `String ] Js.t -> string -> int -> int -> Js.any -> Js.any
 - [ ] Should Js container values be allowed to hold OCaml values when used in the Encode/Decode context?
 - [ ] Warn on `void` and assume `undefined`.
 - [ ] Aliases for `string`, `int`, etc.
+- [ ] Webidl has many integer types, but JS only has Number. Should we add `[`Int] obj` as a subset of Number?

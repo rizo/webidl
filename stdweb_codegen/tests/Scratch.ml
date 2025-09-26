@@ -171,67 +171,67 @@ end = struct
     D_jx.unit (D_jx.meth this "tn1" [| x |])
 
   let bo1 ?x this =
-    let x = (E_jx.optional E_jx.bool) x in
+    let x = (E_jx.undefined E_jx.bool) x in
     D_jx.unit (D_jx.meth this "bo1" [| x |])
 
   let bo2 ?x this =
-    let x = (E_jx.optional E_jx.bool) x in
+    let x = (E_jx.undefined E_jx.bool) x in
     D_jx.unit (D_jx.meth this "bo2" [| x |])
 
   let bo3 ?x this =
-    let x = (E_jx.optional (E_jx.nullable E_jx.bool)) x in
+    let x = (E_jx.undefined (E_jx.nullable E_jx.bool)) x in
     D_jx.unit (D_jx.meth this "bo3" [| x |])
 
   let bo4 ?x this =
-    let x = (E_jx.optional (E_jx.nullable E_jx.bool)) x in
+    let x = (E_jx.undefined (E_jx.nullable E_jx.bool)) x in
     D_jx.unit (D_jx.meth this "bo4" [| x |])
 
   let bo5 ?x this =
-    let x = (E_jx.optional (E_jx.nullable E_jx.bool)) x in
+    let x = (E_jx.undefined (E_jx.nullable E_jx.bool)) x in
     D_jx.unit (D_jx.meth this "bo5" [| x |])
 
   let to1 ?x this =
-    let x = (E_jx.optional T.to_any) x in
+    let x = (E_jx.undefined T.to_any) x in
     D_jx.unit (D_jx.meth this "to1" [| x |])
 
   let to2 ?x this =
-    let x = (E_jx.optional (E_jx.nullable T.to_any)) x in
+    let x = (E_jx.undefined (E_jx.nullable T.to_any)) x in
     D_jx.unit (D_jx.meth this "to2" [| x |])
 
   let to3 ?x this =
-    let x = (E_jx.optional (E_jx.nullable T.to_any)) x in
+    let x = (E_jx.undefined (E_jx.nullable T.to_any)) x in
     D_jx.unit (D_jx.meth this "to3" [| x |])
 
   let ao1 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ao1" [| x |])
 
   let ao2 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ao2" [| x |])
 
   let ao3 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ao3" [| x |])
 
   let ou1 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ou1" [| x |])
 
   let ou2 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ou2" [| x |])
 
   let ou3 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ou3" [| x |])
 
   let ou4 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ou4" [| x |])
 
   let ou5 ?x this =
-    let x = (E_jx.optional E_jx.any) x in
+    let x = (E_jx.undefined E_jx.any) x in
     D_jx.unit (D_jx.meth this "ou5" [| x |])
 end
 [@@ocaml.doc

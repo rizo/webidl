@@ -597,24 +597,24 @@ promiseType :
 // https://webidl.spec.whatwg.org/#prod-RecordType
 recordType :
   | RECORD LT stringType COMMA typeWithExtendedAttributes GT
-    { `Record ($3, $5) }
+    { (`Record ($3, $5) :> distinguishable_type) }
 
 %public null :
   | QUESTION { true }
   | { false }
 
 %public bufferRelatedType :
-  | ARRAYBUFFER { `ArrayBuffer }
-  | DATAVIEW { `DataView }
-  | INT8ARRAY { `Int8Array }
-  | INT16ARRAY { `Int16Array }
-  | INT32ARRAY { `Int32Array }
-  | UINT8ARRAY { `Uint8Array }
-  | UINT16ARRAY { `Uint16Array }
-  | UINT32ARRAY { `Uint32Array }
-  | UINT8CLAMPEDARRAY { `Uint8ClampedArray }
-  | FLOAT32ARRAY { `Float32Array }
-  | FLOAT64ARRAY { `Float64Array }
+  | ARRAYBUFFER { (`ArrayBuffer :> distinguishable_type) }
+  | DATAVIEW { (`DataView :> distinguishable_type) }
+  | INT8ARRAY { (`Int8Array :> distinguishable_type) }
+  | INT16ARRAY { (`Int16Array :> distinguishable_type) }
+  | INT32ARRAY { (`Int32Array :> distinguishable_type) }
+  | UINT8ARRAY { (`Uint8Array :> distinguishable_type) }
+  | UINT16ARRAY { (`Uint16Array :> distinguishable_type) }
+  | UINT32ARRAY { (`Uint32Array :> distinguishable_type) }
+  | UINT8CLAMPEDARRAY { (`Uint8ClampedArray :> distinguishable_type) }
+  | FLOAT32ARRAY { (`Float32Array :> distinguishable_type) }
+  | FLOAT64ARRAY { (`Float64Array :> distinguishable_type) }
 
 
 // BASIC EXTENDED ATTRIBUTES

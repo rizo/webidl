@@ -49,7 +49,7 @@ interface Types1 {
     // Custom
     attribute T1 c1;
     attribute T2 c2;
-    attribute T_missing c3;
+    //attribute T_missing c3;
 
     // Nullable
     attribute object? nul1;
@@ -58,7 +58,7 @@ interface Types1 {
     attribute bigint? nul4;
     attribute DOMString? nul5;
     attribute T1? nul6;
-    attribute T_missing? nul7;
+    //attribute T_missing? nul7;
 
     // Sequence
     attribute sequence<Promise<double>> s2;
@@ -212,10 +212,10 @@ namespace N2 {
 
 // --- Typedef ---
 
-typedef (Int8Array or Int16Array or Int32Array or
-         Uint8Array or Uint16Array or Uint32Array or Uint8ClampedArray or
-         BigInt64Array or BigUint64Array or
-         Float16Array or Float32Array or Float64Array or DataView) ArrayBufferView;
+//typedef (Int8Array or Int16Array or Int32Array or
+//         Uint8Array or Uint16Array or Uint32Array or Uint8ClampedArray or
+//         BigInt64Array or BigUint64Array or
+//         Float16Array or Float32Array or Float64Array or DataView) ArrayBufferView;
 
 
 // TODO
@@ -234,7 +234,7 @@ interface NodeList {
     sequence<Node> filter((NodeFilter? or DOMString) by);
     sequence<Node> filterByFunc(NodeFilter func);
     sequence<Node> filterByFuncNullable(NodeFilter? func);
-    sequence<Node> filterByName(DomString name);
+    sequence<Node> filterByName(DOMString name);
 };
 
 callback interface NodeFilter {
