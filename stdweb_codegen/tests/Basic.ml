@@ -135,30 +135,30 @@ end = struct
   let set_obj1 this = fun x -> Jx.set this "obj1" (E_jx.obj x)
   let a1 this = D_jx.obj (Jx.get this "a1")
   let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
-  let bl1 this = D_jx.bool (Jx.get this "bl1")
-  let set_bl1 this = fun x -> Jx.set this "bl1" (E_jx.bool x)
+  let bl1 this = D_jx.obj (Jx.get this "bl1")
+  let set_bl1 this = fun x -> Jx.set this "bl1" (E_jx.obj x)
   let bt1 this = D_jx.char (Jx.get this "bt1")
   let set_bt1 this = fun x -> Jx.set this "bt1" (E_jx.char x)
   let oc1 this = D_jx.char (Jx.get this "oc1")
   let set_oc1 this = fun x -> Jx.set this "oc1" (E_jx.char x)
-  let n1 this = D_jx.int (Jx.get this "n1")
-  let set_n1 this = fun x -> Jx.set this "n1" (E_jx.int x)
-  let n2 this = D_jx.int (Jx.get this "n2")
-  let set_n2 this = fun x -> Jx.set this "n2" (E_jx.int x)
-  let n3 this = D_jx.int (Jx.get this "n3")
-  let set_n3 this = fun x -> Jx.set this "n3" (E_jx.int x)
-  let n4 this = D_jx.int (Jx.get this "n4")
-  let set_n4 this = fun x -> Jx.set this "n4" (E_jx.int x)
-  let n5 this = D_jx.int (Jx.get this "n5")
-  let set_n5 this = fun x -> Jx.set this "n5" (E_jx.int x)
-  let n6 this = D_jx.int (Jx.get this "n6")
-  let set_n6 this = fun x -> Jx.set this "n6" (E_jx.int x)
-  let n7 this = D_jx.float (Jx.get this "n7")
-  let set_n7 this = fun x -> Jx.set this "n7" (E_jx.float x)
-  let n8 this = D_jx.float (Jx.get this "n8")
-  let set_n8 this = fun x -> Jx.set this "n8" (E_jx.float x)
-  let n9 this = D_jx.float (Jx.get this "n9")
-  let set_n9 this = fun x -> Jx.set this "n9" (E_jx.float x)
+  let n1 this = D_jx.obj (Jx.get this "n1")
+  let set_n1 this = fun x -> Jx.set this "n1" (E_jx.obj x)
+  let n2 this = D_jx.obj (Jx.get this "n2")
+  let set_n2 this = fun x -> Jx.set this "n2" (E_jx.obj x)
+  let n3 this = D_jx.obj (Jx.get this "n3")
+  let set_n3 this = fun x -> Jx.set this "n3" (E_jx.obj x)
+  let n4 this = D_jx.obj (Jx.get this "n4")
+  let set_n4 this = fun x -> Jx.set this "n4" (E_jx.obj x)
+  let n5 this = D_jx.obj (Jx.get this "n5")
+  let set_n5 this = fun x -> Jx.set this "n5" (E_jx.obj x)
+  let n6 this = D_jx.obj (Jx.get this "n6")
+  let set_n6 this = fun x -> Jx.set this "n6" (E_jx.obj x)
+  let n7 this = D_jx.obj (Jx.get this "n7")
+  let set_n7 this = fun x -> Jx.set this "n7" (E_jx.obj x)
+  let n8 this = D_jx.obj (Jx.get this "n8")
+  let set_n8 this = fun x -> Jx.set this "n8" (E_jx.obj x)
+  let n9 this = D_jx.obj (Jx.get this "n9")
+  let set_n9 this = fun x -> Jx.set this "n9" (E_jx.obj x)
   let bi1 this = D_jx.obj (Jx.get this "bi1")
   let set_bi1 this = fun x -> Jx.set this "bi1" (E_jx.obj x)
   let s1 this = D_jx.string (Jx.get this "s1")
@@ -228,15 +228,15 @@ end = struct
    fun ~b ->
     fun ~c ->
      fun () ->
-      let a = E_jx.int a in
-      let b = E_jx.int b in
-      let c = E_jx.int c in
+      let a = E_jx.obj a in
+      let b = E_jx.obj b in
+      let c = E_jx.obj c in
       D_jx.obj (D_jx.meth t "f3" [| a; b; c |])
 
   let f4 ~a =
    fun ~b ->
     fun () ->
-     let a = E_jx.bool a in
+     let a = E_jx.obj a in
      let b = E_jx.obj b in
      D_jx.obj (D_jx.meth t "f4" [| a; b |])
 
@@ -324,14 +324,14 @@ end = struct
   let t = Jx.expr "Attr1"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let a1 this = D_jx.int (Jx.get this "a1")
-  let set_a1 this = fun x -> Jx.set this "a1" (E_jx.int x)
-  let a2 this = D_jx.float (Jx.get this "a2")
-  let set_a2 this = fun x -> Jx.set this "a2" (E_jx.float x)
-  let a3 this = D_jx.bool (Jx.get this "a3")
-  let set_a3 this = fun x -> Jx.set this "a3" (E_jx.bool x)
-  let a4 this = D_jx.string (Jx.get this "a4")
-  let set_a4 this = fun x -> Jx.set this "a4" (E_jx.string x)
+  let a1 this = D_jx.obj (Jx.get this "a1")
+  let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
+  let a2 this = D_jx.obj (Jx.get this "a2")
+  let set_a2 this = fun x -> Jx.set this "a2" (E_jx.obj x)
+  let a3 this = D_jx.obj (Jx.get this "a3")
+  let set_a3 this = fun x -> Jx.set this "a3" (E_jx.obj x)
+  let a4 this = D_jx.obj (Jx.get this "a4")
+  let set_a4 this = fun x -> Jx.set this "a4" (E_jx.obj x)
   let a5 this = Attr2.of_any (Jx.get this "a5")
   let set_a5 this = fun x -> Jx.set this "a5" (Attr2.to_any x)
   let a6 this = D_jx.obj (Jx.get this "a6")
@@ -384,14 +384,14 @@ end = struct
   let t = Jx.expr "Ops1"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let f1 this = D_jx.float (D_jx.meth this "f1" [||])
+  let f1 this = D_jx.obj (D_jx.meth this "f1" [||])
 
   let f2 ~x =
    fun ~y ->
     fun this ->
-     let x = E_jx.int x in
-     let y = E_jx.int y in
-     D_jx.float (D_jx.meth this "f2" [| x; y |])
+     let x = E_jx.obj x in
+     let y = E_jx.obj y in
+     D_jx.obj (D_jx.meth this "f2" [| x; y |])
 
   let f3 ~x =
    fun this ->
@@ -564,7 +564,7 @@ end = struct
 
   let make ?a =
    fun () ->
-    let a = (E_jx.nullable E_jx.bool) a in
+    let a = (E_jx.nullable E_jx.obj) a in
     Jx.obj [| ("a", a) |]
 
   let of_any = D_jx.obj
@@ -586,14 +586,14 @@ end = struct
   let make ?a =
    fun ~b ->
     fun () ->
-     let a = (E_jx.nullable E_jx.bool) a in
-     let b = E_jx.int b in
+     let a = (E_jx.nullable E_jx.obj) a in
+     let b = E_jx.obj b in
      Jx.obj [| ("a", a); ("b", b) |]
 
   let of_any = D_jx.obj
   let to_any = E_jx.obj
   let a this = D_jx.obj (Jx.get this "a")
-  let b this = D_jx.int (Jx.get this "b")
+  let b this = D_jx.obj (Jx.get this "b")
 end
 
 and N2 : sig
@@ -601,7 +601,7 @@ and N2 : sig
   val f : unit -> unit
 end = struct
   let t = Jx.expr "N2"
-  let x = D_jx.int (Jx.get t "x")
+  let x = D_jx.obj (Jx.get t "x")
   let f () = D_jx.unit (D_jx.meth t "f" [||])
 end
 
@@ -692,7 +692,7 @@ and Node_list : sig
   val filter_by_func_nullable :
     func:[ `Node_filter ] Jx.nullable -> t -> Node.t Jx.array
 
-  val filter_by_name : name:string -> t -> Node.t Jx.array
+  val filter_by_name : name:Jx.string -> t -> Node.t Jx.array
 end = struct
   type t = [ `Node_list ] Jx.obj
 
@@ -717,21 +717,20 @@ end = struct
 
   let filter_by_name ~name =
    fun this ->
-    let name = E_jx.string name in
+    let name = E_jx.obj name in
     D_jx.obj (D_jx.meth this "filterByName" [| name |])
 end
 
 and Node_filter : sig
   type t = [ `Node_filter ] Jx.obj
 
-  (* val make : (Node.t -> bool) -> [> `Node_filter] Jx.obj *)
   val make : (Node.t -> bool) -> t
-  val to_any : t -> Jx.any
   val of_any : Jx.any -> t
+  val to_any : t -> Jx.any
 end = struct
   type t = [ `Node_filter ] Jx.obj
 
   let make f = D_jx.obj (E_jx.func 1 f)
-  let to_any = E_jx.obj
   let of_any = D_jx.obj
+  let to_any = E_jx.obj
 end
