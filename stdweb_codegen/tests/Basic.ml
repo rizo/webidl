@@ -161,12 +161,12 @@ end = struct
   let set_n9 this = fun x -> Jx.set this "n9" (E_jx.obj x)
   let bi1 this = D_jx.obj (Jx.get this "bi1")
   let set_bi1 this = fun x -> Jx.set this "bi1" (E_jx.obj x)
-  let s1 this = D_jx.string (Jx.get this "s1")
-  let set_s1 this = fun x -> Jx.set this "s1" (E_jx.string x)
-  let s2 this = D_jx.string (Jx.get this "s2")
-  let set_s2 this = fun x -> Jx.set this "s2" (E_jx.string x)
-  let s3 this = D_jx.string (Jx.get this "s3")
-  let set_s3 this = fun x -> Jx.set this "s3" (E_jx.string x)
+  let s1 this = D_jx.obj (Jx.get this "s1")
+  let set_s1 this = fun x -> Jx.set this "s1" (E_jx.obj x)
+  let s2 this = D_jx.obj (Jx.get this "s2")
+  let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
+  let s3 this = D_jx.obj (Jx.get this "s3")
+  let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
   let sy1 this = D_jx.obj (Jx.get this "sy1")
   let set_sy1 this = fun x -> Jx.set this "sy1" (E_jx.obj x)
   let c1 this = T1.of_any (Jx.get this "c1")
@@ -282,21 +282,23 @@ end = struct
 end
 
 and Cb1 : sig
-  type t = Jx.number Jx.nullable -> Jx.boolean -> Jx.string
+  type t = [ `Cb1 ] Jx.obj
 
+  val make : (Jx.number Jx.nullable -> Jx.boolean -> Jx.string) -> t
   val of_any : Jx.any -> t
   val to_any : t -> Jx.any
 end = struct
-  type t = Jx.number Jx.nullable -> Jx.boolean -> Jx.string
+  type t = [ `Cb1 ] Jx.obj
 
-  let of_any any =
-    let __func = D_jx.func any in
-    fun a b ->
-      let a = Jx.Nullable.to_any E_jx.int a in
-      let b = E_jx.bool b in
-      D_jx.string (__func [| a; b |])
+  let make f = D_jx.obj (E_jx.func 1 f)
+  let of_any any = D_jx.obj any
+  (* let __func = D_jx.func any in *)
+  (* fun a b -> *)
+  (*   let a = Jx.Nullable.to_any E_jx.int a in *)
+  (*   let b = E_jx.bool b in *)
+  (*   D_jx.string (__func [| a; b |]) *)
 
-  let to_any this = E_jx.func 1 this
+  let to_any = E_jx.obj
 end
 
 and Attr1 : sig
@@ -405,10 +407,10 @@ end = struct
     fun ?a ->
      fun ?b ->
       fun this ->
-       let x = E_jx.string x in
-       let y = E_jx.bool y in
-       let a = E_jx.undefined E_jx.string a in
-       let b = E_jx.undefined E_jx.bool b in
+       let x = E_jx.obj x in
+       let y = E_jx.obj y in
+       let a = E_jx.undefined E_jx.obj a in
+       let b = E_jx.undefined E_jx.obj b in
        D_jx.unit (D_jx.meth this "f5" [| x; y; a; b |])
 end
 
@@ -529,11 +531,11 @@ end = struct
   let t = Jx.expr "A5"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let x this = D_jx.int (Jx.get this "x")
-  let set_x this = fun x -> Jx.set this "x" (E_jx.int x)
-  let y this = D_jx.int (Jx.get this "y")
-  let set_y this = fun x -> Jx.set this "y" (E_jx.int x)
-  let z = 5
+  let x this = D_jx.obj (Jx.get this "x")
+  let set_x this = fun x -> Jx.set this "x" (E_jx.obj x)
+  let y this = D_jx.obj (Jx.get this "y")
+  let set_y this = fun x -> Jx.set this "y" (E_jx.obj x)
+  let z = Jx.int 5
   let f this = D_jx.unit (D_jx.meth this "f" [||])
 end
 
@@ -657,7 +659,7 @@ end = struct
    fun ~callback ->
     fun ?options ->
      fun this ->
-      let type' = E_jx.string type' in
+      let type' = E_jx.obj type' in
       let callback = E_jx.obj callback in
       let options = E_jx.obj_undefined options in
       D_jx.unit
