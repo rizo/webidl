@@ -540,11 +540,14 @@ module Gen_sig = struct
             in
             if is_nullable then nullable_tag (Ml.Typ.variant [ tag ] Closed None)
             else tag
-          | `Single (_ext, (t : Wi.distinguishable_type), is_nullable) ->
+            (* `Nullable of _ *)
+          | `Single (_ext, (t : Wi.distinguishable_type), true (* is_nullable *))
+            -> nullable_tag (gen_distinguishable ~ctx t)
+          | `Single
+              (_ext, (t : Wi.distinguishable_type), false (* is_nullable *)) ->
             let name = Gen_common.type_tag t in
             let tag = Ml.Rf.tag (mknoloc name) false [] in
-            if is_nullable then nullable_tag (Ml.Typ.variant [ tag ] Closed None)
-            else tag
+            tag
           | `Nested u -> todo "union union"
           )
         ts'
