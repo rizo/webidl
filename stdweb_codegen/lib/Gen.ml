@@ -288,6 +288,7 @@ module Ml' = struct
     let none () = Ml.Exp.construct (mknoloc (Longident.Lident "None")) None
     let some x = Ml.Exp.construct (mknoloc (Longident.Lident "Some")) (Some x)
     let string x = Ml.Exp.constant (Ml.Const.string x)
+    let int x = Ml.Exp.constant (Ml.Const.int x)
   end
 end
 
@@ -1769,6 +1770,23 @@ module Gen_str = struct
     let vb = Ml.Vb.mk pat exp in
     Ml.Str.value Nonrecursive [ vb ]
 
+  (* let make f = D_jx.obj (E_jx.func $n f) *)
+  let gen_callback_make ~scope (op : Wi.Regular_operation.t) =
+    let args_len = List.length op.arguments in
+    let f_arg = ident_exp [ "f" ] in
+    let body =
+      let ret_exp =
+        exp_apply_no_labels
+          (ident_exp [ "E_jx"; "func" ])
+          [ Ml'.Exp.int args_len; f_arg ]
+      in
+      gen_conv_ext_apply ~scope `ml_of_js ([], op.return) ret_exp
+    in
+    let pat = Ml.Pat.var (mknoloc "make") in
+    let exp = Ml.Exp.fun_ Nolabel None (pat_var "f") body in
+    let vb = Ml.Vb.mk pat exp in
+    Ml.Str.value Nonrecursive [ vb ]
+
   let gen_callback_of_any ~scope (op : Wi.Regular_operation.t) =
     let ml_args_rev =
       List.fold_left
@@ -1856,7 +1874,11 @@ module Gen_str = struct
     let cb_typ_item = [ Ml.Str.type_ Recursive [ cb_typ ] ] in
     Ml.Mod.structure
       (cb_typ_item
-      @ [ gen_callback_to_any op; gen_callback_of_any ~scope op ]
+      @ [
+          gen_callback_make ~scope op;
+          gen_callback_to_any op;
+          gen_callback_of_any ~scope op;
+        ]
       @ const_l
       )
 

@@ -710,7 +710,7 @@ end
 and Node_filter : sig
   type t = [ `Node_filter ] Jx.obj
 
-  val make : (Node.t -> bool) -> t
+  val make : ([ `Node ] Jx.obj -> Jx.boolean) -> t
   val of_any : Jx.any -> t
   val to_any : t -> Jx.any
 end = struct
