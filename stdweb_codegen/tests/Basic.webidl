@@ -58,7 +58,8 @@ interface Types1 {
     attribute bigint? nul4;
     attribute DOMString? nul5;
     attribute T1? nul6;
-    //attribute T_missing? nul7;
+    attribute (DOMString or sequence<long>)? nul7;
+    //attribute T_missing? nul8;
 
     // Sequence
     attribute sequence<Promise<double>> s2;

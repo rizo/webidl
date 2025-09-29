@@ -77,6 +77,11 @@ and Types1 : sig
   val set_nul5 : t -> Jx.string Jx.nullable -> unit
   val nul6 : t -> T1.t Jx.nullable
   val set_nul6 : t -> T1.t Jx.nullable -> unit
+  val nul7 : t -> [< `Array of Jx.number | `String ] Jx.obj Jx.nullable
+
+  val set_nul7 :
+    t -> [< `Array of Jx.number | `String ] Jx.obj Jx.nullable -> unit
+
   val s2 : t -> Jx.number Jx.promise Jx.array
   val set_s2 : t -> Jx.number Jx.promise Jx.array -> unit
   val s3 : t -> Jx.string Jx.promise Jx.array
@@ -107,10 +112,13 @@ and Types1 : sig
   val set_u3 : t -> [< `Number | `String ] Jx.obj -> unit
   val u4 : t -> [< `Number | `String ] Jx.obj
   val set_u4 : t -> [< `Number | `String ] Jx.obj -> unit
-  val u5 : t -> [< `Array | `Number ] Jx.obj
-  val set_u5 : t -> [< `Array | `Number ] Jx.obj -> unit
-  val u6 : t -> [< `Array | `Number | `String ] Jx.obj
-  val set_u6 : t -> [< `Array | `Number | `String ] Jx.obj -> unit
+  val u5 : t -> [< `Array of Jx.number | `Number ] Jx.obj
+  val set_u5 : t -> [< `Array of Jx.number | `Number ] Jx.obj -> unit
+  val u6 : t -> [< `Array of T1.t Jx.promise | `Number | `String ] Jx.obj
+
+  val set_u6 :
+    t -> [< `Array of T1.t Jx.promise | `Number | `String ] Jx.obj -> unit
+
   val u7 : t -> [< `Cb1 | `Number ] Jx.obj
   val set_u7 : t -> [< `Cb1 | `Number ] Jx.obj -> unit
   val f1 : unit -> unit
@@ -121,7 +129,7 @@ and Types1 : sig
   val f6 : cb:Cb1.t -> unit -> Jx.any
   val f7 : cb:Cb1.t Jx.nullable -> unit -> Jx.any
   val f8 : a:[< `Boolean | `Cb1 ] Jx.obj -> unit -> Jx.any
-  val f9 : a:[< `Nullable of [ `Cb1 ] | `String ] Jx.obj -> unit -> Jx.any
+  val f9 : a:[< `Nullable of Cb1.t | `String ] Jx.obj -> unit -> Jx.any
   val f10 : unit -> Cb1.t
 end = struct
   type t = [ `Types1 ] Jx.obj
@@ -607,18 +615,6 @@ end = struct
   let f () = D_jx.unit (D_jx.meth t "f" [||])
 end
 
-and Event : sig
-  type t = [ `Event ] Jx.obj
-
-  val of_any : Jx.any -> t
-  val to_any : t -> Jx.any
-end = struct
-  type t = [ `Event ] Jx.obj
-
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-end
-
 and Event_listener : sig
   type t = Event.t -> unit
 
@@ -666,18 +662,6 @@ end = struct
         (D_jx.meth this "addEventListener" [| type'; callback; options |])
 end
 
-and Node : sig
-  type t = [ `Node ] Jx.obj
-
-  val of_any : Jx.any -> t
-  val to_any : t -> Jx.any
-end = struct
-  type t = [ `Node ] Jx.obj
-
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-end
-
 and Node_list : sig
   type t = [ `Node_list ] Jx.obj
 
@@ -685,14 +669,12 @@ and Node_list : sig
   val to_any : t -> Jx.any
 
   val filter :
-    by:[< `Nullable of [ `Node_filter ] | `String ] Jx.obj ->
-    t ->
-    Node.t Jx.array
+    by:[< `Nullable of Node_filter.t | `String ] Jx.obj -> t -> Node.t Jx.array
 
   val filter_by_func : func:Node_filter.t -> t -> Node.t Jx.array
 
   val filter_by_func_nullable :
-    func:[ `Node_filter ] Jx.nullable -> t -> Node.t Jx.array
+    func:Node_filter.t Jx.nullable -> t -> Node.t Jx.array
 
   val filter_by_name : name:Jx.string -> t -> Node.t Jx.array
 end = struct

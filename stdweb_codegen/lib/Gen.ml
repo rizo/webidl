@@ -523,7 +523,7 @@ module Gen_sig = struct
 
      what about (a? or b?)? - is this allowed?
   *)
-  and gen_union ((t1, t2, ts), is_nullable) =
+  and gen_union ~ctx ((t1, t2, ts), is_nullable) =
     let todo x =
       Ml.Rf.tag (mknoloc "Todo") false [ Ml.Typ.var ("todo_" ^ x) ]
     in
@@ -532,6 +532,14 @@ module Gen_sig = struct
     let cases =
       List.map
         (function
+          (* TODO: Add other polymorphic types (eg. promise) *)
+          | `Single (_ext, (`Sequence x_t as t), is_nullable) ->
+            let name = Gen_common.type_tag t in
+            let tag =
+              Ml.Rf.tag (mknoloc name) false [ gen_type_ext ~ctx x_t ]
+            in
+            if is_nullable then nullable_tag (Ml.Typ.variant [ tag ] Closed None)
+            else tag
           | `Single (_ext, (t : Wi.distinguishable_type), is_nullable) ->
             let name = Gen_common.type_tag t in
             let tag = Ml.Rf.tag (mknoloc name) false [] in
@@ -543,7 +551,8 @@ module Gen_sig = struct
     in
     let cases = List.sort_uniq Stdlib.compare cases in
     let t = Ml.Typ.variant cases Closed (Some []) in
-    if is_nullable then Ml_js.Typ.nullable t else Ml_js.Typ.obj1 t
+    if is_nullable then Ml_js.Typ.nullable (Ml_js.Typ.obj1 t)
+    else Ml_js.Typ.obj1 t
 
   and gen_type ~ctx ?scope ?return (this : Wi.type_) =
     match this with
@@ -553,7 +562,7 @@ module Gen_sig = struct
     | `Promise that ->
       let arg = gen_type ~ctx that in
       Ml_js.Typ.promise arg
-    | `Union that -> gen_union that
+    | `Union that -> gen_union ~ctx that
 
   and gen_type_ext ~ctx ?scope ?return ((_ext, type') : Wi.type_ext) =
     gen_type ~ctx ?scope ?return type'
@@ -1136,7 +1145,7 @@ module Gen_str = struct
     let todo x = failwith ("todo_" ^ x) in
     match this with
     | #Wi.primitive_type as that -> Gen_common.classify_primitive_type that
-    | #Wi.string_type -> `Ml_val "string"
+    | #Wi.string_type -> `Js_obj "string"
     | `Name that -> `Named that
     | `Sequence that ->
       let arg = classify_type_ext that in
@@ -1191,7 +1200,7 @@ module Gen_str = struct
       | `Named name ->
         let name' = Config.rename_upper name in
         ident_exp [ name'; named_suffix ]
-      | `Nullable (`Union _) -> ident_exp [ "Jx"; named_suffix ]
+      | `Nullable (`Union _) -> ident_exp [ "Jxyyyyy"; named_suffix ]
       | `Nullable _that -> ident_exp [ codec_mod_name; "obj" ]
       | `Scoped1 (path, that) ->
         let conv_that_exp = loop that in

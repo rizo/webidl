@@ -1,15 +1,5 @@
 open Basic
 
-module Jx = struct
-  type 'a obj = 'a Jx.obj
-
-  external string : Stdlib.String.t -> [ `String ] Jx.obj = "%identity"
-  external nullable : 'a Jx.obj -> 'a Jx.Nullable.t = "%identity"
-
-  let null = Jx.null
-  let log = Jx.log
-end
-
 let () = Jx.log "Basic"
 
 let test_2 =
