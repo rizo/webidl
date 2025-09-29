@@ -1203,7 +1203,7 @@ module Gen_str = struct
       | `Named name ->
         let name' = Config.rename_upper name in
         ident_exp [ name'; named_suffix ]
-      | `Nullable (`Union _) -> ident_exp [ "Jxyyyyy"; named_suffix ]
+      | `Nullable (`Union _) -> ident_exp [ codec_mod_name; "obj" ]
       | `Nullable _that -> ident_exp [ codec_mod_name; "obj" ]
       | `Scoped1 (path, that) ->
         let conv_that_exp = loop that in
