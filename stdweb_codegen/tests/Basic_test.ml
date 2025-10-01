@@ -7,11 +7,13 @@ let test_2 =
 
 let test_3 this =
   let _ =
-    Node_list.filter_by_func ~func:(Node_filter.make (fun _node -> true)) this
+    Node_list.filter_by_func
+      ~func:(Node_filter.make (fun _node -> Jx.true'))
+      this
   in
   let _ =
     Node_list.filter_by_func_nullable
-      ~func:(Jx.nullable (Node_filter.make (fun _node -> true)))
+      ~func:(Jx.nullable (Node_filter.make (fun _node -> Jx.true')))
       this
   in
   let _ = Node_list.filter_by_name ~name:(Jx.string "div") this in
@@ -20,15 +22,19 @@ let test_3 this =
   ()
 
 let test_5 this =
-  Node_list.filter ~by:(Jx.nullable (Node_filter.make (fun _node -> true))) this
+  Node_list.filter
+    ~by:(Jx.nullable (Node_filter.make (fun _node -> Jx.true')))
+    this
 
 let test_6_1 this =
-  Node_list.filter ~by:(Jx.nullable (Node_filter.make (fun _node -> true))) this
+  Node_list.filter
+    ~by:(Jx.nullable (Node_filter.make (fun _node -> Jx.true')))
+    this
 
 let test_6_2 this = Node_list.filter ~by:(Jx.string "div") this
 
 let test_7 this =
-  Node_list.filter_by_func ~func:(Node_filter.make (fun _node -> true)) this
+  Node_list.filter_by_func ~func:(Node_filter.make (fun _node -> Jx.true')) this
 
 let test_9 this = Node_list.filter_by_name ~name:(Jx.string "div") this
 let any () : [> ] Jx.obj = Obj.magic 0

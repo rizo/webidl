@@ -31,9 +31,9 @@ interface UndocInterface {};
   // [FIXME] Syntax error near "Promise"
   // Constructor(boolean bar, sequence<double> foo, Promise<double> blah)
 ]
-interface SuperStar {};
+interface SuperStar2 {};
 
-[Constructor] interface SuperStar {};
+[Constructor] interface SuperStar3 {};
 
 
 // https://www.w3.org/respec/examples/webidl-contiguous.html#constants
@@ -134,7 +134,7 @@ interface SerializerMap {
 
 
 // https://www.w3.org/respec/examples/webidl-contiguous.html#comments
-interface SuperStar {
+interface SuperStar4 {
   // This is a comment
   // over two lines.
 };

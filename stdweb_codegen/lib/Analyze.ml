@@ -113,4 +113,13 @@ and analyze_definition ctx (_ext, (definition : Wi.definition)) =
         ctx.mixins
     in
     { ctx with mixins }
+  | Callback cb ->
+    let types = String_map.add cb.name None ctx.types in
+    { ctx with types }
+  | Callback_interface cbi ->
+    let types = String_map.add cbi.name None ctx.types in
+    { ctx with types }
+  | Enum e ->
+    let types = String_map.add e.name None ctx.types in
+    { ctx with types }
   | _ -> ctx

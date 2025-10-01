@@ -49,7 +49,7 @@ interface Types1 {
     // Custom
     attribute T1 c1;
     attribute T2 c2;
-    //attribute T_missing c3;
+    attribute T_missing c3;
 
     // Nullable
     attribute object? nul1;
@@ -59,7 +59,7 @@ interface Types1 {
     attribute DOMString? nul5;
     attribute T1? nul6;
     attribute (DOMString or sequence<long>)? nul7;
-    //attribute T_missing? nul8;
+    attribute T_missing? nul8;
 
     // Sequence
     attribute sequence<Promise<double>> s2;
@@ -161,7 +161,7 @@ interface A4 {
 
 enum ScrollBehavior { "auto", "instant", "smooth" };
 // [FIXME] Generates invalid idents
-enum StyleEnum { "", "first-value", "SECOND-VALUE" };
+enum StyleEnum { "", "first-value", "SECOND-VALUE", ">", "a>", ">a" };
 
 
 // --- Partials ---

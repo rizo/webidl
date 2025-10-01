@@ -65,6 +65,8 @@ and Types1 : sig
   val set_c1 : t -> T1.t -> unit
   val c2 : t -> T2.t
   val set_c2 : t -> T2.t -> unit
+  val c3 : t -> [ `T_missing ] Jx.obj
+  val set_c3 : t -> [ `T_missing ] Jx.obj -> unit
   val nul1 : t -> [> ] Jx.obj Jx.nullable
   val set_nul1 : t -> [> ] Jx.obj Jx.nullable -> unit
   val nul2 : t -> Jx.number Jx.nullable
@@ -82,6 +84,8 @@ and Types1 : sig
   val set_nul7 :
     t -> [< `Array of Jx.number | `String ] Jx.obj Jx.nullable -> unit
 
+  val nul8 : t -> [ `T_missing ] Jx.obj Jx.nullable
+  val set_nul8 : t -> [ `T_missing ] Jx.obj Jx.nullable -> unit
   val s2 : t -> Jx.number Jx.promise Jx.array
   val set_s2 : t -> Jx.number Jx.promise Jx.array -> unit
   val s3 : t -> Jx.string Jx.promise Jx.array
@@ -177,10 +181,12 @@ end = struct
   let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
   let sy1 this = D_jx.obj (Jx.get this "sy1")
   let set_sy1 this = fun x -> Jx.set this "sy1" (E_jx.obj x)
-  let c1 this = T1.of_any (Jx.get this "c1")
-  let set_c1 this = fun x -> Jx.set this "c1" (T1.to_any x)
-  let c2 this = T2.of_any (Jx.get this "c2")
-  let set_c2 this = fun x -> Jx.set this "c2" (T2.to_any x)
+  let c1 this = D_jx.obj (Jx.get this "c1")
+  let set_c1 this = fun x -> Jx.set this "c1" (E_jx.obj x)
+  let c2 this = D_jx.obj (Jx.get this "c2")
+  let set_c2 this = fun x -> Jx.set this "c2" (E_jx.obj x)
+  let c3 this = D_jx.obj (Jx.get this "c3")
+  let set_c3 this = fun x -> Jx.set this "c3" (E_jx.obj x)
   let nul1 this = D_jx.obj (Jx.get this "nul1")
   let set_nul1 this = fun x -> Jx.set this "nul1" (E_jx.obj x)
   let nul2 this = D_jx.obj (Jx.get this "nul2")
@@ -195,6 +201,8 @@ end = struct
   let set_nul6 this = fun x -> Jx.set this "nul6" (E_jx.obj x)
   let nul7 this = D_jx.obj (Jx.get this "nul7")
   let set_nul7 this = fun x -> Jx.set this "nul7" (E_jx.obj x)
+  let nul8 this = D_jx.obj (Jx.get this "nul8")
+  let set_nul8 this = fun x -> Jx.set this "nul8" (E_jx.obj x)
   let s2 this = D_jx.obj (Jx.get this "s2")
   let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
   let s3 this = D_jx.obj (Jx.get this "s3")
@@ -215,8 +223,8 @@ end = struct
   let set_p5 this = fun x -> Jx.set this "p5" (E_jx.obj x)
   let fa1 this = D_jx.obj (Jx.get this "fa1")
   let set_fa1 this = fun x -> Jx.set this "fa1" (E_jx.obj x)
-  let cb1 this = Cb1.of_any (Jx.get this "cb1")
-  let set_cb1 this = fun x -> Jx.set this "cb1" (Cb1.to_any x)
+  let cb1 this = D_jx.obj (Jx.get this "cb1")
+  let set_cb1 this = fun x -> Jx.set this "cb1" (E_jx.obj x)
   let u1 this = D_jx.obj (Jx.get this "u1")
   let set_u1 this = fun x -> Jx.set this "u1" (E_jx.obj x)
   let u2 this = D_jx.obj (Jx.get this "u2")
@@ -257,7 +265,7 @@ end = struct
 
   let f6 ~cb =
    fun () ->
-    let cb = Cb1.to_any cb in
+    let cb = E_jx.obj cb in
     D_jx.obj (D_jx.meth t "f6" [| cb |])
 
   let f7 ~cb =
@@ -275,7 +283,7 @@ end = struct
     let a = E_jx.obj a in
     D_jx.obj (D_jx.meth t "f9" [| a |])
 
-  let f10 () = Cb1.of_any (D_jx.meth t "f10" [||])
+  let f10 () = D_jx.obj (D_jx.meth t "f10" [||])
 end
 
 and T2 : sig
@@ -344,8 +352,8 @@ end = struct
   let set_a3 this = fun x -> Jx.set this "a3" (E_jx.obj x)
   let a4 this = D_jx.obj (Jx.get this "a4")
   let set_a4 this = fun x -> Jx.set this "a4" (E_jx.obj x)
-  let a5 this = Attr2.of_any (Jx.get this "a5")
-  let set_a5 this = fun x -> Jx.set this "a5" (Attr2.to_any x)
+  let a5 this = D_jx.obj (Jx.get this "a5")
+  let set_a5 this = fun x -> Jx.set this "a5" (E_jx.obj x)
   let a6 this = D_jx.obj (Jx.get this "a6")
   let set_a6 this = fun x -> Jx.set this "a6" (E_jx.obj x)
   let a7 this = D_jx.obj (Jx.get this "a7")
@@ -407,8 +415,8 @@ end = struct
 
   let f3 ~x =
    fun this ->
-    let x = T1.to_any x in
-    T1.of_any (D_jx.meth this "f3" [| x |])
+    let x = E_jx.obj x in
+    D_jx.obj (D_jx.meth this "f3" [| x |])
 
   let f4 this = D_jx.unit (D_jx.meth this "f4" [||])
 
@@ -419,8 +427,8 @@ end = struct
       fun this ->
        let x = E_jx.obj x in
        let y = E_jx.obj y in
-       let a = E_jx.undefined E_jx.obj a in
-       let b = E_jx.undefined E_jx.obj b in
+       let a = E_jx.obj_undefined a in
+       let b = E_jx.obj_undefined b in
        D_jx.unit (D_jx.meth this "f5" [| x; y; a; b |])
 end
 
@@ -439,8 +447,8 @@ end = struct
   let t = Jx.expr "A3"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let event1 this = A_callback.of_any (Jx.get this "event1")
-  let set_event1 this = fun x -> Jx.set this "event1" (A_callback.to_any x)
+  let event1 this = D_jx.obj (Jx.get this "event1")
+  let set_event1 this = fun x -> Jx.set this "event1" (E_jx.obj x)
   let event2 this = D_jx.obj (Jx.get this "event2")
   let set_event2 this = fun x -> Jx.set this "event2" (E_jx.obj x)
 end
@@ -472,18 +480,12 @@ end = struct
   let t = Jx.expr "A4"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let behavior this = Scroll_behavior.of_any (Jx.get this "behavior")
-
-  let set_behavior this =
-   fun x -> Jx.set this "behavior" (Scroll_behavior.to_any x)
+  let behavior this = D_jx.obj (Jx.get this "behavior")
+  let set_behavior this = fun x -> Jx.set this "behavior" (E_jx.obj x)
 end
 
 and Scroll_behavior : sig
-  type t
-
-  val to_string : t -> string
-  val of_any : Jx.any -> t
-  val to_any : t -> Jx.any
+  type t = private Jx.string
 
   val auto : t [@@ocaml.doc "The [\"auto\"] enum value."]
 
@@ -491,37 +493,36 @@ and Scroll_behavior : sig
 
   val smooth : t [@@ocaml.doc "The [\"smooth\"] enum value."]
 end = struct
-  type t = string
+  type t = Jx.string
 
-  let to_string = Stdlib.Fun.id
-  let of_any = D_jx.string
-  let to_any = E_jx.string
-  let auto = "auto"
-  let instant = "instant"
-  let smooth = "smooth"
+  let auto = Jx.ascii "auto"
+  let instant = Jx.ascii "instant"
+  let smooth = Jx.ascii "smooth"
 end
 
 and Style_enum : sig
-  type t
-
-  val to_string : t -> string
-  val of_any : Jx.any -> t
-  val to_any : t -> Jx.any
+  type t = private Jx.string
 
   val empty : t [@@ocaml.doc "The [\"\"] enum value."]
 
-  val first_hyphenvalue : t [@@ocaml.doc "The [\"first-value\"] enum value."]
+  val first_hyphen_value : t [@@ocaml.doc "The [\"first-value\"] enum value."]
 
   val second_hyphen_value : t [@@ocaml.doc "The [\"SECOND-VALUE\"] enum value."]
-end = struct
-  type t = string
 
-  let to_string = Stdlib.Fun.id
-  let of_any = D_jx.string
-  let to_any = E_jx.string
-  let empty = ""
-  let first_hyphenvalue = "first-value"
-  let second_hyphen_value = "SECOND-VALUE"
+  val gt : t [@@ocaml.doc "The [\">\"] enum value."]
+
+  val a_gt : t [@@ocaml.doc "The [\"a>\"] enum value."]
+
+  val gt_a : t [@@ocaml.doc "The [\">a\"] enum value."]
+end = struct
+  type t = Jx.string
+
+  let empty = Jx.ascii ""
+  let first_hyphen_value = Jx.ascii "first-value"
+  let second_hyphen_value = Jx.ascii "SECOND-VALUE"
+  let gt = Jx.ascii ">"
+  let a_gt = Jx.ascii "a>"
+  let gt_a = Jx.ascii ">a"
 end
 
 and A5 : sig
@@ -576,7 +577,7 @@ end = struct
 
   let make ?a =
    fun () ->
-    let a = (E_jx.nullable E_jx.obj) a in
+    let a = E_jx.obj_nullable a in
     Jx.obj [| ("a", a) |]
 
   let of_any = D_jx.obj
@@ -598,7 +599,7 @@ end = struct
   let make ?a =
    fun ~b ->
     fun () ->
-     let a = (E_jx.nullable E_jx.obj) a in
+     let a = E_jx.obj_nullable a in
      let b = E_jx.obj b in
      Jx.obj [| ("a", a); ("b", b) |]
 
@@ -618,20 +619,25 @@ end = struct
 end
 
 and Event_listener : sig
-  type t = Event.t -> unit
+  type t = [ `Event_listener ] Jx.obj
 
+  val make : ([ `Event ] Jx.obj -> unit) -> t
+  val call : t -> [ `Event ] Jx.obj -> unit
   val of_any : Jx.any -> t
   val to_any : t -> Jx.any
 end = struct
-  type t = Event.t -> unit
+  type t = [ `Event_listener ] Jx.obj
 
-  let to_any this = E_jx.func 1 this
+  let make f = D_jx.obj (E_jx.func 1 f)
 
-  let of_any any =
-    let __f_js = D_jx.func any in
+  let call t =
+    let __f_js = D_jx.func (E_jx.obj t) in
     fun event ->
-      let event = Event.to_any event in
+      let event = E_jx.obj event in
       D_jx.unit (__f_js [| event |])
+
+  let of_any = D_jx.obj
+  let to_any = E_jx.obj
 end
 
 and Event_target : sig
@@ -671,14 +677,16 @@ and Node_list : sig
   val to_any : t -> Jx.any
 
   val filter :
-    by:[< `Nullable of Node_filter.t | `String ] Jx.obj -> t -> Node.t Jx.array
+    by:[< `Nullable of Node_filter.t | `String ] Jx.obj ->
+    t ->
+    [ `Node ] Jx.obj Jx.array
 
-  val filter_by_func : func:Node_filter.t -> t -> Node.t Jx.array
+  val filter_by_func : func:Node_filter.t -> t -> [ `Node ] Jx.obj Jx.array
 
   val filter_by_func_nullable :
-    func:Node_filter.t Jx.nullable -> t -> Node.t Jx.array
+    func:Node_filter.t Jx.nullable -> t -> [ `Node ] Jx.obj Jx.array
 
-  val filter_by_name : name:Jx.string -> t -> Node.t Jx.array
+  val filter_by_name : name:Jx.string -> t -> [ `Node ] Jx.obj Jx.array
 end = struct
   type t = [ `Node_list ] Jx.obj
 
@@ -693,7 +701,7 @@ end = struct
 
   let filter_by_func ~func =
    fun this ->
-    let func = Node_filter.to_any func in
+    let func = E_jx.obj func in
     D_jx.obj (D_jx.meth this "filterByFunc" [| func |])
 
   let filter_by_func_nullable ~func =
@@ -711,12 +719,20 @@ and Node_filter : sig
   type t = [ `Node_filter ] Jx.obj
 
   val make : ([ `Node ] Jx.obj -> Jx.boolean) -> t
+  val call : t -> [ `Node ] Jx.obj -> Jx.boolean
   val of_any : Jx.any -> t
   val to_any : t -> Jx.any
 end = struct
   type t = [ `Node_filter ] Jx.obj
 
   let make f = D_jx.obj (E_jx.func 1 f)
+
+  let call t =
+    let __f_js = D_jx.func (E_jx.obj t) in
+    fun node ->
+      let node = E_jx.obj node in
+      D_jx.obj (__f_js [| node |])
+
   let of_any = D_jx.obj
   let to_any = E_jx.obj
 end
