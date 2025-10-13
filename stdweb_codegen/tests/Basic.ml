@@ -1,8 +1,3 @@
-open struct
-  module E_jx = Jx.Encode
-  module D_jx = Jx.Decode
-end
-
 module rec T1 : sig
   type t = [ `T1 ] Jx.obj
 
@@ -12,8 +7,8 @@ end = struct
   type t = [ `T1 ] Jx.obj
 
   let t = Jx.expr "T1"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = Jx.magic
+  let to_any = Jx.magic
 end
 
 and Types1 : sig
@@ -139,105 +134,105 @@ end = struct
   type t = [ `Types1 ] Jx.obj
 
   let t = Jx.expr "Types1"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-  let u1 this = D_jx.unit (Jx.get this "u1")
+  let of_any = Jx.magic
+  let to_any = Jx.magic
+  let u1 this = Jx.get this "u1"
   let set_u1 this = fun x -> Jx.set this "u1" (E_jx.unit x)
-  let obj1 this = D_jx.obj (Jx.get this "obj1")
+  let obj1 this = Jx.get this "obj1"
   let set_obj1 this = fun x -> Jx.set this "obj1" (E_jx.obj x)
-  let a1 this = D_jx.obj (Jx.get this "a1")
+  let a1 this = Jx.get this "a1"
   let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
-  let bl1 this = D_jx.obj (Jx.get this "bl1")
+  let bl1 this = Jx.get this "bl1"
   let set_bl1 this = fun x -> Jx.set this "bl1" (E_jx.obj x)
   let bt1 this = D_jx.char (Jx.get this "bt1")
   let set_bt1 this = fun x -> Jx.set this "bt1" (E_jx.char x)
   let oc1 this = D_jx.char (Jx.get this "oc1")
   let set_oc1 this = fun x -> Jx.set this "oc1" (E_jx.char x)
-  let n1 this = D_jx.obj (Jx.get this "n1")
+  let n1 this = Jx.get this "n1"
   let set_n1 this = fun x -> Jx.set this "n1" (E_jx.obj x)
-  let n2 this = D_jx.obj (Jx.get this "n2")
+  let n2 this = Jx.get this "n2"
   let set_n2 this = fun x -> Jx.set this "n2" (E_jx.obj x)
-  let n3 this = D_jx.obj (Jx.get this "n3")
+  let n3 this = Jx.get this "n3"
   let set_n3 this = fun x -> Jx.set this "n3" (E_jx.obj x)
-  let n4 this = D_jx.obj (Jx.get this "n4")
+  let n4 this = Jx.get this "n4"
   let set_n4 this = fun x -> Jx.set this "n4" (E_jx.obj x)
-  let n5 this = D_jx.obj (Jx.get this "n5")
+  let n5 this = Jx.get this "n5"
   let set_n5 this = fun x -> Jx.set this "n5" (E_jx.obj x)
-  let n6 this = D_jx.obj (Jx.get this "n6")
+  let n6 this = Jx.get this "n6"
   let set_n6 this = fun x -> Jx.set this "n6" (E_jx.obj x)
-  let n7 this = D_jx.obj (Jx.get this "n7")
+  let n7 this = Jx.get this "n7"
   let set_n7 this = fun x -> Jx.set this "n7" (E_jx.obj x)
-  let n8 this = D_jx.obj (Jx.get this "n8")
+  let n8 this = Jx.get this "n8"
   let set_n8 this = fun x -> Jx.set this "n8" (E_jx.obj x)
-  let n9 this = D_jx.obj (Jx.get this "n9")
+  let n9 this = Jx.get this "n9"
   let set_n9 this = fun x -> Jx.set this "n9" (E_jx.obj x)
-  let bi1 this = D_jx.obj (Jx.get this "bi1")
+  let bi1 this = Jx.get this "bi1"
   let set_bi1 this = fun x -> Jx.set this "bi1" (E_jx.obj x)
-  let s1 this = D_jx.obj (Jx.get this "s1")
+  let s1 this = Jx.get this "s1"
   let set_s1 this = fun x -> Jx.set this "s1" (E_jx.obj x)
-  let s2 this = D_jx.obj (Jx.get this "s2")
+  let s2 this = Jx.get this "s2"
   let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
-  let s3 this = D_jx.obj (Jx.get this "s3")
+  let s3 this = Jx.get this "s3"
   let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
-  let sy1 this = D_jx.obj (Jx.get this "sy1")
+  let sy1 this = Jx.get this "sy1"
   let set_sy1 this = fun x -> Jx.set this "sy1" (E_jx.obj x)
-  let c1 this = D_jx.obj (Jx.get this "c1")
+  let c1 this = Jx.get this "c1"
   let set_c1 this = fun x -> Jx.set this "c1" (E_jx.obj x)
-  let c2 this = D_jx.obj (Jx.get this "c2")
+  let c2 this = Jx.get this "c2"
   let set_c2 this = fun x -> Jx.set this "c2" (E_jx.obj x)
-  let c3 this = D_jx.obj (Jx.get this "c3")
+  let c3 this = Jx.get this "c3"
   let set_c3 this = fun x -> Jx.set this "c3" (E_jx.obj x)
-  let nul1 this = D_jx.obj (Jx.get this "nul1")
+  let nul1 this = Jx.get this "nul1"
   let set_nul1 this = fun x -> Jx.set this "nul1" (E_jx.obj x)
-  let nul2 this = D_jx.obj (Jx.get this "nul2")
+  let nul2 this = Jx.get this "nul2"
   let set_nul2 this = fun x -> Jx.set this "nul2" (E_jx.obj x)
-  let nul3 this = D_jx.obj (Jx.get this "nul3")
+  let nul3 this = Jx.get this "nul3"
   let set_nul3 this = fun x -> Jx.set this "nul3" (E_jx.obj x)
-  let nul4 this = D_jx.obj (Jx.get this "nul4")
+  let nul4 this = Jx.get this "nul4"
   let set_nul4 this = fun x -> Jx.set this "nul4" (E_jx.obj x)
-  let nul5 this = D_jx.obj (Jx.get this "nul5")
+  let nul5 this = Jx.get this "nul5"
   let set_nul5 this = fun x -> Jx.set this "nul5" (E_jx.obj x)
-  let nul6 this = D_jx.obj (Jx.get this "nul6")
+  let nul6 this = Jx.get this "nul6"
   let set_nul6 this = fun x -> Jx.set this "nul6" (E_jx.obj x)
-  let nul7 this = D_jx.obj (Jx.get this "nul7")
+  let nul7 this = Jx.get this "nul7"
   let set_nul7 this = fun x -> Jx.set this "nul7" (E_jx.obj x)
-  let nul8 this = D_jx.obj (Jx.get this "nul8")
+  let nul8 this = Jx.get this "nul8"
   let set_nul8 this = fun x -> Jx.set this "nul8" (E_jx.obj x)
-  let s2 this = D_jx.obj (Jx.get this "s2")
+  let s2 this = Jx.get this "s2"
   let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
-  let s3 this = D_jx.obj (Jx.get this "s3")
+  let s3 this = Jx.get this "s3"
   let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
-  let r1 this = D_jx.obj (Jx.get this "r1")
+  let r1 this = Jx.get this "r1"
   let set_r1 this = fun x -> Jx.set this "r1" (E_jx.obj x)
-  let r2 this = D_jx.obj (Jx.get this "r2")
+  let r2 this = Jx.get this "r2"
   let set_r2 this = fun x -> Jx.set this "r2" (E_jx.obj x)
-  let p1 this = D_jx.obj (Jx.get this "p1")
+  let p1 this = Jx.get this "p1"
   let set_p1 this = fun x -> Jx.set this "p1" (E_jx.obj x)
-  let p2 this = D_jx.obj (Jx.get this "p2")
+  let p2 this = Jx.get this "p2"
   let set_p2 this = fun x -> Jx.set this "p2" (E_jx.obj x)
-  let p3 this = D_jx.obj (Jx.get this "p3")
+  let p3 this = Jx.get this "p3"
   let set_p3 this = fun x -> Jx.set this "p3" (E_jx.obj x)
-  let p4 this = D_jx.obj (Jx.get this "p4")
+  let p4 this = Jx.get this "p4"
   let set_p4 this = fun x -> Jx.set this "p4" (E_jx.obj x)
-  let p5 this = D_jx.obj (Jx.get this "p5")
+  let p5 this = Jx.get this "p5"
   let set_p5 this = fun x -> Jx.set this "p5" (E_jx.obj x)
-  let fa1 this = D_jx.obj (Jx.get this "fa1")
+  let fa1 this = Jx.get this "fa1"
   let set_fa1 this = fun x -> Jx.set this "fa1" (E_jx.obj x)
-  let cb1 this = D_jx.obj (Jx.get this "cb1")
+  let cb1 this = Jx.get this "cb1"
   let set_cb1 this = fun x -> Jx.set this "cb1" (E_jx.obj x)
-  let u1 this = D_jx.obj (Jx.get this "u1")
+  let u1 this = Jx.get this "u1"
   let set_u1 this = fun x -> Jx.set this "u1" (E_jx.obj x)
-  let u2 this = D_jx.obj (Jx.get this "u2")
+  let u2 this = Jx.get this "u2"
   let set_u2 this = fun x -> Jx.set this "u2" (E_jx.obj x)
-  let u3 this = D_jx.obj (Jx.get this "u3")
+  let u3 this = Jx.get this "u3"
   let set_u3 this = fun x -> Jx.set this "u3" (E_jx.obj x)
-  let u4 this = D_jx.obj (Jx.get this "u4")
+  let u4 this = Jx.get this "u4"
   let set_u4 this = fun x -> Jx.set this "u4" (E_jx.obj x)
-  let u5 this = D_jx.obj (Jx.get this "u5")
+  let u5 this = Jx.get this "u5"
   let set_u5 this = fun x -> Jx.set this "u5" (E_jx.obj x)
-  let u6 this = D_jx.obj (Jx.get this "u6")
+  let u6 this = Jx.get this "u6"
   let set_u6 this = fun x -> Jx.set this "u6" (E_jx.obj x)
-  let u7 this = D_jx.obj (Jx.get this "u7")
+  let u7 this = Jx.get this "u7"
   let set_u7 this = fun x -> Jx.set this "u7" (E_jx.obj x)
   let f1 () = D_jx.unit (D_jx.meth t "f1" [||])
   let f2 () = D_jx.obj (D_jx.meth t "f2" [||])
@@ -344,19 +339,19 @@ end = struct
   let t = Jx.expr "Attr1"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let a1 this = D_jx.obj (Jx.get this "a1")
+  let a1 this = Jx.get this "a1"
   let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
-  let a2 this = D_jx.obj (Jx.get this "a2")
+  let a2 this = Jx.get this "a2"
   let set_a2 this = fun x -> Jx.set this "a2" (E_jx.obj x)
-  let a3 this = D_jx.obj (Jx.get this "a3")
+  let a3 this = Jx.get this "a3"
   let set_a3 this = fun x -> Jx.set this "a3" (E_jx.obj x)
-  let a4 this = D_jx.obj (Jx.get this "a4")
+  let a4 this = Jx.get this "a4"
   let set_a4 this = fun x -> Jx.set this "a4" (E_jx.obj x)
-  let a5 this = D_jx.obj (Jx.get this "a5")
+  let a5 this = Jx.get this "a5"
   let set_a5 this = fun x -> Jx.set this "a5" (E_jx.obj x)
-  let a6 this = D_jx.obj (Jx.get this "a6")
+  let a6 this = Jx.get this "a6"
   let set_a6 this = fun x -> Jx.set this "a6" (E_jx.obj x)
-  let a7 this = D_jx.obj (Jx.get this "a7")
+  let a7 this = Jx.get this "a7"
   let set_a7 this = fun x -> Jx.set this "a7" (E_jx.obj x)
 end
 
@@ -447,9 +442,9 @@ end = struct
   let t = Jx.expr "A3"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let event1 this = D_jx.obj (Jx.get this "event1")
+  let event1 this = Jx.get this "event1"
   let set_event1 this = fun x -> Jx.set this "event1" (E_jx.obj x)
-  let event2 this = D_jx.obj (Jx.get this "event2")
+  let event2 this = Jx.get this "event2"
   let set_event2 this = fun x -> Jx.set this "event2" (E_jx.obj x)
 end
 
@@ -480,7 +475,7 @@ end = struct
   let t = Jx.expr "A4"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let behavior this = D_jx.obj (Jx.get this "behavior")
+  let behavior this = Jx.get this "behavior"
   let set_behavior this = fun x -> Jx.set this "behavior" (E_jx.obj x)
 end
 
@@ -542,9 +537,9 @@ end = struct
   let t = Jx.expr "A5"
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let x this = D_jx.obj (Jx.get this "x")
+  let x this = Jx.get this "x"
   let set_x this = fun x -> Jx.set this "x" (E_jx.obj x)
-  let y this = D_jx.obj (Jx.get this "y")
+  let y this = Jx.get this "y"
   let set_y this = fun x -> Jx.set this "y" (E_jx.obj x)
   let z = Jx.int 5
   let f this = D_jx.unit (D_jx.meth this "f" [||])
@@ -582,7 +577,7 @@ end = struct
 
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let a this = D_jx.obj (Jx.get this "a")
+  let a this = Jx.get this "a"
 end
 
 and D2 : sig
@@ -605,8 +600,8 @@ end = struct
 
   let of_any = D_jx.obj
   let to_any = E_jx.obj
-  let a this = D_jx.obj (Jx.get this "a")
-  let b this = D_jx.obj (Jx.get this "b")
+  let a this = Jx.get this "a"
+  let b this = Jx.get this "b"
 end
 
 and N2 : sig
@@ -614,7 +609,7 @@ and N2 : sig
   val f : unit -> unit
 end = struct
   let t = Jx.expr "N2"
-  let x = D_jx.obj (Jx.get t "x")
+  let x = Jx.get t "x"
   let f () = D_jx.unit (D_jx.meth t "f" [||])
 end
 

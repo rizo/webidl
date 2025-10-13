@@ -1278,10 +1278,10 @@ module Gen_str = struct
 
   let gen_conv_ext_apply ~scope ?(nullable = false) ?(optional = false) conv
       t_ext arg =
-    let codec_mod_name, named_suffix =
+    let codec_mod_name =
       match conv with
-      | `ml_of_js -> ("D_jx", "of_any")
-      | `js_of_ml -> ("E_jx", "to_any")
+      | `ml_of_js -> "D_jx"
+      | `js_of_ml -> "E_jx"
     in
     let conv_exp = gen_conv_ext ~scope conv t_ext in
     let conv_exp =
@@ -1299,7 +1299,8 @@ module Gen_str = struct
     let key = Ml.Exp.constant (Ml.Const.string this.name) in
     let exp = Jx_builder.get (if is_static then t_exp else this_exp) key in
     (* TODO: no optional attrs? *)
-    let exp = gen_conv_ext_apply ~scope `ml_of_js this.type_ exp in
+    (* TODO: remove if not having D conv on get is ok. *)
+    (* let exp = gen_conv_ext_apply ~scope `ml_of_js this.type_ exp in *)
     let exp =
       if is_static then exp else Ml.Exp.fun_ Nolabel None this_pat exp
     in

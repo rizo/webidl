@@ -20,6 +20,10 @@
  (modules Scratch)
  (libraries jx))
 
+(library
+ (name jx)
+ (modules Jx))
+
 ; Basic
 
 (rule
@@ -44,5 +48,5 @@
 (executable
  (name basic_test)
  (modules Basic_test)
- (libraries basic jx)
+ (libraries basic)
  (modes js))
