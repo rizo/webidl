@@ -1,3 +1,8 @@
+open struct
+  module E_jx = Jx.Encode
+  module D_jx = Jx.Decode
+end
+
 module rec T1 : sig
   type t = [ `T1 ] Jx.obj
 
@@ -7,8 +12,8 @@ end = struct
   type t = [ `T1 ] Jx.obj
 
   let t = Jx.expr "T1"
-  let of_any = Jx.magic
-  let to_any = Jx.magic
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and Types1 : sig
@@ -134,151 +139,151 @@ end = struct
   type t = [ `Types1 ] Jx.obj
 
   let t = Jx.expr "Types1"
-  let of_any = Jx.magic
-  let to_any = Jx.magic
+  let of_any = D_jx.any
+  let to_any = E_jx.any
   let u1 this = Jx.get this "u1"
   let set_u1 this = fun x -> Jx.set this "u1" (E_jx.unit x)
   let obj1 this = Jx.get this "obj1"
-  let set_obj1 this = fun x -> Jx.set this "obj1" (E_jx.obj x)
+  let set_obj1 this = fun x -> Jx.set this "obj1" x
   let a1 this = Jx.get this "a1"
-  let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
+  let set_a1 this = fun x -> Jx.set this "a1" x
   let bl1 this = Jx.get this "bl1"
-  let set_bl1 this = fun x -> Jx.set this "bl1" (E_jx.obj x)
+  let set_bl1 this = fun x -> Jx.set this "bl1" x
   let bt1 this = D_jx.char (Jx.get this "bt1")
-  let set_bt1 this = fun x -> Jx.set this "bt1" (E_jx.char x)
+  let set_bt1 this = fun x -> Jx.set this "bt1" x
   let oc1 this = D_jx.char (Jx.get this "oc1")
-  let set_oc1 this = fun x -> Jx.set this "oc1" (E_jx.char x)
+  let set_oc1 this = fun x -> Jx.set this "oc1" x
   let n1 this = Jx.get this "n1"
-  let set_n1 this = fun x -> Jx.set this "n1" (E_jx.obj x)
+  let set_n1 this = fun x -> Jx.set this "n1" x
   let n2 this = Jx.get this "n2"
-  let set_n2 this = fun x -> Jx.set this "n2" (E_jx.obj x)
+  let set_n2 this = fun x -> Jx.set this "n2" x
   let n3 this = Jx.get this "n3"
-  let set_n3 this = fun x -> Jx.set this "n3" (E_jx.obj x)
+  let set_n3 this = fun x -> Jx.set this "n3" x
   let n4 this = Jx.get this "n4"
-  let set_n4 this = fun x -> Jx.set this "n4" (E_jx.obj x)
+  let set_n4 this = fun x -> Jx.set this "n4" x
   let n5 this = Jx.get this "n5"
-  let set_n5 this = fun x -> Jx.set this "n5" (E_jx.obj x)
+  let set_n5 this = fun x -> Jx.set this "n5" x
   let n6 this = Jx.get this "n6"
-  let set_n6 this = fun x -> Jx.set this "n6" (E_jx.obj x)
+  let set_n6 this = fun x -> Jx.set this "n6" x
   let n7 this = Jx.get this "n7"
-  let set_n7 this = fun x -> Jx.set this "n7" (E_jx.obj x)
+  let set_n7 this = fun x -> Jx.set this "n7" x
   let n8 this = Jx.get this "n8"
-  let set_n8 this = fun x -> Jx.set this "n8" (E_jx.obj x)
+  let set_n8 this = fun x -> Jx.set this "n8" x
   let n9 this = Jx.get this "n9"
-  let set_n9 this = fun x -> Jx.set this "n9" (E_jx.obj x)
+  let set_n9 this = fun x -> Jx.set this "n9" x
   let bi1 this = Jx.get this "bi1"
-  let set_bi1 this = fun x -> Jx.set this "bi1" (E_jx.obj x)
+  let set_bi1 this = fun x -> Jx.set this "bi1" x
   let s1 this = Jx.get this "s1"
-  let set_s1 this = fun x -> Jx.set this "s1" (E_jx.obj x)
+  let set_s1 this = fun x -> Jx.set this "s1" x
   let s2 this = Jx.get this "s2"
-  let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
+  let set_s2 this = fun x -> Jx.set this "s2" x
   let s3 this = Jx.get this "s3"
-  let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
+  let set_s3 this = fun x -> Jx.set this "s3" x
   let sy1 this = Jx.get this "sy1"
-  let set_sy1 this = fun x -> Jx.set this "sy1" (E_jx.obj x)
+  let set_sy1 this = fun x -> Jx.set this "sy1" x
   let c1 this = Jx.get this "c1"
-  let set_c1 this = fun x -> Jx.set this "c1" (E_jx.obj x)
+  let set_c1 this = fun x -> Jx.set this "c1" x
   let c2 this = Jx.get this "c2"
-  let set_c2 this = fun x -> Jx.set this "c2" (E_jx.obj x)
+  let set_c2 this = fun x -> Jx.set this "c2" x
   let c3 this = Jx.get this "c3"
-  let set_c3 this = fun x -> Jx.set this "c3" (E_jx.obj x)
+  let set_c3 this = fun x -> Jx.set this "c3" x
   let nul1 this = Jx.get this "nul1"
-  let set_nul1 this = fun x -> Jx.set this "nul1" (E_jx.obj x)
+  let set_nul1 this = fun x -> Jx.set this "nul1" x
   let nul2 this = Jx.get this "nul2"
-  let set_nul2 this = fun x -> Jx.set this "nul2" (E_jx.obj x)
+  let set_nul2 this = fun x -> Jx.set this "nul2" x
   let nul3 this = Jx.get this "nul3"
-  let set_nul3 this = fun x -> Jx.set this "nul3" (E_jx.obj x)
+  let set_nul3 this = fun x -> Jx.set this "nul3" x
   let nul4 this = Jx.get this "nul4"
-  let set_nul4 this = fun x -> Jx.set this "nul4" (E_jx.obj x)
+  let set_nul4 this = fun x -> Jx.set this "nul4" x
   let nul5 this = Jx.get this "nul5"
-  let set_nul5 this = fun x -> Jx.set this "nul5" (E_jx.obj x)
+  let set_nul5 this = fun x -> Jx.set this "nul5" x
   let nul6 this = Jx.get this "nul6"
-  let set_nul6 this = fun x -> Jx.set this "nul6" (E_jx.obj x)
+  let set_nul6 this = fun x -> Jx.set this "nul6" x
   let nul7 this = Jx.get this "nul7"
-  let set_nul7 this = fun x -> Jx.set this "nul7" (E_jx.obj x)
+  let set_nul7 this = fun x -> Jx.set this "nul7" x
   let nul8 this = Jx.get this "nul8"
-  let set_nul8 this = fun x -> Jx.set this "nul8" (E_jx.obj x)
+  let set_nul8 this = fun x -> Jx.set this "nul8" x
   let s2 this = Jx.get this "s2"
-  let set_s2 this = fun x -> Jx.set this "s2" (E_jx.obj x)
+  let set_s2 this = fun x -> Jx.set this "s2" x
   let s3 this = Jx.get this "s3"
-  let set_s3 this = fun x -> Jx.set this "s3" (E_jx.obj x)
+  let set_s3 this = fun x -> Jx.set this "s3" x
   let r1 this = Jx.get this "r1"
-  let set_r1 this = fun x -> Jx.set this "r1" (E_jx.obj x)
+  let set_r1 this = fun x -> Jx.set this "r1" x
   let r2 this = Jx.get this "r2"
-  let set_r2 this = fun x -> Jx.set this "r2" (E_jx.obj x)
+  let set_r2 this = fun x -> Jx.set this "r2" x
   let p1 this = Jx.get this "p1"
-  let set_p1 this = fun x -> Jx.set this "p1" (E_jx.obj x)
+  let set_p1 this = fun x -> Jx.set this "p1" x
   let p2 this = Jx.get this "p2"
-  let set_p2 this = fun x -> Jx.set this "p2" (E_jx.obj x)
+  let set_p2 this = fun x -> Jx.set this "p2" x
   let p3 this = Jx.get this "p3"
-  let set_p3 this = fun x -> Jx.set this "p3" (E_jx.obj x)
+  let set_p3 this = fun x -> Jx.set this "p3" x
   let p4 this = Jx.get this "p4"
-  let set_p4 this = fun x -> Jx.set this "p4" (E_jx.obj x)
+  let set_p4 this = fun x -> Jx.set this "p4" x
   let p5 this = Jx.get this "p5"
-  let set_p5 this = fun x -> Jx.set this "p5" (E_jx.obj x)
+  let set_p5 this = fun x -> Jx.set this "p5" x
   let fa1 this = Jx.get this "fa1"
-  let set_fa1 this = fun x -> Jx.set this "fa1" (E_jx.obj x)
+  let set_fa1 this = fun x -> Jx.set this "fa1" x
   let cb1 this = Jx.get this "cb1"
-  let set_cb1 this = fun x -> Jx.set this "cb1" (E_jx.obj x)
+  let set_cb1 this = fun x -> Jx.set this "cb1" x
   let u1 this = Jx.get this "u1"
-  let set_u1 this = fun x -> Jx.set this "u1" (E_jx.obj x)
+  let set_u1 this = fun x -> Jx.set this "u1" x
   let u2 this = Jx.get this "u2"
-  let set_u2 this = fun x -> Jx.set this "u2" (E_jx.obj x)
+  let set_u2 this = fun x -> Jx.set this "u2" x
   let u3 this = Jx.get this "u3"
-  let set_u3 this = fun x -> Jx.set this "u3" (E_jx.obj x)
+  let set_u3 this = fun x -> Jx.set this "u3" x
   let u4 this = Jx.get this "u4"
-  let set_u4 this = fun x -> Jx.set this "u4" (E_jx.obj x)
+  let set_u4 this = fun x -> Jx.set this "u4" x
   let u5 this = Jx.get this "u5"
-  let set_u5 this = fun x -> Jx.set this "u5" (E_jx.obj x)
+  let set_u5 this = fun x -> Jx.set this "u5" x
   let u6 this = Jx.get this "u6"
-  let set_u6 this = fun x -> Jx.set this "u6" (E_jx.obj x)
+  let set_u6 this = fun x -> Jx.set this "u6" x
   let u7 this = Jx.get this "u7"
-  let set_u7 this = fun x -> Jx.set this "u7" (E_jx.obj x)
-  let f1 () = D_jx.unit (D_jx.meth t "f1" [||])
-  let f2 () = D_jx.obj (D_jx.meth t "f2" [||])
+  let set_u7 this = fun x -> Jx.set this "u7" x
+  let f1 () = D_jx.unit (Jx.meth t "f1" [||])
+  let f2 () = D_jx.any (Jx.meth t "f2" [||])
 
   let f3 ~a =
    fun ~b ->
     fun ~c ->
      fun () ->
-      let a = E_jx.obj a in
-      let b = E_jx.obj b in
-      let c = E_jx.obj c in
-      D_jx.obj (D_jx.meth t "f3" [| a; b; c |])
+      let a = E_jx.any a in
+      let b = E_jx.any b in
+      let c = E_jx.any c in
+      D_jx.any (Jx.meth t "f3" [| a; b; c |])
 
   let f4 ~a =
    fun ~b ->
     fun () ->
-     let a = E_jx.obj a in
-     let b = E_jx.obj b in
-     D_jx.obj (D_jx.meth t "f4" [| a; b |])
+     let a = E_jx.any a in
+     let b = E_jx.any b in
+     D_jx.any (Jx.meth t "f4" [| a; b |])
 
   let f5 ~x =
    fun () ->
-    let x = E_jx.obj x in
-    D_jx.obj (D_jx.meth t "f5" [| x |])
+    let x = E_jx.any x in
+    D_jx.any (Jx.meth t "f5" [| x |])
 
   let f6 ~cb =
    fun () ->
-    let cb = E_jx.obj cb in
-    D_jx.obj (D_jx.meth t "f6" [| cb |])
+    let cb = E_jx.any cb in
+    D_jx.any (Jx.meth t "f6" [| cb |])
 
   let f7 ~cb =
    fun () ->
-    let cb = E_jx.obj cb in
-    D_jx.obj (D_jx.meth t "f7" [| cb |])
+    let cb = E_jx.any cb in
+    D_jx.any (Jx.meth t "f7" [| cb |])
 
   let f8 ~a =
    fun () ->
-    let a = E_jx.obj a in
-    D_jx.obj (D_jx.meth t "f8" [| a |])
+    let a = E_jx.any a in
+    D_jx.any (Jx.meth t "f8" [| a |])
 
   let f9 ~a =
    fun () ->
-    let a = E_jx.obj a in
-    D_jx.obj (D_jx.meth t "f9" [| a |])
+    let a = E_jx.any a in
+    D_jx.any (Jx.meth t "f9" [| a |])
 
-  let f10 () = D_jx.obj (D_jx.meth t "f10" [||])
+  let f10 () = D_jx.any (Jx.meth t "f10" [||])
 end
 
 and T2 : sig
@@ -290,8 +295,8 @@ end = struct
   type t = [ `T2 ] Jx.obj
 
   let t = Jx.expr "T2"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and Cb1 : sig
@@ -303,15 +308,15 @@ and Cb1 : sig
 end = struct
   type t = [ `Cb1 ] Jx.obj
 
-  let make f = D_jx.obj (E_jx.func 1 f)
-  let of_any any = D_jx.obj any
+  let make f = Jx.magic (E_jx.func 1 f)
+  let of_any any = D_jx.any any
   (* let __func = D_jx.func any in *)
   (* fun a b -> *)
   (*   let a = Jx.Nullable.to_any E_jx.int a in *)
   (*   let b = E_jx.bool b in *)
   (*   D_jx.string (__func [| a; b |]) *)
 
-  let to_any = E_jx.obj
+  let to_any = E_jx.any
 end
 
 and Attr1 : sig
@@ -337,22 +342,22 @@ end = struct
   type t = [ `Attr1 ] Jx.obj
 
   let t = Jx.expr "Attr1"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
   let a1 this = Jx.get this "a1"
-  let set_a1 this = fun x -> Jx.set this "a1" (E_jx.obj x)
+  let set_a1 this = fun x -> Jx.set this "a1" x
   let a2 this = Jx.get this "a2"
-  let set_a2 this = fun x -> Jx.set this "a2" (E_jx.obj x)
+  let set_a2 this = fun x -> Jx.set this "a2" x
   let a3 this = Jx.get this "a3"
-  let set_a3 this = fun x -> Jx.set this "a3" (E_jx.obj x)
+  let set_a3 this = fun x -> Jx.set this "a3" x
   let a4 this = Jx.get this "a4"
-  let set_a4 this = fun x -> Jx.set this "a4" (E_jx.obj x)
+  let set_a4 this = fun x -> Jx.set this "a4" x
   let a5 this = Jx.get this "a5"
-  let set_a5 this = fun x -> Jx.set this "a5" (E_jx.obj x)
+  let set_a5 this = fun x -> Jx.set this "a5" x
   let a6 this = Jx.get this "a6"
-  let set_a6 this = fun x -> Jx.set this "a6" (E_jx.obj x)
+  let set_a6 this = fun x -> Jx.set this "a6" x
   let a7 this = Jx.get this "a7"
-  let set_a7 this = fun x -> Jx.set this "a7" (E_jx.obj x)
+  let set_a7 this = fun x -> Jx.set this "a7" x
 end
 
 and Attr2 : sig
@@ -364,8 +369,8 @@ end = struct
   type t = [ `Attr2 ] Jx.obj
 
   let t = Jx.expr "Attr2"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and Attr3 : sig
@@ -377,8 +382,8 @@ end = struct
   type t = [ `Attr3 ] Jx.obj
 
   let t = Jx.expr "Attr3"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and Ops1 : sig
@@ -392,39 +397,44 @@ and Ops1 : sig
   val f4 : t -> unit
 
   val f5 :
-    x:Jx.string -> y:Jx.boolean -> ?a:Jx.string -> ?b:Jx.boolean -> t -> unit
+    x:Jx.string ->
+    y:Jx.boolean ->
+    a:Jx.string Jx.undefined ->
+    b:Jx.boolean Jx.undefined ->
+    t ->
+    unit
 end = struct
   type t = [ `Ops1 ] Jx.obj
 
   let t = Jx.expr "Ops1"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-  let f1 this = D_jx.obj (D_jx.meth this "f1" [||])
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+  let f1 this = D_jx.any (Jx.meth this "f1" [||])
 
   let f2 ~x =
    fun ~y ->
     fun this ->
-     let x = E_jx.obj x in
-     let y = E_jx.obj y in
-     D_jx.obj (D_jx.meth this "f2" [| x; y |])
+     let x = E_jx.any x in
+     let y = E_jx.any y in
+     D_jx.any (Jx.meth this "f2" [| x; y |])
 
   let f3 ~x =
    fun this ->
-    let x = E_jx.obj x in
-    D_jx.obj (D_jx.meth this "f3" [| x |])
+    let x = E_jx.any x in
+    D_jx.any (Jx.meth this "f3" [| x |])
 
-  let f4 this = D_jx.unit (D_jx.meth this "f4" [||])
+  let f4 this = D_jx.unit (Jx.meth this "f4" [||])
 
   let f5 ~x =
    fun ~y ->
     fun ?a ->
      fun ?b ->
       fun this ->
-       let x = E_jx.obj x in
-       let y = E_jx.obj y in
+       let x = E_jx.any x in
+       let y = E_jx.any y in
        let a = E_jx.obj_undefined a in
        let b = E_jx.obj_undefined b in
-       D_jx.unit (D_jx.meth this "f5" [| x; y; a; b |])
+       D_jx.unit (Jx.meth this "f5" [| x; y; a; b |])
 end
 
 and A3 : sig
@@ -440,12 +450,12 @@ end = struct
   type t = [ `A3 ] Jx.obj
 
   let t = Jx.expr "A3"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-  let event1 this = Jx.get this "event1"
-  let set_event1 this = fun x -> Jx.set this "event1" (E_jx.obj x)
-  let event2 this = Jx.get this "event2"
-  let set_event2 this = fun x -> Jx.set this "event2" (E_jx.obj x)
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+  let event1 this = D_jx.any (Jx.get this "event1")
+  let set_event1 this = fun x -> Jx.set this "event1" x
+  let event2 this = D_jx.any (Jx.get this "event2")
+  let set_event2 this = fun x -> Jx.set this "event2" x
 end
 
 and A_callback : sig
@@ -457,9 +467,9 @@ and A_callback : sig
 end = struct
   type t = [ `A_callback ] Jx.obj
 
-  let make f = D_jx.obj (E_jx.func 2 f)
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let make f = E_jx.any (E_jx.func 2 f)
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and A4 : sig
@@ -473,10 +483,10 @@ end = struct
   type t = [ `A4 ] Jx.obj
 
   let t = Jx.expr "A4"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
   let behavior this = Jx.get this "behavior"
-  let set_behavior this = fun x -> Jx.set this "behavior" (E_jx.obj x)
+  let set_behavior this = fun x -> Jx.set this "behavior" x
 end
 
 and Scroll_behavior : sig
@@ -490,9 +500,9 @@ and Scroll_behavior : sig
 end = struct
   type t = Jx.string
 
-  let auto = Jx.ascii "auto"
-  let instant = Jx.ascii "instant"
-  let smooth = Jx.ascii "smooth"
+  let auto = E_jx.ascii "auto"
+  let instant = E_jx.ascii "instant"
+  let smooth = E_jx.ascii "smooth"
 end
 
 and Style_enum : sig
@@ -512,12 +522,12 @@ and Style_enum : sig
 end = struct
   type t = Jx.string
 
-  let empty = Jx.ascii ""
-  let first_hyphen_value = Jx.ascii "first-value"
-  let second_hyphen_value = Jx.ascii "SECOND-VALUE"
-  let gt = Jx.ascii ">"
-  let a_gt = Jx.ascii "a>"
-  let gt_a = Jx.ascii ">a"
+  let empty = E_jx.ascii ""
+  let first_hyphen_value = E_jx.ascii "first-value"
+  let second_hyphen_value = E_jx.ascii "SECOND-VALUE"
+  let gt = E_jx.ascii ">"
+  let a_gt = E_jx.ascii "a>"
+  let gt_a = E_jx.ascii ">a"
 end
 
 and A5 : sig
@@ -535,14 +545,14 @@ end = struct
   type t = [ `A5 ] Jx.obj
 
   let t = Jx.expr "A5"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
   let x this = Jx.get this "x"
-  let set_x this = fun x -> Jx.set this "x" (E_jx.obj x)
+  let set_x this = fun x -> Jx.set this "x" x
   let y this = Jx.get this "y"
-  let set_y this = fun x -> Jx.set this "y" (E_jx.obj x)
-  let z = Jx.int 5
-  let f this = D_jx.unit (D_jx.meth this "f" [||])
+  let set_y this = fun x -> Jx.set this "y" x
+  let z = E_jx.int 5
+  let f this = D_jx.unit (Jx.meth this "f" [||])
 end
 
 and A7 : sig
@@ -555,9 +565,9 @@ end = struct
   type t = [ `A7 ] Jx.obj
 
   let t = Jx.expr "A7"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-  let g this = D_jx.unit (D_jx.meth this "g" [||])
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+  let g this = D_jx.unit (Jx.meth this "g" [||])
 end
 
 and D1 : sig
@@ -572,11 +582,11 @@ end = struct
 
   let make ?a =
    fun () ->
-    let a = E_jx.obj_nullable a in
+    let a = E_jx.any a in
     Jx.obj [| ("a", a) |]
 
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
   let a this = Jx.get this "a"
 end
 
@@ -595,13 +605,13 @@ end = struct
    fun ~b ->
     fun () ->
      let a = E_jx.obj_nullable a in
-     let b = E_jx.obj b in
+     let b = E_jx.any b in
      Jx.obj [| ("a", a); ("b", b) |]
 
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
-  let a this = Jx.get this "a"
-  let b this = Jx.get this "b"
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+  let a this = D_jx.any (Jx.get this "a")
+  let b this = D_jx.any (Jx.get this "b")
 end
 
 and N2 : sig
@@ -609,8 +619,8 @@ and N2 : sig
   val f : unit -> unit
 end = struct
   let t = Jx.expr "N2"
-  let x = Jx.get t "x"
-  let f () = D_jx.unit (D_jx.meth t "f" [||])
+  let x = D_jx.any (Jx.get t "x")
+  let f () = D_jx.unit (Jx.meth t "f" [||])
 end
 
 and Event_listener : sig
@@ -623,16 +633,16 @@ and Event_listener : sig
 end = struct
   type t = [ `Event_listener ] Jx.obj
 
-  let make f = D_jx.obj (E_jx.func 1 f)
+  let make f = Jx.magic (E_jx.func 1 f)
 
   let call t =
-    let __f_js = D_jx.func (E_jx.obj t) in
+    let __f_js = Jx.call (Jx.magic t) in
     fun event ->
-      let event = E_jx.obj event in
+      let event = E_jx.any event in
       D_jx.unit (__f_js [| event |])
 
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 end
 
 and Event_target : sig
@@ -651,18 +661,17 @@ end = struct
   type t = [ `Event_target ] Jx.obj
 
   let t = Jx.expr "EventTarget"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 
   let add_event_listener ~type' =
    fun ~callback ->
     fun ?options ->
      fun this ->
-      let type' = E_jx.obj type' in
-      let callback = E_jx.obj callback in
-      let options = E_jx.obj_undefined options in
-      D_jx.unit
-        (D_jx.meth this "addEventListener" [| type'; callback; options |])
+      let type' = E_jx.any type' in
+      let callback = E_jx.any callback in
+      let options = E_jx.any options in
+      D_jx.unit (Jx.meth this "addEventListener" [| type'; callback; options |])
 end
 
 and Node_list : sig
@@ -686,28 +695,28 @@ end = struct
   type t = [ `Node_list ] Jx.obj
 
   let t = Jx.expr "NodeList"
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
 
   let filter ~by =
    fun this ->
-    let by = E_jx.obj by in
-    D_jx.obj (D_jx.meth this "filter" [| by |])
+    let by = E_jx.any by in
+    D_jx.any (Jx.meth this "filter" [| by |])
 
   let filter_by_func ~func =
    fun this ->
-    let func = E_jx.obj func in
-    D_jx.obj (D_jx.meth this "filterByFunc" [| func |])
+    let func = E_jx.any func in
+    D_jx.any (Jx.meth this "filterByFunc" [| func |])
 
   let filter_by_func_nullable ~func =
    fun this ->
-    let func = E_jx.obj func in
-    D_jx.obj (D_jx.meth this "filterByFuncNullable" [| func |])
+    let func = E_jx.any func in
+    D_jx.any (Jx.meth this "filterByFuncNullable" [| func |])
 
   let filter_by_name ~name =
    fun this ->
-    let name = E_jx.obj name in
-    D_jx.obj (D_jx.meth this "filterByName" [| name |])
+    let name = E_jx.any name in
+    D_jx.any (Jx.meth this "filterByName" [| name |])
 end
 
 and Node_filter : sig
@@ -720,14 +729,45 @@ and Node_filter : sig
 end = struct
   type t = [ `Node_filter ] Jx.obj
 
-  let make f = D_jx.obj (E_jx.func 1 f)
+  let make f = D_jx.any (E_jx.func 1 f)
 
   let call t =
-    let __f_js = D_jx.func (E_jx.obj t) in
+    let __f_js = D_jx.func (E_jx.any t) in
     fun node ->
-      let node = E_jx.obj node in
-      D_jx.obj (__f_js [| node |])
+      let node = E_jx.any node in
+      D_jx.any (__f_js [| node |])
 
-  let of_any = D_jx.obj
-  let to_any = E_jx.obj
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+end
+
+and Document : sig
+  type t = [ `Document ] Jx.obj
+
+  type 'base super = 'base Jx.obj constraint 'base = [< `Document | `Node ]
+  [@@ocaml.doc
+    "The type for the {{: \
+     https://developer.mozilla.org/en-US/docs/Web/API/Document} [Document]} \
+     interface or any base interface that it inherits."]
+
+  val of_any : Jx.any -> [> ] super
+  val to_any : t -> Jx.any
+  val make : unit -> [> ] super
+
+  val query_selector :
+    selectors:Jx.string -> t -> [ `Element ] Jx.obj Jx.nullable
+end = struct
+  type t = [ `Document ] Jx.obj
+
+  type 'base super = 'base Jx.obj constraint 'base = [< `Document | `Node ]
+  [@@ocaml.doc
+    "The type for the {{: \
+     https://developer.mozilla.org/en-US/docs/Web/API/Document} [Document]} \
+     interface or any base interface that it inherits."]
+
+  let t : [ `Function ] Jx.obj = Jx.expr "Document"
+  let of_any = D_jx.any
+  let to_any = E_jx.any
+  let to_node this = Js.Ffi.todo this
+  let make () = Jx.obj_new t [||]
 end

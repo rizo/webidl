@@ -234,6 +234,19 @@ module Doc = struct
   end
 end
 
+let js_ident name = Ml.Exp.ident (mknoloc (Longident.Ldot (Lident "Jx", name)))
+let ident xs = Option.get (Longident.unflatten xs)
+let ident_exp xs = Ml.Exp.ident (mknoloc (ident xs))
+let pat_var str = Ml.Pat.var (mknoloc str)
+let ident_noloc xs = mknoloc (ident xs)
+
+let js_nullable_ident name =
+  let ident = Longident.unflatten [ "Jx"; "Nullable"; name ] |> Option.get in
+  Ml.Exp.ident (mknoloc ident)
+
+let exp_apply_no_labels f args =
+  Ml.Exp.apply f (List.map (fun arg -> (Asttypes.Nolabel, arg)) args)
+
 module Ml' = struct
   module Attr = struct
     let doc text =
@@ -291,21 +304,10 @@ module Ml' = struct
     let some x = Ml.Exp.construct (mknoloc (Longident.Lident "Some")) (Some x)
     let string x = Ml.Exp.constant (Ml.Const.string x)
     let int x = Ml.Exp.constant (Ml.Const.int x)
+    let float x = Ml.Exp.constant (Ml.Const.float (string_of_float x))
+    let bool x = Ml.Exp.construct (mknoloc (ident [ string_of_bool x ])) None
   end
 end
-
-let js_ident name = Ml.Exp.ident (mknoloc (Longident.Ldot (Lident "Jx", name)))
-let ident xs = Option.get (Longident.unflatten xs)
-let ident_exp xs = Ml.Exp.ident (mknoloc (ident xs))
-let pat_var str = Ml.Pat.var (mknoloc str)
-let ident_noloc xs = mknoloc (ident xs)
-
-let js_nullable_ident name =
-  let ident = Longident.unflatten [ "Jx"; "Nullable"; name ] |> Option.get in
-  Ml.Exp.ident (mknoloc ident)
-
-let exp_apply_no_labels f args =
-  Ml.Exp.apply f (List.map (fun arg -> (Asttypes.Nolabel, arg)) args)
 
 module Ml_js = struct
   module Typ = struct
@@ -1251,24 +1253,24 @@ module Gen_str = struct
     in
     let rec loop c_typ =
       match c_typ with
-      | `Js_obj _typ_name -> ident_exp [ codec_mod_name; "obj" ]
+      | `Js_obj _typ_name -> ident_exp [ codec_mod_name; "any" ]
       | `Ml_val typ_name -> ident_exp [ codec_mod_name; typ_name ]
       | `Named name when String.equal name scope -> ident_exp [ named_suffix ]
-      | `Named _js_obj_name -> ident_exp [ codec_mod_name; "obj" ]
-      | `Nullable (`Union _) -> ident_exp [ codec_mod_name; "obj" ]
-      | `Nullable _that -> ident_exp [ codec_mod_name; "obj" ]
+      | `Named _js_obj_name -> ident_exp [ codec_mod_name; "any" ]
+      | `Nullable (`Union _) -> ident_exp [ codec_mod_name; "any" ]
+      | `Nullable _that -> ident_exp [ codec_mod_name; "any" ]
       | `Scoped1 (path, that) ->
         let conv_that_exp = loop that in
         exp_apply_no_labels
           (ident_exp (List.map Config.rename_upper path @ [ named_suffix ]))
           [ conv_that_exp ]
-      | `Sequence that -> ident_exp [ codec_mod_name; "obj" ]
+      | `Sequence that -> ident_exp [ codec_mod_name; "any" ]
       | `Scoped0 path ->
         ident_exp (List.map Config.rename_upper path @ [ named_suffix ])
       | `Undefined -> ident_exp [ codec_mod_name; "unit" ]
       (* This should be identity. *)
-      | `Any -> ident_exp [ codec_mod_name; "obj" ]
-      | `Union _ -> ident_exp [ codec_mod_name; "obj" ]
+      | `Any -> ident_exp [ codec_mod_name; "any" ]
+      | `Union _ -> ident_exp [ codec_mod_name; "any" ]
     in
     loop c_typ
 
@@ -1299,8 +1301,8 @@ module Gen_str = struct
     let key = Ml.Exp.constant (Ml.Const.string this.name) in
     let exp = Jx_builder.get (if is_static then t_exp else this_exp) key in
     (* TODO: no optional attrs? *)
-    (* TODO: remove if not having D conv on get is ok. *)
-    (* let exp = gen_conv_ext_apply ~scope `ml_of_js this.type_ exp in *)
+    (* TODO: Do we want to optimize away the obj/id conv? *)
+    let exp = gen_conv_ext_apply ~scope `ml_of_js this.type_ exp in
     let exp =
       if is_static then exp else Ml.Exp.fun_ Nolabel None this_pat exp
     in
@@ -1314,7 +1316,9 @@ module Gen_str = struct
     in
     let key = Ml.Exp.constant (Ml.Const.string this.name) in
     (* TODO: no optional attrs? *)
-    let exp = gen_conv_ext_apply ~scope `js_of_ml this.type_ x_exp in
+    (* TODO: We assume all attr values are Jx.obj. Is that so? *)
+    (* let exp = gen_conv_ext_apply ~scope `js_of_ml this.type_ x_exp in *)
+    let exp = x_exp in
     let exp = Jx_builder.set (if is_static then t_exp else this_exp) key exp in
     (* TODO: Use n-ary pexp constructor *)
     let exp = Ml.Exp.fun_ Nolabel None x_pat exp in
@@ -1340,9 +1344,12 @@ module Gen_str = struct
 
   let gen_const_value (v : Wi.const_value) =
     match v with
-    | `Bool x -> Jx_builder.boolean x
-    | `Float x -> Jx_builder.float x
-    | `Int x -> Jx_builder.int x
+    | `Bool x ->
+      exp_apply_no_labels (ident_exp [ "E_jx"; "bool" ]) [ Ml'.Exp.bool x ]
+    | `Float x ->
+      exp_apply_no_labels (ident_exp [ "E_jx"; "float" ]) [ Ml'.Exp.float x ]
+    | `Int x ->
+      exp_apply_no_labels (ident_exp [ "E_jx"; "int" ]) [ Ml'.Exp.int x ]
 
   (* --- Regular operation --- *)
 
@@ -1401,7 +1408,7 @@ module Gen_str = struct
       let body =
         let ret_exp =
           exp_apply_no_labels
-            (ident_exp [ "D_jx"; "meth" ])
+            (ident_exp [ "Jx"; "meth" ])
             [ obj_exp; op_key; Ml.Exp.array ml_args ]
         in
         gen_conv_ext_apply ~scope `ml_of_js ([], this.return) ret_exp
@@ -1570,8 +1577,8 @@ module Gen_str = struct
   let gen_interface_any_conv () =
     let of_any_pat = Ml.Pat.var (mknoloc "of_any") in
     let to_any_pat = Ml.Pat.var (mknoloc "to_any") in
-    let of_any = Ml.Vb.mk of_any_pat (ident_exp [ "D_jx"; "obj" ]) in
-    let to_any = Ml.Vb.mk to_any_pat (ident_exp [ "E_jx"; "obj" ]) in
+    let of_any = Ml.Vb.mk of_any_pat (ident_exp [ "D_jx"; "any" ]) in
+    let to_any = Ml.Vb.mk to_any_pat (ident_exp [ "E_jx"; "any" ]) in
     [
       Ml.Str.value Nonrecursive [ of_any ]; Ml.Str.value Nonrecursive [ to_any ];
     ]
@@ -1760,7 +1767,11 @@ module Gen_str = struct
         (fun c ->
           let name = Config.enum_to_ident c in
           let pat = Ml.Pat.var (mknoloc name) in
-          let exp = Jx_builder.ascii c in
+          let exp =
+            exp_apply_no_labels
+              (ident_exp [ "E_jx"; "ascii" ])
+              [ Ml.Exp.constant (Ml.Const.string c) ]
+          in
           Ml.Str.value Nonrecursive [ Ml.Vb.mk pat exp ]
         )
         this.values
@@ -1796,17 +1807,18 @@ module Gen_str = struct
 
   (* --- Callback interface --- *)
 
-  (* [let make f = D_jx.obj (E_jx.func $n f)] *)
+  (* [let make f = D_jx.obj (Jx.func $n f)] *)
   let gen_callback_make ~scope (op : Wi.Regular_operation.t) =
     let args_len = List.length op.arguments in
     let f_arg = ident_exp [ "f" ] in
     let body =
       let ret_exp =
         exp_apply_no_labels
-          (ident_exp [ "E_jx"; "func" ])
+          (ident_exp [ "Jx"; "func" ])
           [ Ml'.Exp.int args_len; f_arg ]
       in
-      gen_conv_ext_apply ~scope `ml_of_js ([], op.return) ret_exp
+      exp_apply_no_labels (ident_exp [ "Jx"; "relax" ]) [ ret_exp ]
+      (* gen_conv_ext_apply ~scope `ml_of_js ([], op.return) ret_exp *)
     in
     let pat = Ml.Pat.var (mknoloc "make") in
     let exp = Ml.Exp.fun_ Nolabel None (pat_var "f") body in
@@ -1833,7 +1845,7 @@ module Gen_str = struct
         (ident_exp [ "D_jx"; "func" ])
         [
           exp_apply_no_labels
-            (ident_exp [ "E_jx"; "obj" ])
+            (ident_exp [ "E_jx"; "any" ])
             [ ident_exp [ "t" ] ];
         ]
     in

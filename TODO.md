@@ -38,3 +38,4 @@ type t = [< `Event | `String ] Js.t -> string -> int -> int -> Js.any -> Js.any
 - [ ] Warn on `void` and assume `undefined`.
 - [ ] Aliases for `string`, `int`, etc.
 - [ ] Webidl has many integer types, but JS only has Number. Should we add `[`Int] obj` as a subset of Number?
+- [ ] Document safe casts with polyvars.

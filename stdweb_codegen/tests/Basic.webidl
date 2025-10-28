@@ -241,3 +241,18 @@ interface NodeList {
 callback interface NodeFilter {
     boolean filter(Node node);
 };
+
+interface mixin ParentNode {
+  Element? querySelector(DOMString selectors);
+};
+Document includes ParentNode;
+
+
+
+interface Document : Node {
+  constructor();
+
+  // FIXME
+  Element? querySelector(DOMString selectors);
+};
+

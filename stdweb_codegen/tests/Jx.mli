@@ -1,88 +1,112 @@
-(** External JavaScript interface for OCaml.
-
-    This module provides bindings for standard JavaScript objects and external
-    primitives that allow type-safe compile-time and runtime interoperability
-    between JavaScript and OCaml.
-
-    Start by exploring the standard JavaScript {!section:types} or learning
-    about the {!section:bindings} API. *)
-
-(** {1 Types}
-
-    All standard JavaScript types are directly representable in OCaml without
-    wrapping or any runtime conversions. This is achieved by providing
-    semi-abstract types for global JavaScript objects types like
-    {!section:number} and {!section:array}.
-
-    When interacting with JavaScript APIs you can either use the specialized
-    {!section:object} types for zero-cost access to values of that type, or you
-    can write {!section:bindings} that convert OCaml values to JavaScript and
-    vice-versa. *)
-
-(** {2:object Object} *)
+(** {1 Object} *)
 
 type +'a obj constraint 'a = [> ]
-(** Typed JavaScript objects.
-
-    The type parameter ['a] is used to differentiate between objects of
-    different classes using polymorphic variants.
-
-    For example, the JavaScript
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date}
-     Date} class can be represented as: [[ `Date ] Js.obj]. *)
-
 type any = [ `Any ] obj
-(** JavaScript objects of an unknown type.
+type prop = Stdlib.String.t
 
-    The [any] type is used to represent arbitrary, opaque JavaScript values
-    whose static type information is unknown. This type useful for interfacing
-    with low-level JavaScript APIs.
+external get : 'a obj -> prop -> 'v obj = "caml_js_get"
+external set : 'a obj -> prop -> 'v obj -> unit = "caml_js_set"
+external del : 'a obj -> prop -> unit = "caml_js_delete"
+external obj : (prop * any) Stdlib.Array.t -> 'a obj = "caml_js_object"
 
-    The {!type:any} values can be converted to and from OCaml values using the
-    {!module:Encode} and {!module:Decode} modules. See {!section:bindings} for
-    more details. *)
+external new_obj : [ `Function ] obj -> any Stdlib.Array.t -> 'a obj
+  = "caml_js_new"
 
-external get : 'a obj -> string -> 'v obj = "caml_js_get"
-external set : 'a obj -> string -> 'v obj -> unit = "caml_js_set"
-external del : 'a obj -> string -> unit = "caml_js_delete"
+external call : [ `Function ] obj -> any Stdlib.Array.t -> 'r obj
+  = "caml_js_fun_call"
 
-external obj : (string * any) Stdlib.Array.t -> 'a obj = "caml_js_object"
-(** [obj [| (prop1, v1); ... |]] is [{prop1: v1, ... }]. *)
-
-external obj_new : 'a obj -> any Stdlib.Array.t -> 'a obj = "caml_js_new"
-(** [obj_new obj []] is [new obj(...args)]. *)
+external meth : 'a obj -> prop -> any Stdlib.Array.t -> 'r obj
+  = "caml_js_meth_call"
 
 external typeof : 'a obj -> Stdlib.String.t = "caml_js_typeof"
-(** See
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof}
-     typeof}. *)
 
 external instanceof : 'a obj -> constr:'constr obj -> bool
   = "caml_js_instanceof"
-(** See
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof}
-     instanceof}. *)
 
 external equal : 'a obj -> 'a obj -> bool = "caml_js_equals"
-(** See
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Equality}
-     Equality (==)}. *)
-
 external strict_equal : 'a obj -> 'a obj -> bool = "caml_js_strict_equals"
-(** See
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality}
-     Strict equality (===)}. *)
 
-(** Conversion *)
+(** {1 Nullable} *)
 
-external any : 'c obj -> any = "%identity"
-external magic : 'a obj -> 'b obj = "%identity"
+type +'a nullable = [ `Nullable of 'a ] obj
 
-(** {2:string String} *)
+val null : 'a nullable
+external nullable : 'a -> 'a nullable = "%identity"
+val is_null : 'a nullable -> bool
 
-external string : Stdlib.String.t -> [ `String ] obj = "caml_jsstring_of_string"
-external ascii : Stdlib.String.t -> [ `String ] obj = "%identity"
-external to_string : [ `String ] obj -> string = "caml_string_of_jsstring"
+module Nullable : sig
+  type +'a t = 'a nullable
+
+  val of_option : 'a option -> 'a t
+  val to_option : 'a t -> 'a option
+  val is_null : 'a nullable -> bool
+  val get : 'a t -> 'a
+  external unsafe_get : 'a t -> 'a = "%identity"
+  val map : ('a -> 'b) -> 'a t -> 'b t
+  val map_or : 'b -> ('a -> 'b) -> 'a t -> 'b
+  val map_or_else : (unit -> 'b) -> ('a -> 'b) -> 'a t -> 'b
+end
+
+(** {1 Optional} *)
+
+type +'a optional = [ `Optional of 'a ] obj
+
+val undefined : 'a optional
+external optional : 'a -> 'a optional = "%identity"
+val is_undefined : 'a optional -> bool
+
+module Optional : sig
+  type +'a t = 'a optional
+
+  val of_option : 'a option -> 'a t
+  val to_option : 'a t -> 'a option
+  val is_undefined : 'a t -> bool
+  val get : 'a t -> 'a
+  external unsafe_get : 'a t -> 'a = "%identity"
+  val map : ('a -> 'b) -> 'a t -> 'b t
+  val map_or : 'b -> ('a -> 'b) -> 'a t -> 'b
+  val map_or_else : (unit -> 'b) -> ('a -> 'b) -> 'a t -> 'b
+end
+
+(** {1 Conversion} *)
+
+(* TODO: Document safe casts. *)
+
+type 'a constr = [ `Constr of 'a ] obj
+
+external magic : _ obj -> 'a = "%identity"
+external cast : _ obj -> 'a constr -> 'a obj = "%identity"
+external any : 'a -> any = "%identity"
+external bool : bool -> [> `Boolean ] obj = "caml_js_from_bool"
+external float : float -> [> `Number ] obj = "caml_js_from_float"
+external int : int -> [> `Number ] obj = "%identity"
+external int32 : int32 -> [> `Number ] obj = "caml_js_from_int32"
+external nativeint : nativeint -> [> `Number ] obj = "caml_js_from_nativeint"
+external char : char -> [> `Number ] obj = "%identity"
+external string : string -> [> `String ] obj = "caml_jsstring_of_string"
+external ascii : string -> [> `String ] obj = "%identity"
+external array : 'a array -> [ `Array of 'a ] obj = "caml_js_from_array"
+
+external func : int -> (_ -> _) -> [> `Function ] obj
+  = "caml_js_wrap_callback_strict"
+
+module Ml : sig
+  external any : any -> 'a obj = "%identity"
+  external bool : [ `Boolean ] obj -> bool = "caml_js_to_bool"
+  external float : [ `Number ] obj -> float = "caml_js_to_float"
+  external int : [ `Number ] obj -> int = "%identity"
+  external int32 : [ `Number ] obj -> int32 = "caml_js_to_int32"
+  external nativeint : [ `Number ] obj -> nativeint = "caml_js_to_nativeint"
+  external char : [ `Number ] obj -> char = "%identity"
+  external string : [ `String ] obj -> string = "caml_string_of_jsstring"
+  external ascii : [ `String ] obj -> string = "caml_string_of_jsstring"
+  external array : [ `Array of 'a ] obj -> 'a array = "caml_js_to_array"
+  val unit : [ `Optional of unit ] obj -> unit
+  val nullable : [ `Nullable of 'a ] obj -> 'a option
+  val optional : [ `Optional of 'a ] obj -> 'a option
+end
+
+(** {1 Unicode} *)
 
 module Unicode : sig
   external utf16 : Stdlib.String.t -> Stdlib.String.t
@@ -91,57 +115,51 @@ module Unicode : sig
   external utf8 : Stdlib.String.t -> Stdlib.String.t = "caml_string_of_jsstring"
 end
 
-(** {2:raw Raw JavaScript}
-
-    The {!expr} and {!exec} primitives embed untyped JavaScript code into the
-    compiled output.
-
-    The textual representation of the code must be valid JavaScript, otherwise
-    the compilation will fail.
-
-    The provided JavaScript code must be represented as a static string literal.
-    If the provided code string is computed dynamically, the evaluation will
-    fallback to runtime and an error will be thrown (check the console for
-    evaluation errors).
-
-    {b Warning:} {!expr} and {!exec} are unsafe since no type-checking is
-    performed on the embedded code. *)
+(** {1 Raw JavaScript} *)
 
 external expr : Stdlib.String.t -> 'a obj = "caml_pure_js_expr"
-
 external exec : Stdlib.String.t -> unit = "caml_js_expr"
-(** Unsafe JavaScript statement.
-
-    {[
-      let () = Jx.exec "console.log('hello')"
-    ]} *)
 
 (** {1 Debug} *)
 
 val debug : 'a -> unit
-(** Print the runtime representation of a value using
-    {{:https://developer.mozilla.org/en-US/docs/Web/API/console/debug_static}
-     console.debug}.*)
-
 val log : 'a -> unit
-(** Print the runtime representation of a value using
-    {{:https://developer.mozilla.org/en-US/docs/Web/API/console/log_static}
-     console.log}.*)
-
 external debugger : unit -> unit = "debugger"
-(** See
-    {{:https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger}
-     debugger}. *)
 
-(** {2:types Types} *)
+(** {1 Types} *)
 
-type string = [ `String ] obj
-type boolean = [ `Boolean ] obj
-type number = [ `Number ] obj
 type bigint = [ `Bigint ] obj
 type symbol = [ `Symbol ] obj
-type 'a nullable = [ `Nullable of 'a ] obj
-type 'a undefined = [ `Undefined of 'a ] obj
 type 'a array = [ `Array of 'a ] obj
 type 'a dict = [ `Dict of 'a ] obj
 type 'a promise = [ `Promise of 'a ] obj
+
+(* {1 String} **)
+
+type string = [ `String ] obj
+
+module String : sig
+  type t = [ `String ] obj
+
+  val to_string : t -> Stdlib.String.t
+end
+
+(* {1 Boolean} **)
+
+type boolean = [ `Boolean ] obj
+
+module Boolean : sig
+  type t = [ `Boolean ] obj
+
+  val to_bool : t -> Stdlib.Bool.t
+end
+
+(* {1 Boolean} **)
+
+type number = [ `Number ] obj
+
+module Number : sig
+  type t = [ `Number ] obj
+
+  val to_float : t -> Stdlib.Float.t
+end
